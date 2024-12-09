@@ -46,7 +46,7 @@ LAPR1_24_25_DAB_02
 │
 ├── javadoc                               # Documentação do código em javadoc (apenas por diversão)
 │
-├── target                                # Diretório de compilação
+├── target                                # Diretório de compilação (Esta fora do git, não deve aparecer no repositório) 
 │       ├── classes
 │       ├── generated-sources
 │       ├── generated-test-sources

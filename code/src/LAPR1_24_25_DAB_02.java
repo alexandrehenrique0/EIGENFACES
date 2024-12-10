@@ -1,9 +1,12 @@
 import org.la4j.Matrix;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class LAPR1_24_25_DAB_02 {
     public static Scanner SCANNER = new Scanner(System.in);
+    public static Scanner SCANNER_CSV = new Scanner(System.in);
+    public static Scanner SCANNER_IMAGE = new Scanner(System.in);
     public static void main(String[] args) {
         int function = 0;
         int vectorNumbers = 0;
@@ -11,7 +14,19 @@ public class LAPR1_24_25_DAB_02 {
         String imageLocation = "";
 
         if (check_Correct_Parameters(args)){
-            System.out.println("Parâmetros corretos");
+            function = receive_Function(args);
+            vectorNumbers = receive_Number_Vectors(args);
+            csvLocation = receive_CSV_Location(args);
+            imageLocation = receive_Image_Location(args);
+
+            try {
+                SCANNER_CSV = new Scanner(new File(csvLocation));
+                SCANNER_IMAGE = new Scanner(new File(imageLocation));
+            } catch (FileNotFoundException e) {
+                System.out.println("Erro ao abrir os arquivos: " + e.getMessage());
+                System.exit(1);
+            }
+
         }
         else if (args.length == 0)
         {

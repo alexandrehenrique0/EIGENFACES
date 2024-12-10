@@ -28,8 +28,9 @@ LAPR1_24_25_DAB_02
 │
 ├── code
 │   ├── src
-│   │   └── LAPR1_24_25_DAB_02.java        # Código principal da aplicação.
-│   ├── test
+│   │   ├── MatrixDecomposition.java        # Contém a lógica da decomposição  
+│   │   └── LAPR1_24_25_DAB_02.java         # Código principal da aplicação.
+├── test
 │   │   └── LAPR1_24_25_DAB_02_TEST.java   # Código para testes unitários.
 │   └── lib                                # Bibliotecas não nativas utilizadas
 │       ├── junit-jupiter-api-5.9.2.jar

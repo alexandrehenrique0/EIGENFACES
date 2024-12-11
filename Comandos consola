@@ -1,0 +1,2 @@
+java -cp "./code/lib/commons-math3-3.6.1.jar" ./code/src/LAPR1_24_25_DAB_02.java -f 1 -k 1 -i './Input/TesteFuncao1/csv/exampleInputFunc1.csv' -j './Input/TesteFuncao1/csv/'
+-------

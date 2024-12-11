@@ -1,3 +1,4 @@
+import org.apache.commons.math3.linear.EigenDecomposition;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -7,7 +8,6 @@ public class LAPR1_24_25_DAB_02 {
     public static final int MAX_SIZE_COLS = 256;
     public static final int MIN_SIZE_ROWS = 1;
     public static final int MIN_SIZE_COLS = 1;
-
     public static Scanner SCANNER;
     public static Scanner SCANNER_CSV;
     public static Scanner SCANNER_IMAGE = new Scanner(System.in);

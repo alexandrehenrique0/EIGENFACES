@@ -1,9 +1,15 @@
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.Scanner;
 
-public class LAPR1_24_25_DAB_02 {
+public class Gabriel {
     public static final int MAX_SIZE_ROWS = 256;
     public static final int MAX_SIZE_COLS = 256;
     public static final int MIN_SIZE_ROWS = 1;
@@ -68,9 +74,11 @@ public class LAPR1_24_25_DAB_02 {
         }
         return false;
     }
+
     public static boolean check_function(int function) {
         return function >= 1 && function <= 3;
     }
+
     public static boolean check_csvLocation(String csvLocation) {
         File csv = new File(csvLocation);
         if (csvLocation.equals("")) {
@@ -79,6 +87,7 @@ public class LAPR1_24_25_DAB_02 {
             return false;
         } else return csv.exists();
     }
+
     public static boolean check_imageFolderLocation(String imageFolderLocation) {
         File imageDirectory = new File(imageFolderLocation);
         if (imageFolderLocation.isEmpty()) {
@@ -113,6 +122,7 @@ public class LAPR1_24_25_DAB_02 {
         System.out.printf("Localização: ");
     }
 
+
     // Receber parâmetros
     public static int receive_Function(String[] args) {
         int functionArgs = 0;
@@ -130,6 +140,7 @@ public class LAPR1_24_25_DAB_02 {
             return functionArgs;
         }
     }
+
     public static int receive_Number_Vectors(String[] args) {
         int vectorNumbersArgs = 0;
         if (args == null) {
@@ -140,6 +151,7 @@ public class LAPR1_24_25_DAB_02 {
             return vectorNumbersArgs;
         }
     }
+
     public static String receive_CSV_Location(String[] args) {
         String csvLocationArgs = "";
         if (args == null) {
@@ -162,7 +174,7 @@ public class LAPR1_24_25_DAB_02 {
         if (args == null) {
             String imageFolderLocation = SCANNER.next();
             if (!check_imageFolderLocation(imageFolderLocation)) {
-               error_Location_Not_Found();
+                error_Location_Not_Found();
             }
             return imageFolderLocation;
         } else {
@@ -238,6 +250,32 @@ public class LAPR1_24_25_DAB_02 {
     }
 
     //* ---------------------------------------
+    //* Decomposição de matriz simétrica
+    public static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {
+        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);
+
+        RealMatrix eigenVectors = eigenDecomposition.getV();
+        RealMatrix eigenValues = eigenDecomposition.getD();
+        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
+
+        return eigenDecomposition;
+    }
+
+
+    public static void printMatrix(RealMatrix matrix, String matrixName) {
+        double[][] matrixToPrint = matrix.getData();
+        System.out.println("Matriz " + matrixName);
+
+        for (int j = 0; j < matrixToPrint.length; j++) {
+            for (int i = 0; i < matrixToPrint[0].length; i++) {
+                System.out.printf("%.3f\f", matrixToPrint[j][i]);
+            }
+            System.out.println(); // Nova linha para cada linha da matriz
+        }
+        System.out.println(); // Linha extra para separar diferentes matrizes
+    }
+
 
     //! Error Messages
     public static void error_Location_Not_Found() {

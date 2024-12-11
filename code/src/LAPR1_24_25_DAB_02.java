@@ -1,4 +1,7 @@
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -238,6 +241,34 @@ public class LAPR1_24_25_DAB_02 {
     }
 
     //* ---------------------------------------
+
+
+    //* Decomposição de matriz simétrica
+    public static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {
+        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);
+
+        // demonstração de como utilizar os resultados da decomposição
+//        RealMatrix eigenVectors = eigenDecomposition.getV();
+//        RealMatrix eigenValues = eigenDecomposition.getD();
+//        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
+
+        return eigenDecomposition;
+    }
+
+    //* Metodo para printar matrizes corretamente no console.
+    public static void printMatrix(RealMatrix matrix, String matrixName) {
+        double[][] matrixToPrint = matrix.getData();
+        System.out.println("Matriz " + matrixName);
+
+        for (int j = 0; j < matrixToPrint.length; j++) {
+            for (int i = 0; i < matrixToPrint[0].length; i++) {
+                System.out.printf("%.3f\f", matrixToPrint[j][i]);
+            }
+            System.out.println(); // Nova linha para cada linha da matriz
+        }
+        System.out.println(); // Linha extra para separar diferentes matrizes
+    }
 
     //! Error Messages
     public static void error_Location_Not_Found() {

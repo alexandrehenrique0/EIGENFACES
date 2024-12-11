@@ -38,26 +38,26 @@ public class Rafael {
         SCANNER.close();
         return new int[]{rows, cols};
     }
-private static void populate_Matrix(double[][] matrix) {
-    int row = 0;
-    while (SCANNER.hasNextLine()) {
-        String line = SCANNER.nextLine().trim();
-        if (!line.isEmpty()) {
-            populate_Row(matrix, row, line);
-            row++;
+    private static void populate_Matrix(double[][] matrix) {
+        int row = 0;
+        while (SCANNER.hasNextLine()) {
+            String line = SCANNER.nextLine().trim();
+            if (!line.isEmpty()) {
+                populate_Row(matrix, row, line);
+                row++;
+            }
         }
+        SCANNER.close();
     }
-    SCANNER.close();
-}
 
-private static void populate_Row(double[][] matrix, int row, String line) {
-    String[] values = line.split(",");
-    for (int col = 0; col < values.length; col++) {
-        try {
-            matrix[row][col] = Double.parseDouble(values[col].trim());
-        } catch (NumberFormatException e) {
-            matrix[row][col] = 0; // or any default value you prefer
+    private static void populate_Row(double[][] matrix, int row, String line) {
+        String[] values = line.split(",");
+        for (int col = 0; col < values.length; col++) {
+            try {
+                matrix[row][col] = Double.parseDouble(values[col].trim());
+            } catch (NumberFormatException e) {
+                matrix[row][col] = 0; // or any default value you prefer
+            }
         }
     }
-}
 }

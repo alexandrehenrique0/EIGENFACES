@@ -10,22 +10,22 @@ public class LAPR1_24_25_DAB_02 {
     public static final int MIN_SIZE_COLS = 1;
     public static Scanner SCANNER;
     public static Scanner SCANNER_CSV;
-    public static Scanner SCANNER_IMAGE = new Scanner(System.in);
+    public static Scanner SCANNER_IMAGE;
 
     public static void main(String[] args) {
         int function = 0;
         int vectorNumbers = 0;
         String csvLocation = "";
-        String imageLocation = "";
+        String imageFolderLocation = "";
         if (check_Correct_Parameters(args)) {
             function = receive_Function(args);
             vectorNumbers = receive_Number_Vectors(args);
             csvLocation = receive_CSV_Location(args);
-            imageLocation = receive_Image_Location(args);
+            imageFolderLocation = receive_Image_Location(args);
 
             try {
                 SCANNER_CSV = new Scanner(new File(csvLocation));
-                SCANNER_IMAGE = new Scanner(new File(imageLocation));
+                File[] fileList = new File(imageFolderLocation).listFiles();
             } catch (FileNotFoundException e) {
                 System.out.println("Erro ao abrir os arquivos: " + e.getMessage());
                 System.exit(1);
@@ -43,12 +43,12 @@ public class LAPR1_24_25_DAB_02 {
             csvLocation = receive_CSV_Location(null);
 
             ui_Image_Location_Parameter_Menu();
-            imageLocation = receive_Image_Location(null);
+            imageFolderLocation = receive_Image_Location(null);
             // ---------------------------------------
 
             try {
                 SCANNER_CSV = new Scanner(new File(csvLocation));
-                SCANNER_IMAGE = new Scanner(new File(imageLocation));
+                File[] fileList = new File(imageFolderLocation).listFiles();
             } catch (FileNotFoundException e) {
                 System.out.println("Erro ao abrir os arquivos: " + e.getMessage());
                 System.exit(1);
@@ -79,9 +79,9 @@ public class LAPR1_24_25_DAB_02 {
             return false;
         } else return csv.exists();
     }
-    public static boolean check_imageLocation(String imageLocation) {
-        File imageDirectory = new File(imageLocation);
-        if (imageLocation.isEmpty()) {
+    public static boolean check_imageFolderLocation(String imageFolderLocation) {
+        File imageDirectory = new File(imageFolderLocation);
+        if (imageFolderLocation.isEmpty()) {
             return false;
         }
         return imageDirectory.exists();
@@ -158,19 +158,19 @@ public class LAPR1_24_25_DAB_02 {
     }
 
     public static String receive_Image_Location(String[] args) {
-        String imageLocationArgs = "";
+        String imageFolderLocationArgs = "";
         if (args == null) {
-            String imageLocation = SCANNER.next();
-            if (!check_imageLocation(imageLocation)) {
+            String imageFolderLocation = SCANNER.next();
+            if (!check_imageFolderLocation(imageFolderLocation)) {
                error_Location_Not_Found();
             }
-            return imageLocation;
+            return imageFolderLocation;
         } else {
-            imageLocationArgs = args[7];
-            if (!check_imageLocation(imageLocationArgs)) {
+            imageFolderLocationArgs = args[7];
+            if (!check_imageFolderLocation(imageFolderLocationArgs)) {
                 error_Location_Not_Found();
             }
-            return imageLocationArgs;
+            return imageFolderLocationArgs;
         }
     }
 

@@ -36,12 +36,14 @@ public class Rafael {
             }
         }
         SCANNER.close();
-        if (rows == 0 || cols == 0) {
-            throw new IllegalArgumentException("Empty matrix");
-        }else if(rows > 256 || cols > 256){
-            throw new IllegalArgumentException("Matrix exceeds the maximum allowed dimension of 256x256. Current dimension: " + rows + "x" + cols);
+        if (check_Size_Boundaries(rows, cols)) {
+            throw new IllegalArgumentException("Erro: A matriz ultrapassa a dimensão máxima permitida de 256x256. Dimensão atual: " + rows + "x" + cols);
         }
         return new int[]{rows, cols};
+    }
+
+    private static boolean check_Size_Boundaries(int rows, int cols){
+        return rows > 256 || cols > 256 || rows == 0 || cols == 0;
     }
     private static void populate_Matrix(double[][] matrix) {
         int row = 0;

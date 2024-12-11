@@ -259,15 +259,33 @@ public class LAPR1_24_25_DAB_02 {
     //* Metodo para printar matrizes corretamente no console.
     public static void printMatrix(RealMatrix matrix, String matrixName) {
         double[][] matrixToPrint = matrix.getData();
-        System.out.println("Matriz " + matrixName);
+        System.out.println("Matriz: " + matrixName + " ↓");
+
+        // Linha superior
+        for (int i = 0; i < matrixToPrint[0].length; i++) {
+            System.out.print("____________");
+        }
+
+        System.out.println(); // pula uma linha (estética)
 
         for (int j = 0; j < matrixToPrint.length; j++) {
             for (int i = 0; i < matrixToPrint[0].length; i++) {
-                System.out.printf("%.3f\f", matrixToPrint[j][i]);
+                if (i == 0) {
+                    System.out.printf("|%8.3f\t", matrixToPrint[j][i]);
+                } else if (i == matrixToPrint[0].length - 1) {
+                    System.out.printf("%8.3f\t|", matrixToPrint[j][i]);
+                } else {
+                    System.out.printf("%8.3f\t", matrixToPrint[j][i]);
+                }
             }
-            System.out.println(); // Nova linha para cada linha da matriz
+            System.out.println();
         }
-        System.out.println(); // Linha extra para separar diferentes matrizes
+        // Linha final
+        for (int i = 0; i < matrixToPrint[0].length; i++) {
+            System.out.print("============");
+        }
+        System.out.println(); // pula duas linha (estética)
+        System.out.println();
     }
 
     //! Error Messages

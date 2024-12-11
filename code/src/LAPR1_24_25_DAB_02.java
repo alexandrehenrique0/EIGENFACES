@@ -7,33 +7,42 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class LAPR1_24_25_DAB_02 {
+
+    // CONSTANTES PARA BOUNDARIES DE MATRIZES
     public static final int MAX_SIZE_ROWS = 256;
     public static final int MAX_SIZE_COLS = 256;
     public static final int MIN_SIZE_ROWS = 1;
     public static final int MIN_SIZE_COLS = 1;
+
+    // SCANNERS GLOBAIS
     public static Scanner SCANNER = new Scanner(System.in);
-    public static Scanner SCANNER_CSV = new Scanner(System.in);
-    public static Scanner SCANNER_IMAGE = new Scanner(System.in);
+    public static Scanner SCANNER_CSV;
+    public static Scanner SCANNER_IMAGE;
+    public static File[] IMAGE_FILES;
 
     public static void main(String[] args) {
+
+        // PARÂMETROS DE ENTRADA
         int function = 0;
         int vectorNumbers = 0;
         String csvLocation = "";
         String imageFolderLocation = "";
-        if (check_Correct_Parameters(args)) {
+
+        // VERIFICAÇÃO DE PARÂMETROS (ARGS) PARA MÉTODOS DE INPUT
+        if (check_Correct_Parameters_Structure(args)) {
+
+            // Receber os parâmetros
             function = receive_Function(args);
             vectorNumbers = receive_Number_Vectors(args);
             csvLocation = receive_CSV_Location(args);
             imageFolderLocation = receive_Image_Location(args);
 
-            try {
-                SCANNER_CSV = new Scanner(new File(csvLocation));
-                File[] fileList = new File(imageFolderLocation).listFiles();
-            } catch (FileNotFoundException e) {
-                System.out.println("Erro ao abrir os arquivos: " + e.getMessage());
-                System.exit(1);
-            }
+            // Verificar se os arquivo e diretório existem
+            check_Existance_File_Directory(csvLocation, imageFolderLocation);
+
+            // Obter a matriz do CSV
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
+
         } else if (args.length == 0) {
             // Mostrar as opções num menu e receber os parâmetros
             ui_Function_Parameter_Menu();
@@ -49,23 +58,19 @@ public class LAPR1_24_25_DAB_02 {
             imageFolderLocation = receive_Image_Location(null);
             // ---------------------------------------
 
-            try {
-                SCANNER_CSV = new Scanner(new File(csvLocation));
-                File[] fileList = new File(imageFolderLocation).listFiles();
-            } catch (FileNotFoundException e) {
-                System.out.println("Erro ao abrir os arquivos: " + e.getMessage());
-                System.exit(1);
-            }
+            // Verificar se os arquivo e diretório existem
+            check_Existance_File_Directory(csvLocation, imageFolderLocation);
+
+            // Obter a matriz do CSV
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
 
         } else {
-            System.out.println("Parâmetros inválidos");
-            System.exit(1);
+            error_General("Erro: Parâmetros inválidos");
         }
     }
 
-    //* Verificações de parâmetros
-    public static boolean check_Correct_Parameters(String[] parameters) {
+    //* Verificações
+    public static boolean check_Correct_Parameters_Structure(String[] parameters) {
         if (parameters.length == 8) {
             return parameters[0].equals("-f") && parameters[2].equals("-k") && parameters[4].equals("-i") && parameters[6].equals("-j");
         }
@@ -89,6 +94,14 @@ public class LAPR1_24_25_DAB_02 {
         }
         return imageDirectory.exists();
     }
+    public static void  check_Existance_File_Directory(String csvLocation, String imageFolderLocation) {
+        try {
+            SCANNER_CSV = new Scanner(new File(csvLocation));
+            File[] IMAGE_FILES = new File(imageFolderLocation).listFiles();
+        } catch (FileNotFoundException e) {
+            error_General("Erro ao abrir os arquivos: " + e.getMessage());
+        }
+    }
     //* ---------------------------------------
 
     // Menus de opções
@@ -100,21 +113,19 @@ public class LAPR1_24_25_DAB_02 {
         System.out.println("-------------------------------------------------------");
         System.out.printf("Opção: ");
     }
-
     public static void ui_Vector_Numbers_Parameter_Menu() {
         System.out.println("------ Quantos vetores próprios deseja utilizar? ------");
         System.out.printf("Quantidade: ");
     }
-
     public static void ui_CSV_Location_Parameter_Menu() {
         System.out.println("---- Qual a localização do csv que deseja utilizar? ---");
         System.out.printf("Localização: ");
     }
-
     public static void ui_Image_Location_Parameter_Menu() {
         System.out.println("-------- Qual a localização da base de imagens? -------");
         System.out.printf("Localização: ");
     }
+    // ---------------------------------------
 
     // Receber parâmetros
     public static int receive_Function(String[] args) {
@@ -122,13 +133,13 @@ public class LAPR1_24_25_DAB_02 {
         if (args == null) {
             int function = SCANNER.nextInt();
             if (!check_function(function)) {
-                error_Invalid_Option();
+                error_General("Erro: Opção inválida");
             }
             return function;
         } else {
             functionArgs = Integer.parseInt(args[1]);
             if (!check_function(functionArgs)) {
-                error_Invalid_Option();
+                error_General("Erro: Opção inválida");
             }
             return functionArgs;
         }
@@ -136,8 +147,7 @@ public class LAPR1_24_25_DAB_02 {
     public static int receive_Number_Vectors(String[] args) {
         int vectorNumbersArgs = 0;
         if (args == null) {
-            int vectorNumbers = SCANNER.nextInt();
-            return vectorNumbers;
+            return SCANNER.nextInt();
         } else {
             vectorNumbersArgs = Integer.parseInt(args[3]);
             return vectorNumbersArgs;
@@ -148,35 +158,33 @@ public class LAPR1_24_25_DAB_02 {
         if (args == null) {
             String csvLocation = SCANNER.next();
             if (!check_csvLocation(csvLocation)) {
-                error_Location_Not_Found();
+                error_General("Erro: Localização inválida csv");
             }
             return csvLocation;
         } else {
             csvLocationArgs = args[5];
             if (!check_csvLocation(csvLocationArgs)) {
-                error_Location_Not_Found();
+                error_General("Erro: Localização inválida csv");
             }
             return csvLocationArgs;
         }
     }
-
     public static String receive_Image_Location(String[] args) {
         String imageFolderLocationArgs = "";
         if (args == null) {
             String imageFolderLocation = SCANNER.next();
             if (!check_imageFolderLocation(imageFolderLocation)) {
-               error_Location_Not_Found();
+               error_General("Erro: Localização inválida da pasta de imagens");
             }
             return imageFolderLocation;
         } else {
             imageFolderLocationArgs = args[7];
             if (!check_imageFolderLocation(imageFolderLocationArgs)) {
-                error_Location_Not_Found();
+                error_General("Erro: Localização inválida da pasta de imagens");
             }
             return imageFolderLocationArgs;
         }
     }
-
     // ---------------------------------------
 
     //* Leitura de CSV
@@ -203,15 +211,13 @@ public class LAPR1_24_25_DAB_02 {
             }
         }
         if (check_Size_Boundaries(rows, cols)) {
-            throw new IllegalArgumentException("Erro: A matriz ultrapassa a dimensão máxima permitida de 256x256. Dimensão atual: " + rows + "x" + cols);
+            error_General("Erro: Dimensões da matriz fora dos limites: " + rows + "x" + cols);
         }
         return new int[]{rows, cols};
     }
-
     private static boolean check_Size_Boundaries(int rows, int cols) {
         return rows > MAX_SIZE_ROWS || cols > MAX_SIZE_COLS || rows < MIN_SIZE_ROWS || cols < MIN_SIZE_COLS;
     }
-
     private static void populate_Matrix(double[][] matrix, String csvLocation) {
         try {
             SCANNER_CSV = new Scanner(new File(csvLocation));
@@ -228,7 +234,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         SCANNER_CSV.close();
     }
-
     private static void populate_Row(double[][] matrix, int row, String line) {
         String[] values = line.split(",");
         for (int col = 0; col < values.length; col++) {
@@ -239,25 +244,23 @@ public class LAPR1_24_25_DAB_02 {
             }
         }
     }
-
     //* ---------------------------------------
 
 
     //* Decomposição de matriz simétrica
-    public static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {
+    public static EigenDecomposition decompose_Matrix(double[][] arrayParaDecompor) {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
         EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);
 
-        // demonstração de como utilizar os resultados da decomposição
-//        RealMatrix eigenVectors = eigenDecomposition.getV();
-//        RealMatrix eigenValues = eigenDecomposition.getD();
-//        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
-
+        /*? demonstração de como utilizar os resultados da decomposição
+        RealMatrix eigenVectors = eigenDecomposition.getV();
+        RealMatrix eigenValues = eigenDecomposition.getD();
+        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
+        ? ----------------------------------------------------------*/
         return eigenDecomposition;
     }
-
-    //* Metodo para printar matrizes corretamente no console.
-    public static void printMatrix(RealMatrix matrix, String matrixName) {
+    // Metodo para printar matrizes corretamente no console.
+    public static void print_Matrix(RealMatrix matrix, String matrixName) {
         double[][] matrixToPrint = matrix.getData();
         System.out.println("Matriz " + matrixName);
 
@@ -269,14 +272,11 @@ public class LAPR1_24_25_DAB_02 {
         }
         System.out.println(); // Linha extra para separar diferentes matrizes
     }
+    //* ---------------------------------------
 
     //! Error Messages
-    public static void error_Location_Not_Found() {
-        System.out.println("Localização inválida ou ficheiro não existe");
-        System.exit(1);
-    }
-    public static void error_Invalid_Option() {
-        System.out.println("Opção inválida");
+    public static void error_General(String error) {
+        System.out.println(error);
         System.exit(1);
     }
     //! Error Messages

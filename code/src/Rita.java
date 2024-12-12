@@ -4,16 +4,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-//2.1.2.2 Reconstrução/Representação de Imagens utilizando Eigenfaces
+//--------------2.1.2.2 Reconstrução/Representação de Imagens utilizando Eigenfaces-------------------------------------
 
 public class Rita {
     public static void main(String[] args) throws IOException {
-        String imageFolderLocation = "C:\\Users\\rita\\Documents\\lapr1-24-25_DAB_02\\Input\\TesteFuncao2-3\\csv";  // Caminho para a pasta das imagens
+        String imageFolderLocation = "C:\\Users\\rita\\Documents\\lapr1-24-25_DAB_02\\Input\\TesteFuncao2-3\\csv";
 
-        // Transformar imagens em vetores
         double[][] imageVectors = convertImagesToVectors(imageFolderLocation);
 
-        // Exibir o tamanho do vetor para as primeiras imagens (apenas para verificar)
         for (int i = 0; i < imageVectors.length; i++) {
             System.out.printf("Imagem %d - Tamanho do vetor: %d", i + 1, imageVectors[i].length);
             System.out.println();
@@ -22,13 +20,14 @@ public class Rita {
                 System.out.print(imageVectors[i][j] + " ");
             }
 
-            System.out.println(); // Quebra de linha para separar as imagens
+            System.out.println();
         }
 
-        // Construir a matriz de imagens M
+        // Matriz M
+
         double[][] imageMatrix = buildImageMatrixM(imageVectors);
 
-        // Exibir a matriz de imagens (só para verificar)
+
         System.out.println("\nMatriz de Imagens M (colunas são imagens):");
         for (int i = 0; i < imageMatrix.length; i++) {
             for (int j = 0; j < imageMatrix[i].length; j++) {
@@ -40,7 +39,6 @@ public class Rita {
 
 //--------1.Transformar cada imagem da base de imagens, com N imagens, para o formato vetor-----------------------------
 
-    // Método para converter as imagens em vetores, ajustando o tamanho das imagens
     public static double[][] convertImagesToVectors(String imageFolderLocation) throws IOException {
         File folder = new File(imageFolderLocation);
 
@@ -60,12 +58,10 @@ public class Rita {
             }
         }
 
-        // Se nenhum arquivo CSV foi encontrado
         if (csvFileCount == 0) {
             throw new FileNotFoundException("Nenhum arquivo CSV encontrado.");
         }
 
-        // Inicializar o array de arquivos CSV com o tamanho correto
         File[] csvFiles = new File[csvFileCount];
         int index = 0;
 
@@ -92,7 +88,6 @@ public class Rita {
     }
 
 
-    // Carregar uma imagem de um arquivo CSV e transformá-la em vetor
     public static double[] loadImageFromCSV(File imageFile) throws IOException {
         double[] imageVector = new double[0];  // Inicializa como vetor vazio
 
@@ -102,29 +97,27 @@ public class Rita {
         }
 
 
-        // Lendo o arquivo CSV
+        // Ler o arquivo CSV
         BufferedReader reader = new BufferedReader(new FileReader(imageFile));
-        String line;
+        String line; // armazena cada linha lida do arquivo
         int rowCount = 0;
         int cols = 0;
 
-        // Primeiro, contar o número de colunas e linhas
+
         while ((line = reader.readLine()) != null) {
             if (rowCount == 0) {
-                cols = line.split(",").length;  // número de colunas
+                cols = line.split(",").length;
             }
             rowCount++;
         }
 
-        // Inicializar o vetor com o número correto de elementos (linhas * colunas)
         imageVector = new double[cols * rowCount];
 
-        // Reposicionar o leitor para a leitura real dos dados
+
         reader.close();
         reader = new BufferedReader(new FileReader(imageFile));
         int index = 0;
 
-        // Lendo os dados reais
         while ((line = reader.readLine()) != null) {
             String[] pixels = line.split(",");
             for (String pixel : pixels) {
@@ -132,10 +125,10 @@ public class Rita {
 
                 // Verificar se a conversão é possível
                 if (isValidDouble(trimmedPixel)) {
-                    imageVector[index] = Double.parseDouble(trimmedPixel);  // Atribuir o valor convertido
+                    imageVector[index] = Double.parseDouble(trimmedPixel);
                 } else {
                     System.out.printf("Valor inválido no arquivo %d na linha: %d", imageFile.getName(),line);
-                    imageVector[index] = 0;  // Atribuir um valor padrão em caso de erro
+                    imageVector[index] = 0;
                 }
 
                 index++;
@@ -146,7 +139,6 @@ public class Rita {
         return imageVector;
     }
 
-    // Método para verificar se uma string pode ser convertida para double
     public static boolean isValidDouble(String str) {
         try {
             Double.parseDouble(str);
@@ -159,19 +151,15 @@ public class Rita {
 
 //------2.Construir uma matriz de imagens, M, em que cada coluna da matriz ´e uma imagem da base de imagens-------------
 
-    // Método para construir a matriz de imagens, onde cada coluna é uma imagem (vetor)
     public static double[][] buildImageMatrixM(double[][] imageVectors) {
-        // Determinar o número de pixels de cada imagem e o número de imagens
-        int numPixels = imageVectors[0].length;  // Número de pixels por imagem (tamanho do vetor de cada imagem)
-        int numImages = imageVectors.length;     // Número de imagens
+        int numPixels = imageVectors[0].length;
+        int numImages = imageVectors.length;
 
-        // Inicializar a matriz de imagens M com tamanho numPixels x numImages
         double[][] imageMatrixM = new double[numPixels][numImages];
 
-        // Preencher a matriz com os vetores das imagens
         for (int i = 0; i < numImages; i++) {
             for (int j = 0; j < numPixels; j++) {
-                imageMatrixM[j][i] = imageVectors[i][j];  // A coluna i é a imagem i
+                imageMatrixM[j][i] = imageVectors[i][j];
             }
         }
 

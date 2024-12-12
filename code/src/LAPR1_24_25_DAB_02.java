@@ -79,16 +79,70 @@ public class LAPR1_24_25_DAB_02 {
     public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers) {
         switch (function) {
             case 1:
-                for (int i = 0; i < vectorNumbers; i++) {
-                    //TODO Função Gabriel
-                    //TODO double[][] matrixPk = create_subMatrix_remove_col(matriz P, col);
+                    System.out.println();
+                    print_Line(1, "-------------------------------------------------------");
+                    System.out.println("Decomposição Própria de uma Matriz Simétrica");
+                    print_Line(1, "-------------------------------------------------------");
+                    System.out.println();
+                    EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
+                    double[][] eigenVectors = getEigenVectors(eigenDecomposition);
+                    double[][] eigenValues = getEigenValues(eigenDecomposition);
+                    double[][] eigenVectorsTranspose = getEigenVectorsTranspose(eigenDecomposition);
+                    double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
 
-                }
+                    double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
+                    double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
+                    double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
+
+                    double[][] matrixResultante = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
+                    double errorAbsMed = calculateMAE(matrixCSVDouble, matrixResultante);
+
+
+                    print_Matrix(matrixCSVDouble, "Matriz Original");
+                    print_Matrix(eigenVectors, "Matriz Vetores Próprios");
+                    print_Matrix(matrixResultante, "Matriz Resultante");
+                    print_Matrix(newEigenValuesK, "Matriz Valores Próprios");
+                    print_Matrix(newEigenVectorsK, "Matriz Vetores Próprios");
+                    print_Matrix(newEigenVectorsTransposeK, "Matriz Vetores Próprios Transpostos");
+                    System.out.println("Erro Absoluto Médio: " + errorAbsMed);
+
                 break;
             case 2:
+                /*
+                    Funcionalidade 1
+                    EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
+                    double[][] eigenVectors = getEigenVectors(eigenDecomposition);
+                    double[][] eigenValues = getEigenValues(eigenDecomposition);
+                    double[][] eigenVectorsTranspose = getEigenVectorsTranspose(eigenDecomposition);
+                    double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
+
+                    double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
+                    double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
+                    double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
+
+                    double[][] matrixResultante = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
+                    double errorAbsMed = calculateMAE(matrixCSVDouble, matrixResultante);
+                */
+
                 // TODO Reconstrução de Imagens usando Eigenfaces
+
                 break;
             case 3:
+                /*
+                    Funcionalidade 1
+                    EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
+                    double[][] eigenVectors = getEigenVectors(eigenDecomposition);
+                    double[][] eigenValues = getEigenValues(eigenDecomposition);
+                    double[][] eigenVectorsTranspose = getEigenVectorsTranspose(eigenDecomposition);
+                    double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
+
+                    double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
+                    double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
+                    double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
+
+                    double[][] matrixResultante = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
+                    double errorAbsMed = calculateMAE(matrixCSVDouble, matrixResultante);
+                */
                 // TODO Identificação de imagem mais próxima
                 break;
         }
@@ -419,7 +473,6 @@ public class LAPR1_24_25_DAB_02 {
     // eu (gabriel) apenas colocarei os metodos que ainda não tem no main, depois podemos organizar melhor
     public static EigenDecomposition decompose_Matrix(double[][] arrayToDecompose) {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayToDecompose);
-
         return new EigenDecomposition(matrix);
     }
 
@@ -452,7 +505,7 @@ public class LAPR1_24_25_DAB_02 {
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
         return eigenVectorsTranspose.getData();
     }
-
+// TODO verificar se o metodo é mais eficiente que o método keepColumns
     private static double[][] getEigenVectorsKArray(double[][] eigenVectorsArray, double[][] arrayValuesK) {
         double[][] newVectorsK = new double[eigenVectorsArray.length][arrayValuesK.length];
         //TODO ao inves de dar system exit, pode retornar a pergunta de quantos K o utilizador quer
@@ -473,7 +526,7 @@ public class LAPR1_24_25_DAB_02 {
 
         return newVectorsK;
     }
-
+// TODO ----------------------------------------------------------------
     private static double[][] constructDiagonalMatrix(double[][] matrixvaluesK) {
         double[][] matrixvaluesKPrint = new double[matrixvaluesK.length][matrixvaluesK.length];
         for (int i = 0; i < matrixvaluesK.length; i++) {

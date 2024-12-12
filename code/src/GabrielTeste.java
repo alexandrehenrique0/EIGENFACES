@@ -4,10 +4,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class GabrielTeste {
@@ -18,18 +15,38 @@ public class GabrielTeste {
         EigenDecomposition eigenDecomposition = decomposeMatrix(matrix);
         RealMatrix eigenVectors = eigenDecomposition.getV();
         RealMatrix eigenValues = eigenDecomposition.getD();
+        double[][] eigenValuesArray = eigenValues.getData();
+        int k = 1;
+        getMaxAbsoluteValues(eigenValuesArray, k); //para buscar maior valor absoluto
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
         RealMatrix originalMatrix = eigenVectors.multiply(eigenValues).multiply(eigenVectorsTranspose);
 
         RealMatrix matrix2 = new Array2DRowRealMatrix(matrix);
 
-        printMatrix(matrix2, "Matrix");
-        printMatrix(eigenVectors, "EigenVectors");
-        printMatrix(eigenValues, "EigenValues");
-        printMatrix(eigenVectorsTranspose, "EigenVectorsTranspose");
-        printMatrix(originalMatrix, "OriginalMatrix");
+        printMatrix(matrix2, "Matrix (A)");
+        printMatrix(eigenVectors, "EigenVectors (P)");
+        printMatrix(eigenValues, "EigenValues (D)");
+        printMatrix(eigenVectorsTranspose, "EigenVectorsTranspose (P^t)");
+        printMatrix(originalMatrix, "OriginalMatrix (A = P.D.P^t)");
 
 
+    }
+
+    private static double getMaxAbsoluteValues(double[][] eigenValuesArray, int k) {
+
+        double[] quantity = new double[k];
+
+//        for (int i = 0; i < quantity.length; i++) {
+//            quantity[i] = Double.MIN_VALUE;
+//        }
+//
+//        for (int i = 0; i < eigenValuesArray.length; i++) {
+//            if (Math.abs(eigenValuesArray[i][i]) > Math.abs(quantity[i])) {
+//                quantity[i] = eigenValuesArray[i][i];
+//            }
+//        }
+// return erra do, rodar matriz maior na diagonal, se for maior do que matrix K, insere, roda a matrix K por completo por pode ter sempre um maior valorAbsoluto.
+        return manyValues;
     }
 
     public static double[][] readCSVToMatrix(String filePath) {

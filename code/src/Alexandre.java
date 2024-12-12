@@ -1,5 +1,8 @@
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+
+import java.util.Arrays;
 
 public class Alexandre {
     // Calcula o Erro Absoluto Médio (EAM)
@@ -23,9 +26,15 @@ public class Alexandre {
             }
             System.out.println();
         }
-        RealMatrix covariancia = covariancias(desvios);
-        System.out.println(covariancia);
+        double[][] covariancia = covariancias(desvios);
+        for (int i = 0; i < covariancia.length; i++) {
+            for (int j = 0; j < covariancia[i].length; j++) {
+                System.out.print(covariancia[i][j] + " ");
+            }
+            System.out.println();
 
+        }
+        valoresProprios(desvios);
     }
     public static double calculateEAM(double[][] A, double[][] Ak) {
         int M = A.length;
@@ -64,7 +73,7 @@ public class Alexandre {
         return mediaColuna;
     }
     public static boolean testColunaMedia(double[] matrix, double[] expectedColMedia) {
-        return matrix == expectedColMedia;
+        return Arrays.equals(matrix, expectedColMedia);
     }
 
     public static double[][] calculoDesvios(double[][] matrix, double[][] colunaMedia) {
@@ -82,18 +91,59 @@ public class Alexandre {
     }
 
     public static boolean testCalDesvios(double[][] matrix, double[][] expectedDesvios) {
-        return matrix == expectedDesvios;
+        return Arrays.equals(matrix, expectedDesvios);
     }
 
-    public static RealMatrix covariancias(double[][] matrix) {
-        int N = matrix.length;
-        Array2DRowRealMatrix A = new Array2DRowRealMatrix(matrix);
-        RealMatrix AT = A.transpose();
-        RealMatrix C = A.multiply(AT).scalarMultiply(1.0/N);
-        return C;
+    public static double[][] covariancias(double[][] A) {
+        int N = A.length;
+        double[][] AT = transpostaMatriz(A);
+        double[][] AAT = multiplicaMatrizes(A,AT);
+        return multiplicaMatrizPorEscalar(AAT,1.0/N);
     }
 
-    public static boolean testCovariancia(RealMatrix C, RealMatrix expectedC) {
+    public static boolean testCovariancia(double[][] C, double[][] expectedC) {
         return C == expectedC;
+    }
+
+    public static double[][] valoresProprios(double[][] A) {
+        double[][] AT =transpostaMatriz(A);
+        double[][] ATxA = multiplicaMatrizes(AT,A);
+        Array2DRowRealMatrix ATxA2 = new Array2DRowRealMatrix(ATxA);
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(ATxA2);
+        RealMatrix D = eigenDecomposition.getD();
+        double[][] dArray = D.getData();
+        return dArray;
+    }
+
+    public static double[][] transpostaMatriz(double[][] matriz) {
+        double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[0].length; j++) {
+                matrizTransposta[j][i] = matriz[i][j];
+            }
+        }
+        return matrizTransposta;
+    }
+
+    public static double[][] multiplicaMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+        double[][] matrizResultante = new double[matrizLeft.length][matrizRight[0].length];
+        for (int i = 0; i < matrizLeft.length; i++) {
+            for (int j = 0; j < matrizRight[0].length; j++) {
+                for (int k = 0; k < matrizRight.length; k++) {
+                    matrizResultante[i][j] += matrizLeft[i][k] * matrizRight[k][j];
+                }
+            }
+        }
+        return matrizResultante;
+    }
+
+    public static double[][] multiplicaMatrizPorEscalar(double[][] matriz, double escalar) {
+        double[][] matrizResultante = new double[matriz.length][matriz[0].length];
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[0].length; j++) {
+                matrizResultante[i][j] = matriz[i][j] * escalar;
+            }
+        }
+        return matrizResultante;
     }
 }

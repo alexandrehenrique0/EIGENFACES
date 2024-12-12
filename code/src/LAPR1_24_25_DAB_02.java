@@ -78,7 +78,11 @@ public class LAPR1_24_25_DAB_02 {
     public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers) {
         switch (function){
             case 1:
-                // TODO Decomposição Própria de uma Matriz Simétrica
+                for (int i = 0; i < vectorNumbers; i++) {
+                    //TODO Função Gabriel
+                    //TODO double[][] matrixPk = create_subMatrix_remove_col(matriz P, col);
+
+                }
                 break;
             case 2:
                 // TODO Reconstrução de Imagens usando Eigenfaces
@@ -279,7 +283,7 @@ public class LAPR1_24_25_DAB_02 {
         ? ----------------------------------------------------------*/
         return eigenDecomposition;
     }
-    public static double[][] somaMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+    public static double[][] sum_Matrices(double[][] matrizLeft, double[][] matrizRight) {
         double[][] matrizResultante = new double[matrizLeft.length][matrizLeft[0].length];
         for (int i = 0; i < matrizLeft.length; i++) {
             for (int j = 0; j < matrizLeft[0].length; j++) {
@@ -288,7 +292,7 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-    public static double[][] subtraiMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+    public static double[][] subtraction_Matrices(double[][] matrizLeft, double[][] matrizRight) {
         double[][] matrizResultante = new double[matrizLeft.length][matrizLeft[0].length];
         for (int i = 0; i < matrizLeft.length; i++) {
             for (int j = 0; j < matrizLeft[0].length; j++) {
@@ -297,7 +301,7 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-    public static double[][] multiplicaMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+    public static double[][] multiply_Matrices(double[][] matrizLeft, double[][] matrizRight) {
         double[][] matrizResultante = new double[matrizLeft.length][matrizRight[0].length];
         for (int i = 0; i < matrizLeft.length; i++) {
             for (int j = 0; j < matrizRight[0].length; j++) {
@@ -308,7 +312,7 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-    public static double[][] multiplicaMatrizPorEscalar(double[][] matriz, double escalar) {
+    public static double[][] multiply_Matrix_Escalar(double[][] matriz, double escalar) {
         double[][] matrizResultante = new double[matriz.length][matriz[0].length];
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[0].length; j++) {
@@ -317,7 +321,7 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-    public static double[][] transpostaMatriz(double[][] matriz) {
+    public static double[][] transposed_Matrix(double[][] matriz) {
         double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[0].length; j++) {
@@ -325,6 +329,20 @@ public class LAPR1_24_25_DAB_02 {
             }
         }
         return matrizTransposta;
+    }
+    public static double[][] create_subMatrix_remove_col(double[][] matrix, int col) {
+        double[][] submatrix = new double[matrix.length][matrix[0].length - 1];
+        int sub_i = 0;
+        for (double[] doubles : matrix) {
+            int sub_j = 0;
+            for (int j = 0; j < matrix[0].length; j++) {
+                if (j == col - 1) continue;
+                submatrix[sub_i][sub_j] = doubles[j];
+                sub_j++;
+            }
+            sub_i++;
+        }
+        return submatrix;
     }
     //* ---------------------------------------
     // Metodo para printar matrizes corretamente no console.

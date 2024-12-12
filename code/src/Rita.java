@@ -110,13 +110,13 @@ public class Rita {
 
         while ((line = reader.readLine()) != null) {
             String[] pixels = line.split(",");
-            for (String pixel : pixels) {
-                String trimmedPixel = pixel.trim();
+            for (int i = 0; i < pixels.length; i++) {
+                String trimmedPixel = pixels[i].trim();
 
                 if (isValidDouble(trimmedPixel)) {
                     imageVector[index] = Double.parseDouble(trimmedPixel);
                 } else {
-                    System.out.printf("Valor inválido no arquivo %d na linha: %d", imageFile.getName(),line);
+                    System.out.printf("Valor inválido no arquivo %s na linha: %d", imageFile.getName(), line);
                     imageVector[index] = 0;
                 }
 

@@ -417,31 +417,25 @@ public class LAPR1_24_25_DAB_02 {
 
     //* -------------------- Funcionalidade 1 -----------------------
     // eu (gabriel) apenas colocarei os metodos que ainda não tem no main, depois podemos organizar melhor
-    public static EigenDecomposition decompose_Matrix(double[][] arrayParaDecompor) {
-        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
-        EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);
+    public static EigenDecomposition decompose_Matrix(double[][] arrayToDecompose) {
+        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayToDecompose);
 
-        /*? demonstração de como utilizar os resultados da decomposição
-        RealMatrix eigenVectors = eigenDecomposition.getV();
-        RealMatrix eigenValues = eigenDecomposition.getD();
-        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
-        ? ----------------------------------------------------------*/
-        return eigenDecomposition;
+        return new EigenDecomposition(matrix);
     }
 
-    public static double calculateEAM(double[][] A, double[][] Ak) {
+    public static double calculateMAE(double[][] A, double[][] Ak) {
         int M = A.length;
         int N = A[0].length;
-        double erroAbsMed = 0;
+        double errorAbsMed = 0;
         // Percorre cada elemento da matriz
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                erroAbsMed += Math.abs(A[i][j] - Ak[i][j]);
+                errorAbsMed += Math.abs(A[i][j] - Ak[i][j]);
             }
         }
 
         // Calcula o erro médio
-        return erroAbsMed / (M * N);
+        return errorAbsMed / (M * N);
     }
 
     public static double[][] getEigenVectors(EigenDecomposition eigenDecomposition) {

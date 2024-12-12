@@ -247,7 +247,7 @@ public class LAPR1_24_25_DAB_02 {
     //* ---------------------------------------
 
 
-    //* Decomposição de matriz simétrica
+    //* Operações com Matrizes
     public static EigenDecomposition decompose_Matrix(double[][] arrayParaDecompor) {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
         EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);
@@ -259,38 +259,81 @@ public class LAPR1_24_25_DAB_02 {
         ? ----------------------------------------------------------*/
         return eigenDecomposition;
     }
-    // Metodo para printar matrizes corretamente no console.
-    public static void print_Matrix(RealMatrix matrix, String matrixName) {
-        double[][] matrixToPrint = matrix.getData();
-        System.out.println("Matriz: " + matrixName + " ↓");
-
-        // Linha superior
-        for (int i = 0; i < matrixToPrint[0].length; i++) {
-            System.out.print("____________");
+    public static double[][] somaMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+        double[][] matrizResultante = new double[matrizLeft.length][matrizLeft[0].length];
+        for (int i = 0; i < matrizLeft.length; i++) {
+            for (int j = 0; j < matrizLeft[0].length; j++) {
+                matrizResultante[i][j] = matrizLeft[i][j] + matrizRight[i][j];
+            }
         }
+        return matrizResultante;
+    }
+    public static double[][] subtraiMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+        double[][] matrizResultante = new double[matrizLeft.length][matrizLeft[0].length];
+        for (int i = 0; i < matrizLeft.length; i++) {
+            for (int j = 0; j < matrizLeft[0].length; j++) {
+                matrizResultante[i][j] = matrizLeft[i][j] - matrizRight[i][j];
+            }
+        }
+        return matrizResultante;
+    }
+    public static double[][] multiplicaMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+        double[][] matrizResultante = new double[matrizLeft.length][matrizRight[0].length];
+        for (int i = 0; i < matrizLeft.length; i++) {
+            for (int j = 0; j < matrizRight[0].length; j++) {
+                for (int k = 0; k < matrizRight.length; k++) {
+                    matrizResultante[i][j] += matrizLeft[i][k] * matrizRight[k][j];
+                }
+            }
+        }
+        return matrizResultante;
+    }
+    public static double[][] multiplicaMatrizPorEscalar(double[][] matriz, double escalar) {
+        double[][] matrizResultante = new double[matriz.length][matriz[0].length];
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[0].length; j++) {
+                matrizResultante[i][j] = matriz[i][j] * escalar;
+            }
+        }
+        return matrizResultante;
+    }
+    public static double[][] transpostaMatriz(double[][] matriz) {
+        double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[0].length; j++) {
+                matrizTransposta[j][i] = matriz[i][j];
+            }
+        }
+        return matrizTransposta;
+    }
+    //* ---------------------------------------
+    // Metodo para printar matrizes corretamente no console.
+    public static void print_Matrix(double[][] matrixToPrint, String matrixName) {
+        System.out.println("Matriz: " + matrixName + " ↓");
+        print_Line(matrixToPrint[0].length, "____________");
 
-        System.out.println(); // pula uma linha (estética)
-
-        for (int j = 0; j < matrixToPrint.length; j++) {
-            for (int i = 0; i < matrixToPrint[0].length; i++) {
-                if (i == 0) {
-                    System.out.printf("|%8.3f\t", matrixToPrint[j][i]);
-                } else if (i == matrixToPrint[0].length - 1) {
-                    System.out.printf("%8.3f\t|", matrixToPrint[j][i]);
-                } else {
-                    System.out.printf("%8.3f\t", matrixToPrint[j][i]);
+        for (double[] row : matrixToPrint) {
+            System.out.print("|");
+            for (int i = 0; i < row.length; i++) {
+                System.out.printf("%8.3f\t", row[i]);
+                if (i == row.length - 1) {
+                    System.out.print("|");
                 }
             }
             System.out.println();
         }
-        // Linha final
-        for (int i = 0; i < matrixToPrint[0].length; i++) {
-            System.out.print("============");
+        print_Line(matrixToPrint[0].length, "============");
+        System.out.println();
+    }
+    // Metodo para printar linhas de caracteres no console.
+    private static void print_Line(int length, String pattern) {
+        for (int i = 0; i < length; i++) {
+            System.out.print(pattern);
         }
-        System.out.println(); // pula duas linha (estética)
         System.out.println();
     }
     //* ---------------------------------------
+
 
     //! Error Messages
     public static void error_General(String error) {

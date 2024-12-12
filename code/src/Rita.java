@@ -53,7 +53,8 @@ public class Rita {
 
         // Contar quantos arquivos CSV existem
         int csvFileCount = 0;
-        for (File file : imageFiles) {
+        for (int i = 0; i < imageFiles.length; i++) {
+            File file = imageFiles[i];
             if (file.isFile() && file.getName().toLowerCase().endsWith(".csv")) {
                 csvFileCount++;
             }

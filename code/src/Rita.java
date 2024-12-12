@@ -69,7 +69,8 @@ public class Rita {
         int index = 0;
 
         // Adicionar os arquivos CSV ao array
-        for (File file : imageFiles) {
+        for (int i = 0; i < imageFiles.length; i++) {
+            File file = imageFiles[i];
             if (file.isFile() && file.getName().toLowerCase().endsWith(".csv")) {
                 csvFiles[index++] = file;
             }

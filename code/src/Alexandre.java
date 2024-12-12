@@ -14,6 +14,8 @@ public class Alexandre {
                 {7.0, 8.0, 9.0}
         };
 
+        int N = A.length;
+
         double[][] colunaMedia = colunaMedia(A);
         System.out.println("Média das colunas:");
         for (int i = 0; i < colunaMedia.length; i++) {
@@ -34,7 +36,7 @@ public class Alexandre {
             System.out.println();
 
         }
-        valoresProprios(desvios);
+        valoresPropriosATxA(desvios);
     }
     public static double calculateEAM(double[][] A, double[][] Ak) {
         int M = A.length;
@@ -59,6 +61,7 @@ public class Alexandre {
         return calculatedEAM == expectedEAM;
     }
 
+    //3-----------------------------------------------------
     public static double[][] colunaMedia(double[][] matrix) {
         int linhas = matrix.length;
         int colunas = matrix[0].length;
@@ -94,8 +97,7 @@ public class Alexandre {
         return Arrays.equals(matrix, expectedDesvios);
     }
 
-    public static double[][] covariancias(double[][] A) {
-        int N = A.length;
+    public static double[][] covariancias(double[][] A,int N) {
         double[][] AT = transpostaMatriz(A);
         double[][] AAT = multiplicaMatrizes(A,AT);
         return multiplicaMatrizPorEscalar(AAT,1.0/N);
@@ -105,14 +107,55 @@ public class Alexandre {
         return C == expectedC;
     }
 
-    public static double[][] valoresProprios(double[][] A) {
+    //-------------------------------------------------------
+
+    //4------------------------------------------------------
+    public static double[][] valoresPropriosATxA(double[][] A) {
         double[][] AT =transpostaMatriz(A);
         double[][] ATxA = multiplicaMatrizes(AT,A);
         Array2DRowRealMatrix ATxA2 = new Array2DRowRealMatrix(ATxA);
-        EigenDecomposition eigenDecomposition = new EigenDecomposition(ATxA2);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(ATxA);
         RealMatrix D = eigenDecomposition.getD();
         double[][] dArray = D.getData();
         return dArray;
+    }
+
+    public static double[][] vetoresPropriosATxA(double[][] A) {
+        double[][] AT =transpostaMatriz(A);
+        double[][] ATxA = multiplicaMatrizes(AT,A);
+        Array2DRowRealMatrix ATxA2 = new Array2DRowRealMatrix(ATxA);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(ATxA);
+        RealMatrix V = eigenDecomposition.getV();
+        double[][] vi = V.getData();
+        return vi;
+    }
+
+    public static double[][] valoresPropriosAxAT(double[][] A,double[][] vi) {
+        double[][] ui = multiplicaMatrizes(A,vi);
+        return ui;
+    }
+
+    public static double[][] valoresPropriosC(double[][] valoresPropriosAxAT, int N) {
+        double[][] lambdai = multiplicaMatrizPorEscalar(valoresPropriosAxAT,1.0/N);
+        return lambdai;
+    }
+
+    public static double[][] vetoresPropriosC(double[][] vetoresPropriosAxAT,double[][] vi) {
+        double[][] ui = multiplicaMatrizes(vetoresPropriosAxAT,vi);
+        return ui;
+    }
+
+    //------------------------------------------------------
+
+    public static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {
+        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);
+
+//        RealMatrix eigenVectors = eigenDecomposition.getV();
+//        RealMatrix eigenValues = eigenDecomposition.getD();
+//        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
+
+        return eigenDecomposition;
     }
 
     public static double[][] transpostaMatriz(double[][] matriz) {

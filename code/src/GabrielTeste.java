@@ -21,6 +21,8 @@ public class GabrielTeste {
         double[][] arrayValuesK = getMaxAbsoluteValues(eigenValuesArray, k); //para buscar maior valor absoluto
         double[][] matrixValuesKPrint = diagonalMatrix(arrayValuesK);
         double[][] matrixVectorsK = vectorsK(eigenVectorsArray, arrayValuesK);
+        double[][] matrixVectorsKTransposed = transposed_Matrix(matrixVectorsK);
+        double[][] Ak = multiply_Matrices(multiply_Matrices(matrixVectorsK, matrixValuesKPrint), matrixVectorsKTransposed);
 
 
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
@@ -29,8 +31,9 @@ public class GabrielTeste {
         RealMatrix matrixValuesK = new Array2DRowRealMatrix(arrayValuesK);
         RealMatrix matrixValuesKPrintFinal = new Array2DRowRealMatrix(matrixValuesKPrint);
         RealMatrix matrixVectorsKPrintFinal = new Array2DRowRealMatrix(matrixVectorsK);
-
-
+        RealMatrix matrixVectorsKPrintFinalTransposed = new Array2DRowRealMatrix(matrixVectorsKTransposed);
+        RealMatrix matrixAk = new Array2DRowRealMatrix(Ak);
+        double erroMedio = calculateEAM(matrix, Ak);
 
         printMatrix(matrix2, "Matrix (A)");
         printMatrix(eigenValues, "EigenValues (D)");
@@ -40,14 +43,56 @@ public class GabrielTeste {
         printMatrix(matrixValuesK, "MatrixValuesK (K)");
         printMatrix(eigenVectors, "EigenVectors (P)");
         printMatrix(matrixVectorsKPrintFinal, "MatrixVectorsKPrint (Vk)");
+        printMatrix(matrixVectorsKPrintFinalTransposed, "MatrixVectorsK tranposta (Vk T)");
+        printMatrix(matrixAk, "Matrix Ak (Ak)");
+        printMatrix(matrix2, "Matrix (A)");
+        System.out.printf("Erro médio: %.3f ",erroMedio);
 
     }
+
+    public static double calculateEAM(double[][] A, double[][] Ak) {
+        int M = A.length;
+        int N = A[0].length;
+        double erroAbsMed = 0;
+        // Percorre cada elemento da matriz
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                erroAbsMed += Math.abs(A[i][j] - Ak[i][j]);
+            }
+        }
+
+        // Calcula o erro médio
+        return erroAbsMed / (M * N);
+    }
+
+    public static double[][] multiply_Matrices(double[][] matrizLeft, double[][] matrizRight) {
+        double[][] matrizResultante = new double[matrizLeft.length][matrizRight[0].length];
+        for (int i = 0; i < matrizLeft.length; i++) {
+            for (int j = 0; j < matrizRight[0].length; j++) {
+                for (int k = 0; k < matrizRight.length; k++) {
+                    matrizResultante[i][j] += matrizLeft[i][k] * matrizRight[k][j];
+                }
+            }
+        }
+        return matrizResultante;
+    }
+
+    public static double[][] transposed_Matrix(double[][] matriz) {
+        double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[0].length; j++) {
+                matrizTransposta[j][i] = matriz[i][j];
+            }
+        }
+        return matrizTransposta;
+    }
+
 
     //                  arrayValuesK (0 ,3)
     private static double[][] vectorsK(double[][] eigenVectorsArray, double[][] arrayValuesK) {
         double[][] newVectorsK = new double[eigenVectorsArray.length][arrayValuesK.length];
 
-        for (int i = 0; i < eigenVectorsArray[0].length ; i++) {
+        for (int i = 0; i < eigenVectorsArray[0].length; i++) {
             for (int j = 0; j < arrayValuesK.length; j++) {
                 newVectorsK[i][j] = eigenVectorsArray[i][(int) arrayValuesK[j][1]];
             }

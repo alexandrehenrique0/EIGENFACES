@@ -21,7 +21,7 @@ public class Alexandre {
         for (int i = 0; i < colunaMedia.length; i++) {
             System.out.println(colunaMedia[i][0]);
         }
-        double[][] desvios = calculoDesvios(A,colunaMedia);
+        double[][] desvios = matrixDesvios(A,colunaMedia);
         for (int i = 0; i < desvios.length; i++) {
             for (int j = 0; j < desvios[i].length; j++) {
                 System.out.print(desvios[i][j] + " ");
@@ -79,7 +79,28 @@ public class Alexandre {
         return Arrays.equals(matrix, expectedColMedia);
     }
 
-    public static double[][] calculoDesvios(double[][] matrix, double[][] colunaMedia) {
+    public static double[][] matrixDesvios(double[][] matrix, double[][] colunaMedia) {
+        int colunas = matrix[0].length;
+        int linhas = matrix.length;
+        double[][] desvios = new double[linhas][colunas];
+
+        for (int j = 0; j < colunas; j++) {
+            for (int i = 0; i < linhas; i++) {
+                desvios[i][j] =  colunaDesvio(matrix[i][j],colunaMedia[i][0]);
+            }
+
+        }
+        return desvios;
+    }
+
+    public static double colunaDesvio(double valorMatrix, double valorColunaMedia) {
+
+        double desvio = valorMatrix - valorColunaMedia; // Calcula o desvio de cada elemento da matriz em relação à média da linha correspondente
+
+        return desvio;
+    }
+
+    /* public static double[][] calculoDesvios(double[][] matrix, double[][] colunaMedia) {
         int colunas = matrix[0].length;
         int linhas = matrix.length;
         double[][] desvios = new double[linhas][colunas];
@@ -91,7 +112,7 @@ public class Alexandre {
 
         }
         return desvios;
-    }
+    }*/
 
     public static boolean testCalDesvios(double[][] matrix, double[][] expectedDesvios) {
         return Arrays.equals(matrix, expectedDesvios);
@@ -113,7 +134,6 @@ public class Alexandre {
     public static double[][] valoresPropriosATxA(double[][] A) {
         double[][] AT =transpostaMatriz(A);
         double[][] ATxA = multiplicaMatrizes(AT,A);
-        Array2DRowRealMatrix ATxA2 = new Array2DRowRealMatrix(ATxA);
         EigenDecomposition eigenDecomposition = decomposeMatrix(ATxA);
         RealMatrix D = eigenDecomposition.getD();
         double[][] dArray = D.getData();

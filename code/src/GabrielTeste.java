@@ -10,44 +10,72 @@ import java.util.Scanner;
 public class GabrielTeste {
     public static void main(String[] args) {
         String csvPath = "Input/TesteFuncao1/csv/exampleInputFunc2.csv";
-        double[][] matrix = readCSVToMatrix(csvPath);
+        double[][] arrayOriginal = readCSVToMatrix(csvPath);
+        int k = 3;
 
-        EigenDecomposition eigenDecomposition = decomposeMatrix(matrix);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(arrayOriginal);
+        // primeiro buscamos as matrizes com get, pois eigenDecomposition é uma matriz real para depois transformar em array
         RealMatrix eigenVectors = eigenDecomposition.getV();
         double[][] eigenVectorsArray = eigenVectors.getData();
+
         RealMatrix eigenValues = eigenDecomposition.getD();
         double[][] eigenValuesArray = eigenValues.getData();
-        int k = 2;
-        double[][] arrayValuesK = getMaxAbsoluteValues(eigenValuesArray, k); //para buscar maior valor absoluto
-        double[][] matrixValuesKPrint = diagonalMatrix(arrayValuesK);
-        double[][] matrixVectorsK = vectorsK(eigenVectorsArray, arrayValuesK);
-        double[][] matrixVectorsKTransposed = transposed_Matrix(matrixVectorsK);
-        double[][] Ak = multiply_Matrices(multiply_Matrices(matrixVectorsK, matrixValuesKPrint), matrixVectorsKTransposed);
-
 
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
-        RealMatrix originalMatrix = eigenVectors.multiply(eigenValues).multiply(eigenVectorsTranspose);
-        RealMatrix matrix2 = new Array2DRowRealMatrix(matrix);
-        RealMatrix matrixValuesK = new Array2DRowRealMatrix(arrayValuesK);
-        RealMatrix matrixValuesKPrintFinal = new Array2DRowRealMatrix(matrixValuesKPrint);
-        RealMatrix matrixVectorsKPrintFinal = new Array2DRowRealMatrix(matrixVectorsK);
-        RealMatrix matrixVectorsKPrintFinalTransposed = new Array2DRowRealMatrix(matrixVectorsKTransposed);
-        RealMatrix matrixAk = new Array2DRowRealMatrix(Ak);
-        double erroMedio = calculateEAM(matrix, Ak);
+        double[][] eigenVectorsTransposeArray =  eigenVectorsTranspose.getData();
 
-        printMatrix(matrix2, "Matrix (A)");
-        printMatrix(eigenValues, "EigenValues (D)");
-        printMatrix(eigenVectorsTranspose, "EigenVectorsTranspose (P^t)");
-        printMatrix(originalMatrix, "OriginalMatrix (A = P.D.P^t)");
-        printMatrix(matrixValuesKPrintFinal, "MatrixValuesKPrint (K)");
-        printMatrix(matrixValuesK, "MatrixValuesK (K)");
-        printMatrix(eigenVectors, "EigenVectors (P)");
-        printMatrix(matrixVectorsKPrintFinal, "MatrixVectorsKPrint (Vk)");
-        printMatrix(matrixVectorsKPrintFinalTransposed, "MatrixVectorsK tranposta (Vk T)");
-        printMatrix(matrixAk, "Matrix Ak (Ak)");
-        printMatrix(matrix2, "Matrix (A)");
-        System.out.printf("Erro médio: %.3f ",erroMedio);
+        double[][] valuesAndIndexArray = getMaxAbsoluteValues(eigenValuesArray, k); //para buscar maior valor absoluto
 
+        //methods K
+        double[][] eigenVectorsKArray = vectorsK(eigenVectorsArray, valuesAndIndexArray);
+
+        double[][] absoluteValuesKArray = diagonalMatrix(valuesAndIndexArray);
+
+        double[][] vectorsKTransposeArray = transposed_Matrix(eigenVectorsKArray);
+
+        double[][] A = multiply_Matrices(multiply_Matrices(eigenVectorsArray, eigenValuesArray), eigenVectorsTransposeArray);
+
+        double[][] Ak = multiply_Matrices(multiply_Matrices(eigenVectorsKArray, absoluteValuesKArray), vectorsKTransposeArray);
+
+        double erroMedio = calculateEAM(arrayOriginal, Ak);
+
+        print_Matrix(arrayOriginal, "Matrix original");
+        print_Matrix(eigenVectorsArray, "Matrix P");
+        print_Matrix(eigenValuesArray, "Matrix D");
+        print_Matrix(eigenVectorsTransposeArray, "Matrix P^t");
+        print_Matrix(A, "Matrix A = P.D.P^t");
+        print_Matrix(arrayOriginal, "Matrix original");
+        print_Matrix(eigenVectorsKArray, "Matrix Pk");
+        print_Matrix(absoluteValuesKArray, "Matrix Dk");
+        print_Matrix(vectorsKTransposeArray, "Matrix Pk^t");
+        print_Matrix(Ak, "Matrix Ak = Pk.Dk.Pk^t");
+        System.out.printf("Erro médio: %.3f\n",erroMedio);
+
+    }
+
+    private static void print_Line(int length, String pattern) {
+        for (int i = 0; i < length; i++) {
+            System.out.print(pattern);
+        }
+        System.out.println();
+    }
+
+    public static void print_Matrix(double[][] matrixToPrint, String matrixName) {
+        System.out.println("Matriz: " + matrixName + " ↓");
+        print_Line(matrixToPrint[0].length, "____________");
+
+        for (double[] row : matrixToPrint) {
+            System.out.print("|");
+            for (int i = 0; i < row.length; i++) {
+                System.out.printf("%8.3f\t", row[i]);
+                if (i == row.length - 1) {
+                    System.out.print("|");
+                }
+            }
+            System.out.println();
+        }
+        print_Line(matrixToPrint[0].length, "============");
+        System.out.println();
     }
 
     public static double calculateEAM(double[][] A, double[][] Ak) {
@@ -111,23 +139,28 @@ public class GabrielTeste {
     }
 
     private static double[][] getMaxAbsoluteValues(double[][] eigenValuesArray, int k) {
-        double[][] quantity = new double[k][k];
+        double[][] valuesAndIndexArray = new double[k][2];
 
-        for (int i = 0; i < quantity.length; i++) {
-            quantity[i][0] = Double.MIN_VALUE;
+        for (int i = 0; i < valuesAndIndexArray.length; i++) {
+            valuesAndIndexArray[i][0] = Double.MIN_VALUE;
         }
 
         for (int i = 0; i < eigenValuesArray.length; i++) {
-            for (int j = 0; j < quantity.length; j++) {
-                if (Math.abs(eigenValuesArray[i][i]) > quantity[j][0]) {
-                    quantity[j][0] = eigenValuesArray[i][i];
-                    quantity[j][1] = i;
+            double absValue = Math.abs(eigenValuesArray[i][i]);
+            for (int j = 0; j < valuesAndIndexArray.length; j++) {
+                if (absValue > Math.abs(valuesAndIndexArray[j][0])) {
+                    for (int l = valuesAndIndexArray.length - 1; l > j; l--) {
+                        valuesAndIndexArray[l][0] = valuesAndIndexArray[l - 1][0];
+                        valuesAndIndexArray[l][1] = valuesAndIndexArray[l - 1][1];
+                    }
+                    valuesAndIndexArray[j][0] = eigenValuesArray[i][i];
+                    valuesAndIndexArray[j][1] = i;
                     break;
                 }
             }
         }
 
-        return quantity;
+        return valuesAndIndexArray;
     }
 
     public static double[][] readCSVToMatrix(String filePath) {

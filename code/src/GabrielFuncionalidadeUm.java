@@ -7,11 +7,11 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class GabrielTeste {
+public class GabrielFuncionalidadeUm {
     public static void main(String[] args) {
-        String csvPath = "Input/TesteFuncao1/csv/exampleInputFunc2.csv";
-        double[][] arrayOriginal = readCSVToMatrix(csvPath);
-        int k = 3;
+        String csvPath = "Input/TesteFuncao1/csv/exampleInputFunc1.csv";
+        double[][] arrayOriginal = readCSVToArray(csvPath);
+        int k = 1;
 
         EigenDecomposition eigenDecomposition = decomposeMatrix(arrayOriginal);
         // primeiro buscamos as matrizes com get, pois eigenDecomposition é uma matriz real para depois transformar em array
@@ -24,12 +24,12 @@ public class GabrielTeste {
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
         double[][] eigenVectorsTransposeArray =  eigenVectorsTranspose.getData();
 
-        double[][] valuesAndIndexArray = getMaxAbsoluteValues(eigenValuesArray, k); //para buscar maior valor absoluto
+        double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValuesArray, k); //para buscar maior valor absoluto
 
         //methods K
-        double[][] eigenVectorsKArray = vectorsK(eigenVectorsArray, valuesAndIndexArray);
+        double[][] eigenVectorsKArray = getEigenVectorsKArray(eigenVectorsArray, valuesAndIndexArray);
 
-        double[][] absoluteValuesKArray = diagonalMatrix(valuesAndIndexArray);
+        double[][] absoluteValuesKArray = constructDiagonalMatrix(valuesAndIndexArray);
 
         double[][] vectorsKTransposeArray = transposed_Matrix(eigenVectorsKArray);
 
@@ -47,10 +47,31 @@ public class GabrielTeste {
         print_Matrix(arrayOriginal, "Matrix original");
         print_Matrix(eigenVectorsKArray, "Matrix Pk");
         print_Matrix(absoluteValuesKArray, "Matrix Dk");
+        print_Matrix(valuesAndIndexArray, "Valores absolutos e índices");
         print_Matrix(vectorsKTransposeArray, "Matrix Pk^t");
         print_Matrix(Ak, "Matrix Ak = Pk.Dk.Pk^t");
         System.out.printf("Erro médio: %.3f\n",erroMedio);
 
+    }
+
+    // serve para A e para Ak
+    public static double[][] multiplyVectorsValuesVectorsTransposed(double[][] matrixVectors, double[][] matrixValues, double[][] matrixVectorsTranspose) {
+        return multiply_Matrices(multiply_Matrices(matrixVectors, matrixValues), matrixVectorsTranspose);
+    }
+
+    public static double[][] getEigenVectors(EigenDecomposition eigenDecomposition) {
+        RealMatrix eigenVectors = eigenDecomposition.getV();
+        return eigenVectors.getData();
+    }
+
+    public static double[][] getEigenValues(EigenDecomposition eigenDecomposition) {
+        RealMatrix eigenValues = eigenDecomposition.getD();
+        return eigenValues.getData();
+    }
+
+    public static double[][] getEigenVectorsTranspose(EigenDecomposition eigenDecomposition) {
+        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
+        return eigenVectorsTranspose.getData();
     }
 
     private static void print_Line(int length, String pattern) {
@@ -60,7 +81,7 @@ public class GabrielTeste {
         System.out.println();
     }
 
-    public static void print_Matrix(double[][] matrixToPrint, String matrixName) {
+    private static void print_Matrix(double[][] matrixToPrint, String matrixName) {
         System.out.println("Matriz: " + matrixName + " ↓");
         print_Line(matrixToPrint[0].length, "____________");
 
@@ -78,7 +99,7 @@ public class GabrielTeste {
         System.out.println();
     }
 
-    public static double calculateEAM(double[][] A, double[][] Ak) {
+    private static double calculateEAM(double[][] A, double[][] Ak) {
         int M = A.length;
         int N = A[0].length;
         double erroAbsMed = 0;
@@ -93,7 +114,7 @@ public class GabrielTeste {
         return erroAbsMed / (M * N);
     }
 
-    public static double[][] multiply_Matrices(double[][] matrizLeft, double[][] matrizRight) {
+    private static double[][] multiply_Matrices(double[][] matrizLeft, double[][] matrizRight) {
         double[][] matrizResultante = new double[matrizLeft.length][matrizRight[0].length];
         for (int i = 0; i < matrizLeft.length; i++) {
             for (int j = 0; j < matrizRight[0].length; j++) {
@@ -105,7 +126,7 @@ public class GabrielTeste {
         return matrizResultante;
     }
 
-    public static double[][] transposed_Matrix(double[][] matriz) {
+    private static double[][] transposed_Matrix(double[][] matriz) {
         double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[0].length; j++) {
@@ -115,10 +136,16 @@ public class GabrielTeste {
         return matrizTransposta;
     }
 
-
-    //                  arrayValuesK (0 ,3)
-    private static double[][] vectorsK(double[][] eigenVectorsArray, double[][] arrayValuesK) {
+    private static double[][] getEigenVectorsKArray(double[][] eigenVectorsArray, double[][] arrayValuesK) {
         double[][] newVectorsK = new double[eigenVectorsArray.length][arrayValuesK.length];
+        //TODO ao inves de dar system exit, pode retornar a pergunta de quantos K o utilizador quer
+        if (arrayValuesK.length > eigenVectorsArray[0].length) {
+            System.out.println("O valor de k não pode ser maior que o número de colunas da matriz de autovetores.");
+            System.exit(1);
+        } else if (arrayValuesK.length < 1) {
+            System.out.println("O valor de k não pode ser menor que 1.");
+            System.exit(1);
+        }
 
         for (int i = 0; i < eigenVectorsArray[0].length; i++) {
             for (int j = 0; j < arrayValuesK.length; j++) {
@@ -130,7 +157,7 @@ public class GabrielTeste {
         return newVectorsK;
     }
 
-    public static double[][] diagonalMatrix(double[][] matrixvaluesK) {
+    private static double[][] constructDiagonalMatrix(double[][] matrixvaluesK) {
         double[][] matrixvaluesKPrint = new double[matrixvaluesK.length][matrixvaluesK.length];
         for (int i = 0; i < matrixvaluesK.length; i++) {
             matrixvaluesKPrint[i][i] = matrixvaluesK[i][0];
@@ -138,7 +165,7 @@ public class GabrielTeste {
         return matrixvaluesKPrint;
     }
 
-    private static double[][] getMaxAbsoluteValues(double[][] eigenValuesArray, int k) {
+    private static double[][] getValuesAndIndexArray(double[][] eigenValuesArray, int k) {
         double[][] valuesAndIndexArray = new double[k][2];
 
         for (int i = 0; i < valuesAndIndexArray.length; i++) {
@@ -163,7 +190,7 @@ public class GabrielTeste {
         return valuesAndIndexArray;
     }
 
-    public static double[][] readCSVToMatrix(String filePath) {
+    private static double[][] readCSVToArray(String filePath) {
         ArrayList<double[]> rows = new ArrayList<>();
         try (Scanner scanner = new Scanner(new File(filePath))) {
             while (scanner.hasNextLine()) {
@@ -193,7 +220,7 @@ public class GabrielTeste {
 
     //* ---------------------------------------
     //* Decomposição de matriz simétrica
-    public static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {
+    private static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
         EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);
 
@@ -204,8 +231,7 @@ public class GabrielTeste {
         return eigenDecomposition;
     }
 
-
-    public static void printMatrix(RealMatrix matrix, String matrixName) {
+    private static void printMatrix(RealMatrix matrix, String matrixName) {
         double[][] matrixToPrint = matrix.getData();
         System.out.println("Matriz: " + matrixName + " ↓");
 
@@ -238,12 +264,12 @@ public class GabrielTeste {
 
 
     //! Error Messages
-    public static void error_Location_Not_Found() {
+    private static void error_Location_Not_Found() {
         System.out.println("Localização inválida ou ficheiro não existe");
         System.exit(1);
     }
 
-    public static void error_Invalid_Option() {
+    private static void error_Invalid_Option() {
         System.out.println("Opção inválida");
         System.exit(1);
     }

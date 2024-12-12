@@ -28,6 +28,7 @@ public class Andre {
 
     /**
      * Método para calcular a norma (L2) de um vetor.
+     *
      * @param vector Vetor a ser normalizado
      * @return Norma do vetor
      */

@@ -43,6 +43,9 @@ public class LAPR1_24_25_DAB_02 {
             // Obter a matriz do CSV
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
 
+            //FUnção que contém as funções principais
+            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers);
+
         } else if (args.length == 0) {
             // Mostrar as opções num menu e receber os parâmetros
             ui_Function_Parameter_Menu();
@@ -64,8 +67,25 @@ public class LAPR1_24_25_DAB_02 {
             // Obter a matriz do CSV
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
 
+            //FUnção que contém as funções principais
+            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers);
+
         } else {
             error_General("Erro: Parâmetros inválidos");
+        }
+    }
+
+    public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers) {
+        switch (function){
+            case 1:
+                // TODO Decomposição Própria de uma Matriz Simétrica
+                break;
+            case 2:
+                // TODO Reconstrução de Imagens usando Eigenfaces
+                break;
+            case 3:
+                // TODO Identificação de imagem mais próxima
+                break;
         }
     }
 

@@ -330,6 +330,7 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizTransposta;
     }
+    //! Usar se preciso para remover apenas uma coluna
     public static double[][] create_subMatrix_remove_col(double[][] matrix, int col) {
         double[][] submatrix = new double[matrix.length][matrix[0].length - 1];
         int sub_i = 0;
@@ -339,6 +340,30 @@ public class LAPR1_24_25_DAB_02 {
                 if (j == col - 1) continue;
                 submatrix[sub_i][sub_j] = doubles[j];
                 sub_j++;
+            }
+            sub_i++;
+        }
+        return submatrix;
+    }
+    //! -----------------------------------
+    public static double[][] create_submatrix_Keep_cols(double[][] matrixP, double[][] keepColumns) {
+
+        boolean[] keepColumnsBOL = new boolean[matrixP[0].length];
+
+        for (double[] col : keepColumns) {
+            keepColumnsBOL[(int) col[1]] = true;
+        }
+
+        double[][] submatrix = new double[matrixP.length][keepColumns.length];
+
+        int sub_i = 0;
+        for (double[] doubles : matrixP) {
+            int sub_j = 0;
+            for (int j = 0; j < doubles.length; j++) {
+                if (keepColumnsBOL[j]) {
+                    submatrix[sub_i][sub_j] = doubles[j];
+                    sub_j++;
+                }
             }
             sub_i++;
         }

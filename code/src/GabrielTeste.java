@@ -14,39 +14,75 @@ public class GabrielTeste {
 
         EigenDecomposition eigenDecomposition = decomposeMatrix(matrix);
         RealMatrix eigenVectors = eigenDecomposition.getV();
+        double[][] eigenVectorsArray = eigenVectors.getData();
         RealMatrix eigenValues = eigenDecomposition.getD();
         double[][] eigenValuesArray = eigenValues.getData();
-        int k = 1;
-        getMaxAbsoluteValues(eigenValuesArray, k); //para buscar maior valor absoluto
+        int k = 2;
+        double[][] arrayValuesK = getMaxAbsoluteValues(eigenValuesArray, k); //para buscar maior valor absoluto
+        double[][] matrixValuesKPrint = diagonalMatrix(arrayValuesK);
+        double[][] matrixVectorsK = vectorsK(eigenVectorsArray, arrayValuesK);
+
+
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
         RealMatrix originalMatrix = eigenVectors.multiply(eigenValues).multiply(eigenVectorsTranspose);
-
         RealMatrix matrix2 = new Array2DRowRealMatrix(matrix);
+        RealMatrix matrixValuesK = new Array2DRowRealMatrix(arrayValuesK);
+        RealMatrix matrixValuesKPrintFinal = new Array2DRowRealMatrix(matrixValuesKPrint);
+        RealMatrix matrixVectorsKPrintFinal = new Array2DRowRealMatrix(matrixVectorsK);
+
+
 
         printMatrix(matrix2, "Matrix (A)");
-        printMatrix(eigenVectors, "EigenVectors (P)");
         printMatrix(eigenValues, "EigenValues (D)");
         printMatrix(eigenVectorsTranspose, "EigenVectorsTranspose (P^t)");
         printMatrix(originalMatrix, "OriginalMatrix (A = P.D.P^t)");
-
+        printMatrix(matrixValuesKPrintFinal, "MatrixValuesKPrint (K)");
+        printMatrix(matrixValuesK, "MatrixValuesK (K)");
+        printMatrix(eigenVectors, "EigenVectors (P)");
+        printMatrix(matrixVectorsKPrintFinal, "MatrixVectorsKPrint (Vk)");
 
     }
 
-    private static double getMaxAbsoluteValues(double[][] eigenValuesArray, int k) {
+    //                  arrayValuesK (0 ,3)
+    private static double[][] vectorsK(double[][] eigenVectorsArray, double[][] arrayValuesK) {
+        double[][] newVectorsK = new double[eigenVectorsArray.length][arrayValuesK.length];
 
-        double[] quantity = new double[k];
+        for (int i = 0; i < eigenVectorsArray[0].length ; i++) {
+            for (int j = 0; j < arrayValuesK.length; j++) {
+                newVectorsK[i][j] = eigenVectorsArray[i][(int) arrayValuesK[j][1]];
+            }
+        }
 
-//        for (int i = 0; i < quantity.length; i++) {
-//            quantity[i] = Double.MIN_VALUE;
-//        }
-//
-//        for (int i = 0; i < eigenValuesArray.length; i++) {
-//            if (Math.abs(eigenValuesArray[i][i]) > Math.abs(quantity[i])) {
-//                quantity[i] = eigenValuesArray[i][i];
-//            }
-//        }
-// return erra do, rodar matriz maior na diagonal, se for maior do que matrix K, insere, roda a matrix K por completo por pode ter sempre um maior valorAbsoluto.
-        return manyValues;
+
+        return newVectorsK;
+    }
+
+    public static double[][] diagonalMatrix(double[][] matrixvaluesK) {
+        double[][] matrixvaluesKPrint = new double[matrixvaluesK.length][matrixvaluesK.length];
+        for (int i = 0; i < matrixvaluesK.length; i++) {
+            matrixvaluesKPrint[i][i] = matrixvaluesK[i][0];
+        }
+        return matrixvaluesKPrint;
+    }
+
+    private static double[][] getMaxAbsoluteValues(double[][] eigenValuesArray, int k) {
+        double[][] quantity = new double[k][k];
+
+        for (int i = 0; i < quantity.length; i++) {
+            quantity[i][0] = Double.MIN_VALUE;
+        }
+
+        for (int i = 0; i < eigenValuesArray.length; i++) {
+            for (int j = 0; j < quantity.length; j++) {
+                if (Math.abs(eigenValuesArray[i][i]) > quantity[j][0]) {
+                    quantity[j][0] = eigenValuesArray[i][i];
+                    quantity[j][1] = i;
+                    break;
+                }
+            }
+        }
+
+        return quantity;
     }
 
     public static double[][] readCSVToMatrix(String filePath) {

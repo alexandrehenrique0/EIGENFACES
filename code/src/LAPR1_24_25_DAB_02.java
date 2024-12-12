@@ -79,11 +79,7 @@ public class LAPR1_24_25_DAB_02 {
     public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers) {
         switch (function) {
             case 1:
-                    System.out.println();
-                    print_Line(1, "-------------------------------------------------------");
-                    System.out.println("Decomposição Própria de uma Matriz Simétrica");
-                    print_Line(1, "-------------------------------------------------------");
-                    System.out.println();
+                    print_Header_Function("Decomposição Própria de uma Matriz Simétrica");
                     EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
                     double[][] eigenVectors = getEigenVectors(eigenDecomposition);
                     double[][] eigenValues = getEigenValues(eigenDecomposition);
@@ -93,23 +89,16 @@ public class LAPR1_24_25_DAB_02 {
                     double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
                     double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
                     double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
+                    double[][] resultingMatrixAk = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
+                    
+                    double errorAbsMed = calculateMAE(matrixCSVDouble, resultingMatrixAk);
 
-                    double[][] matrixResultante = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
-                    double errorAbsMed = calculateMAE(matrixCSVDouble, matrixResultante);
-
-
-                    print_Matrix(matrixCSVDouble, "Matriz Original");
-                    print_Matrix(eigenVectors, "Matriz Vetores Próprios");
-                    print_Matrix(matrixResultante, "Matriz Resultante");
-                    print_Matrix(newEigenValuesK, "Matriz Valores Próprios");
-                    print_Matrix(newEigenVectorsK, "Matriz Vetores Próprios");
-                    print_Matrix(newEigenVectorsTransposeK, "Matriz Vetores Próprios Transpostos");
-                    System.out.println("Erro Absoluto Médio: " + errorAbsMed);
-
+                    print_Function_1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, resultingMatrixAk, errorAbsMed);
+                    
                 break;
             case 2:
                 /*
-                    Funcionalidade 1
+                                        print_Header_Function("Decomposição Própria de uma Matriz Simétrica");
                     EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
                     double[][] eigenVectors = getEigenVectors(eigenDecomposition);
                     double[][] eigenValues = getEigenValues(eigenDecomposition);
@@ -119,17 +108,19 @@ public class LAPR1_24_25_DAB_02 {
                     double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
                     double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
                     double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
+                    double[][] resultingMatrixAk = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
+                    
+                    double errorAbsMed = calculateMAE(matrixCSVDouble, resultingMatrixAk);
 
-                    double[][] matrixResultante = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
-                    double errorAbsMed = calculateMAE(matrixCSVDouble, matrixResultante);
+                    print_Function_1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, resultingMatrixAk, errorAbsMed);
+                    
                 */
-
                 // TODO Reconstrução de Imagens usando Eigenfaces
-
+                print_Header_Function("Reconstrução de Imagens usando Eigenfaces");
                 break;
             case 3:
                 /*
-                    Funcionalidade 1
+                    print_Header_Function("Decomposição Própria de uma Matriz Simétrica");
                     EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
                     double[][] eigenVectors = getEigenVectors(eigenDecomposition);
                     double[][] eigenValues = getEigenValues(eigenDecomposition);
@@ -139,11 +130,14 @@ public class LAPR1_24_25_DAB_02 {
                     double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
                     double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
                     double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
+                    double[][] resultingMatrixAk = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
+                    
+                    double errorAbsMed = calculateMAE(matrixCSVDouble, resultingMatrixAk);
 
-                    double[][] matrixResultante = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
-                    double errorAbsMed = calculateMAE(matrixCSVDouble, matrixResultante);
-                */
+                    print_Function_1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, resultingMatrixAk, errorAbsMed);
+                    */
                 // TODO Identificação de imagem mais próxima
+                print_Header_Function("Identificação de imagem mais próxima");
                 break;
         }
     }
@@ -197,17 +191,14 @@ public class LAPR1_24_25_DAB_02 {
         System.out.println("-------------------------------------------------------");
         System.out.printf("Opção: ");
     }
-
     public static void ui_Vector_Numbers_Parameter_Menu() {
         System.out.println("------ Quantos vetores próprios deseja utilizar? ------");
         System.out.printf("Quantidade: ");
     }
-
     public static void ui_CSV_Location_Parameter_Menu() {
         System.out.println("---- Qual a localização do csv que deseja utilizar? ---");
         System.out.printf("Localização: ");
     }
-
     public static void ui_Image_Location_Parameter_Menu() {
         System.out.println("-------- Qual a localização da base de imagens? -------");
         System.out.printf("Localização: ");
@@ -232,7 +223,6 @@ public class LAPR1_24_25_DAB_02 {
             return functionArgs;
         }
     }
-
     public static int receive_Number_Vectors(String[] args) {
         int vectorNumbersArgs = 0;
         if (args == null) {
@@ -242,7 +232,6 @@ public class LAPR1_24_25_DAB_02 {
             return vectorNumbersArgs;
         }
     }
-
     public static String receive_CSV_Location(String[] args) {
         String csvLocationArgs = "";
         if (args == null) {
@@ -259,7 +248,6 @@ public class LAPR1_24_25_DAB_02 {
             return csvLocationArgs;
         }
     }
-
     public static String receive_Image_Location(String[] args) {
         String imageFolderLocationArgs = "";
         if (args == null) {
@@ -290,7 +278,6 @@ public class LAPR1_24_25_DAB_02 {
 
         return matrix;
     }
-
     private static int[] get_Dimensions() {
         int rows = 0;
         int cols = 0;
@@ -308,11 +295,9 @@ public class LAPR1_24_25_DAB_02 {
         }
         return new int[]{rows, cols};
     }
-
     private static boolean check_Size_Boundaries(int rows, int cols) {
         return rows > MAX_SIZE_ROWS || cols > MAX_SIZE_COLS || rows < MIN_SIZE_ROWS || cols < MIN_SIZE_COLS;
     }
-
     private static void populate_Matrix(double[][] matrix, String csvLocation) {
         try {
             SCANNER_CSV = new Scanner(new File(csvLocation));
@@ -329,7 +314,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         SCANNER_CSV.close();
     }
-
     private static void populate_Row(double[][] matrix, int row, String line) {
         String[] values = line.split(",");
         for (int col = 0; col < values.length; col++) {
@@ -353,7 +337,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-
     public static double[][] subtraction_Matrices(double[][] matrizLeft, double[][] matrizRight) {
         double[][] matrizResultante = new double[matrizLeft.length][matrizLeft[0].length];
         for (int i = 0; i < matrizLeft.length; i++) {
@@ -363,7 +346,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-
     public static double[][] multiply_Matrices(double[][] matrizLeft, double[][] matrizRight) {
         double[][] matrizResultante = new double[matrizLeft.length][matrizRight[0].length];
         for (int i = 0; i < matrizLeft.length; i++) {
@@ -375,7 +357,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-
     public static double[][] multiply_Matrix_Escalar(double[][] matriz, double escalar) {
         double[][] matrizResultante = new double[matriz.length][matriz[0].length];
         for (int i = 0; i < matriz.length; i++) {
@@ -385,7 +366,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizResultante;
     }
-
     public static double[][] transposed_Matrix(double[][] matriz) {
         double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
         for (int i = 0; i < matriz.length; i++) {
@@ -395,7 +375,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrizTransposta;
     }
-
     //! Usar se preciso para remover apenas uma coluna
     public static double[][] create_subMatrix_remove_col(double[][] matrix, int col) {
         double[][] submatrix = new double[matrix.length][matrix[0].length - 1];
@@ -411,7 +390,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         return submatrix;
     }
-
     //! -----------------------------------
     public static double[][] create_submatrix_Keep_cols(double[][] matrixP, double[][] keepColumns) {
 
@@ -458,7 +436,6 @@ public class LAPR1_24_25_DAB_02 {
         print_Line(matrixToPrint[0].length, "============");
         System.out.println();
     }
-
     // Metodo para printar linhas de caracteres no console.
     private static void print_Line(int length, String pattern) {
         for (int i = 0; i < length; i++) {
@@ -467,7 +444,24 @@ public class LAPR1_24_25_DAB_02 {
         System.out.println();
     }
     //* ----------------- Fim printar matrizes -----------------------
-
+    
+    //* Printar Funcionalidades
+    public static void print_Function_1(double[][] matrixCSVDouble, int vectorNumbers, double[][] newEigenVectorsK, double[][] newEigenValuesK, double[][] newEigenVectorsTransposeK, double[][] resultingMatrixAk, double errorAbsMed) {
+        print_Matrix(matrixCSVDouble, "Matriz Original");
+        print_Matrix(resultingMatrixAk, "Matriz Resultante k:" + vectorNumbers);
+        print_Matrix(newEigenValuesK, "Matriz Valores Próprios k:" + vectorNumbers);
+        print_Matrix(newEigenVectorsK, "Matriz Vetores Próprios k:" + vectorNumbers);
+        print_Matrix(newEigenVectorsTransposeK, "Matriz Vetores Próprios Transpostos k:" + vectorNumbers);
+        System.out.println("Erro Absoluto Médio: " + errorAbsMed);
+    }
+    public static void print_Header_Function(String functionName) {
+        System.out.println();
+        print_Line(1, "-------------------------------------------------------");
+        System.out.println(functionName);
+        print_Line(1, "-------------------------------------------------------");
+        System.out.println();
+    }
+    //* ----------------- Fim printar funcionalidades -----------------------
 
     //* -------------------- Funcionalidade 1 -----------------------
     // eu (gabriel) apenas colocarei os metodos que ainda não tem no main, depois podemos organizar melhor
@@ -475,7 +469,6 @@ public class LAPR1_24_25_DAB_02 {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayToDecompose);
         return new EigenDecomposition(matrix);
     }
-
     public static double calculateMAE(double[][] A, double[][] Ak) {
         int M = A.length;
         int N = A[0].length;
@@ -490,22 +483,19 @@ public class LAPR1_24_25_DAB_02 {
         // Calcula o erro médio
         return errorAbsMed / (M * N);
     }
-
     public static double[][] getEigenVectors(EigenDecomposition eigenDecomposition) {
         RealMatrix eigenVectors = eigenDecomposition.getV();
         return eigenVectors.getData();
     }
-
     public static double[][] getEigenValues(EigenDecomposition eigenDecomposition) {
         RealMatrix eigenValues = eigenDecomposition.getD();
         return eigenValues.getData();
     }
-
     public static double[][] getEigenVectorsTranspose(EigenDecomposition eigenDecomposition) {
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
         return eigenVectorsTranspose.getData();
     }
-// TODO verificar se o metodo é mais eficiente que o método keepColumns
+    // TODO verificar se o metodo é mais eficiente que o método keepColumns
     private static double[][] getEigenVectorsKArray(double[][] eigenVectorsArray, double[][] arrayValuesK) {
         double[][] newVectorsK = new double[eigenVectorsArray.length][arrayValuesK.length];
         //TODO ao inves de dar system exit, pode retornar a pergunta de quantos K o utilizador quer
@@ -526,7 +516,7 @@ public class LAPR1_24_25_DAB_02 {
 
         return newVectorsK;
     }
-// TODO ----------------------------------------------------------------
+    // TODO ----------------------------------------------------------------
     private static double[][] constructDiagonalMatrix(double[][] matrixvaluesK) {
         double[][] matrixvaluesKPrint = new double[matrixvaluesK.length][matrixvaluesK.length];
         for (int i = 0; i < matrixvaluesK.length; i++) {
@@ -534,7 +524,6 @@ public class LAPR1_24_25_DAB_02 {
         }
         return matrixvaluesKPrint;
     }
-
     private static double[][] getValuesAndIndexArray(double[][] eigenValuesArray, int k) {
         double[][] valuesAndIndexArray = new double[k][2];
 
@@ -559,12 +548,10 @@ public class LAPR1_24_25_DAB_02 {
 
         return valuesAndIndexArray;
     }
-
     // serve para A e para Ak
     public static double[][] multiplyVectorsValuesVectorsTransposed(double[][] matrixVectors, double[][] matrixValues, double[][] matrixVectorsTranspose) {
         return multiply_Matrices(multiply_Matrices(matrixVectors, matrixValues), matrixVectorsTranspose);
     }
-
     //* ----------------- Fim funcionalidade 1 ------------------
 
 
@@ -573,6 +560,5 @@ public class LAPR1_24_25_DAB_02 {
         System.out.println(error);
         System.exit(1);
     }
-
     //! ------------------ Fim error messages --------------
 }

@@ -28,7 +28,7 @@ public class Alexandre {
             }
             System.out.println();
         }
-        double[][] covariancia = covariancias(desvios);
+        double[][] covariancia = covariancias(desvios,N);
         for (int i = 0; i < covariancia.length; i++) {
             for (int j = 0; j < covariancia[i].length; j++) {
                 System.out.print(covariancia[i][j] + " ");
@@ -123,7 +123,6 @@ public class Alexandre {
     public static double[][] vetoresPropriosATxA(double[][] A) {
         double[][] AT =transpostaMatriz(A);
         double[][] ATxA = multiplicaMatrizes(AT,A);
-        Array2DRowRealMatrix ATxA2 = new Array2DRowRealMatrix(ATxA);
         EigenDecomposition eigenDecomposition = decomposeMatrix(ATxA);
         RealMatrix V = eigenDecomposition.getV();
         double[][] vi = V.getData();

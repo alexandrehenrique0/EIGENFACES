@@ -27,7 +27,6 @@ public class Rita {
 
         double[][] imageMatrix = buildImageMatrixM(imageVectors);
 
-
         System.out.println("\nMatriz de Imagens M (colunas são imagens):");
         for (int i = 0; i < imageMatrix.length; i++) {
             for (int j = 0; j < imageMatrix[i].length; j++) {
@@ -42,14 +41,12 @@ public class Rita {
     public static double[][] convertImagesToVectors(String imageFolderLocation) throws IOException {
         File folder = new File(imageFolderLocation);
 
-        // Obter todos os arquivos no diretório
         File[] imageFiles = folder.listFiles();
 
         if (imageFiles == null || imageFiles.length == 0) {
             throw new FileNotFoundException("Nenhuma imagem CSV encontrada na pasta.");
         }
 
-        // Contar quantos arquivos CSV existem
         int csvFileCount = 0;
         for (int i = 0; i < imageFiles.length; i++) {
             File file = imageFiles[i];
@@ -65,7 +62,6 @@ public class Rita {
         File[] csvFiles = new File[csvFileCount];
         int index = 0;
 
-        // Adicionar os arquivos CSV ao array
         for (int i = 0; i < imageFiles.length; i++) {
             File file = imageFiles[i];
             if (file.isFile() && file.getName().toLowerCase().endsWith(".csv")) {
@@ -73,13 +69,10 @@ public class Rita {
             }
         }
 
-        // Exibir quantidade de arquivos CSV encontrados
         System.out.printf("Encontrados %d arquivos CSV.%n", csvFiles.length);
 
-        // Inicializar o array para armazenar todos os vetores das imagens
         double[][] imageVectors = new double[csvFiles.length][];
 
-        // Para cada arquivo CSV, carregamos os dados e transformamos em vetores
         for (int i = 0; i < csvFiles.length; i++) {
             imageVectors[i] = loadImageFromCSV(csvFiles[i]);
         }
@@ -89,17 +82,14 @@ public class Rita {
 
 
     public static double[] loadImageFromCSV(File imageFile) throws IOException {
-        double[] imageVector = new double[0];  // Inicializa como vetor vazio
+        double[] imageVector = new double[0];
 
-        // Verificar se o arquivo existe antes de tentar ler
         if (!imageFile.exists() || !imageFile.isFile()) {
             throw new FileNotFoundException(String.format("Arquivo não encontrado: %s", imageFile.getName()));
         }
 
-
-        // Ler o arquivo CSV
         BufferedReader reader = new BufferedReader(new FileReader(imageFile));
-        String line; // armazena cada linha lida do arquivo
+        String line;
         int rowCount = 0;
         int cols = 0;
 
@@ -121,9 +111,8 @@ public class Rita {
         while ((line = reader.readLine()) != null) {
             String[] pixels = line.split(",");
             for (String pixel : pixels) {
-                String trimmedPixel = pixel.trim();  // Remover espaços extras
+                String trimmedPixel = pixel.trim();
 
-                // Verificar se a conversão é possível
                 if (isValidDouble(trimmedPixel)) {
                     imageVector[index] = Double.parseDouble(trimmedPixel);
                 } else {

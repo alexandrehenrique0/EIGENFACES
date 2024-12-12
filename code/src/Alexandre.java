@@ -8,31 +8,32 @@ public class Alexandre {
     // Calcula o Erro Absoluto Médio (EAM)
     public static void main(String[] args) {
         // Matriz de exemplo (3x3)
-        double[][] A = {
+        double[][] Z = {
                 {1.0, 2.0, 3.0},
                 {2.0, 1.0, 6.0},
                 {3.0, 6.0, 1.0}
         };
 
-        int N = A[0].length;
+        int N = Z[0].length;
 
-        double[][] colunaMedia = colunaMedia(A);
+        double[][] colunaMedia = colunaMedia(Z);
         System.out.println("Média das colunas:");
         for (int i = 0; i < colunaMedia.length; i++) {
             System.out.println(colunaMedia[i][0]);
         }
         System.out.println();
-        System.out.println("A:");
-        double[][] desvios = matrixDesvios(A,colunaMedia);
-        for (int i = 0; i < desvios.length; i++) {
-            for (int j = 0; j < desvios[i].length; j++) {
-                System.out.print(desvios[i][j] + " ");
+        System.out.println("Z:");
+        double[][] desviosA = matrixDesvios(Z,colunaMedia);
+        double[][] desviosAT = transpostaMatriz(desviosA);
+        for (int i = 0; i < desviosA.length; i++) {
+            for (int j = 0; j < desviosA[i].length; j++) {
+                System.out.print(desviosA[i][j] + " ");
             }
             System.out.println();
         }
         System.out.println();
         System.out.println("C:");
-        double[][] covariancia = covariancias(desvios,N);
+        double[][] covariancia = covariancias(desviosA,N);
         for (int i = 0; i < covariancia.length; i++) {
             for (int j = 0; j < covariancia[i].length; j++) {
                 System.out.print(covariancia[i][j] + " ");
@@ -41,8 +42,38 @@ public class Alexandre {
 
         }
         System.out.println();
+        System.out.println("Valores AtxA:");
+        double[][] valProATxA = valoresPropriosATxA(desviosA,desviosAT);
+        for (int i = 0; i < valProATxA.length; i++) {
+            for (int j = 0; j < valProATxA[i].length; j++) {
+                System.out.print(valProATxA[i][j] + " ");
+            }
+            System.out.println();
+
+        }
+        System.out.println();
+        System.out.println("Vetores AtxA:");
+        double[][] vetProATxA = vetoresPropriosATxA(desviosA,desviosAT);
+        for (int i = 0; i < vetProATxA.length; i++) {
+            for (int j = 0; j < vetProATxA[i].length; j++) {
+                System.out.print(vetProATxA[i][j] + " ");
+            }
+            System.out.println();
+
+        }
+        System.out.println();
+        System.out.println("Vetores AxAt:");
+        double[][] vetProAxAT = vetoresPropriosAxAT(desviosA,desviosAT);
+        for (int i = 0; i < vetProAxAT.length; i++) {
+            for (int j = 0; j < vetProAxAT[i].length; j++) {
+                System.out.print(vetProAxAT[i][j] + " ");
+            }
+            System.out.println();
+
+        }
+        System.out.println();
         System.out.println("Valores C:");
-        double[][] valProC = valoresPropriosC(covariancia);
+        double[][] valProC = valoresPropriosC(valProATxA,N);
         for (int i = 0; i < valProC.length; i++) {
             for (int j = 0; j < valProC[i].length; j++) {
                 System.out.print(valProC[i][j] + " ");
@@ -51,7 +82,7 @@ public class Alexandre {
         }
         System.out.println();
         System.out.println("Vetores C:");
-        double[][] vetProC = vetoresPropriosC(covariancia);
+        double[][] vetProC = vetProAxAT;
         for (int i = 0; i < vetProC.length; i++) {
             for (int j = 0; j < vetProC[i].length; j++) {
                 System.out.print(vetProC[i][j] + " ");
@@ -155,19 +186,33 @@ public class Alexandre {
     //-------------------------------------------------------
 
     //4------------------------------------------------------
-
-    public static double[][] valoresPropriosC(double[][] C) {
-        EigenDecomposition eigenDecomposition = decomposeMatrix(C);
+    public static double[][] valoresPropriosATxA(double[][] A,double[][] AT) {
+        double[][] ATxA = multiplicaMatrizes(AT,A);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(ATxA);
         RealMatrix D = eigenDecomposition.getD();
         double[][] dArray = D.getData();
         return dArray;
     }
 
-    public static double[][] vetoresPropriosC(double[][] C) {
-        EigenDecomposition eigenDecomposition = decomposeMatrix(C);
+    public static double[][] vetoresPropriosATxA(double[][] A,double[][] AT) {
+        double[][] ATxA = multiplicaMatrizes(AT,A);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(ATxA);
         RealMatrix V = eigenDecomposition.getV();
-        double[][] vArray = V.getData();
-        return vArray;
+        double[][] vi = V.getData();
+        return vi;
+    }
+
+    public static double[][] vetoresPropriosAxAT(double[][] A,double[][] AT) {
+        double[][] AxAT = multiplicaMatrizes(A,AT);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(AxAT);
+        RealMatrix V = eigenDecomposition.getV();
+        double[][] ui = V.getData();
+        return ui;
+    }
+
+    public static double[][] valoresPropriosC(double[][] valoresPropriosAxAT, int N) {
+        double[][] lambdai = multiplicaMatrizPorEscalar(valoresPropriosAxAT,1.0/N);
+        return lambdai;
     }
 
     //------------------------------------------------------

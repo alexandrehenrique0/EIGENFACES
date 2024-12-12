@@ -337,7 +337,7 @@ public class LAPR1_24_25_DAB_02 {
         for (double[] doubles : matrix) {
             int sub_j = 0;
             for (int j = 0; j < matrix[0].length; j++) {
-                if (j == col - 1) continue;
+                if (j == col) continue;
                 submatrix[sub_i][sub_j] = doubles[j];
                 sub_j++;
             }

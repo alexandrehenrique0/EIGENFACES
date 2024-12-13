@@ -18,12 +18,6 @@ public class Alexandre {
 
         //GABRIEL
 
-        EigenDecomposition eigenDecomposition = decomposeMatrix(Z);
-        double[][] eigenVectorsArray = getEigenVectors(eigenDecomposition);
-        double[][] eigenValuesArray = getEigenValues(eigenDecomposition);
-        double[][] eigenVectorsTransposeArray = getEigenVectorsTranspose(eigenDecomposition);
-
-
         //GABRIEL
 
         double[][] colunaMedia = colunaMedia(Z);
@@ -58,20 +52,7 @@ public class Alexandre {
     }
 
     //GABRIEL
-    public static double[][] getEigenVectors(EigenDecomposition eigenDecomposition) {
-        RealMatrix eigenVectors = eigenDecomposition.getV();
-        return eigenVectors.getData();
-    }
 
-    public static double[][] getEigenValues(EigenDecomposition eigenDecomposition) {
-        RealMatrix eigenValues = eigenDecomposition.getD();
-        return eigenValues.getData();
-    }
-
-    public static double[][] getEigenVectorsTranspose(EigenDecomposition eigenDecomposition) {
-        RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
-        return eigenVectorsTranspose.getData();
-    }
     //GABRIEL
 
     public static double calculateEAM(double[][] A, double[][] Ak) {

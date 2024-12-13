@@ -3,61 +3,263 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class GabrielTesteFunc2 {
     // Calcula o Erro Absoluto Médio (EAM)
     public static void main(String[] args) {
-        // Matriz de exemplo (3x3)
-        double[][] Z = {
-                {1.0, 2.0, 3.0},
-                {2.0, 1.0, 6.0},
-                {3.0, 6.0, 1.0}
-        };
+        String csvPath = "Input/TesteFuncao2-3/csv/image_001.csv";
+        double[][] arrayOriginal = readCSVToArray(csvPath);
 
-        int N = Z[0].length;
-        int k = 2;
+        // Dimensão e número de eigenfaces
+        int N = arrayOriginal[0].length; // Número de colunas (64)
+        int k = 64; // Número de eigenfaces (ajuste conforme necessário)
 
-        double[][] colunaMedia = colunaMedia(Z);
-
+        // 1. Cálculo da média
+        double[][] colunaMedia = colunaMedia(arrayOriginal);
         print_Matrix(colunaMedia, "Coluna Média");
 
-        double[][] desviosA = matrixDesvios(Z,colunaMedia);
+        // 2. Centralização (Matriz de desvios)
+        double[][] desviosA = matrixDesvios(arrayOriginal, colunaMedia);
         double[][] desviosAT = transpostaMatriz(desviosA);
+        print_Matrix(desviosA, "Matriz de Desvios (A)");
+        print_Matrix(desviosAT, "Matriz Transposta de Desvios (A^T)");
 
-        print_Matrix(desviosA, " desvioA");
-        print_Matrix(desviosAT, " desvioAT");
+        // 3. Matriz de Covariância
+        double[][] covariancia = covariancias(desviosA, N);
+        print_Matrix(covariancia, "Matriz de Covariância (C)");
 
-        print_Matrix(desviosA, "Matriz Z = desvioA");
+        // 4. Valores e vetores próprios
+        double[][] valProATxA = valoresPropriosATxA(desviosA, desviosAT);
+        double[][] vetProATxA = vetoresPropriosATxA(desviosA, desviosAT);
+        print_Matrix(valProATxA, "Valores Próprios de A^T . A");
+        print_Matrix(vetProATxA, "Vetores Próprios de A^T . A");
 
-        double[][] covariancia = covariancias(desviosA,N);
-        print_Matrix(covariancia, "matriz C : covariancia ");
+        double[][] vetProAxAT = vetoresPropriosAxAT(desviosA, desviosAT);
+        double[][] vetNormalizados = normalizarVetores(vetProAxAT);
+        print_Matrix(vetProAxAT, "Vetores Próprios de A . A^T");
+        print_Matrix(vetNormalizados, "Vetores Próprios Normalizados");
 
-        double[][] valProATxA = valoresPropriosATxA(desviosA,desviosAT);
-        print_Matrix(valProATxA, "VALORES A^t . A");
-
-        double[][] vetProATxA = vetoresPropriosATxA(desviosA,desviosAT);
-        print_Matrix(vetProATxA, "Vetores A^t . A");
-
-        double[][] vetProAxAT = vetoresPropriosAxAT(desviosA,desviosAT);
-        print_Matrix(vetProAxAT, "Vetores A . A^t");
+        // 5. Centralização da imagem para reconstrução
+        double[] linearizedOriginal = matrixToArray(arrayOriginal);
+        System.out.println("Tamanho do linearizedOriginal: " + linearizedOriginal.length);
+// Calcula o vetor médio para o vetor linearizado
+        double[] meanVector = matrixToArray(arrayOriginal);
+        System.out.println("Tamanho do vetor médio (meanVector): " + meanVector.length);
 
 
-        // algo esta mal nessa funcao
-        double[][] valProAxAt = valoresPropriosAxAT(desviosA,desviosAT);
-        print_Matrix(valProAxAt, "VALORES A^t . A");
+// Centraliza a imagem original linearizada
+        double[] phi = centralizeImage(linearizedOriginal, meanVector);
+        System.out.println("Tamanho de phi: " + phi.length);
 
-        double[][] valProC = valoresPropriosC(valProATxA,N);
-        print_Matrix(valProC, "VALORES C");
+        // 6. Cálculo dos pesos (projeção nos eigenfaces)
+        double[] weights = calculateWeights(phi, vetNormalizados);
+        System.out.println("Pesos Calculados (W): " + Arrays.toString(weights));
 
-        double[][] vetProC = vetProAxAT;
-        print_Matrix(vetProC, "Vetores C");
+        // 7. Reconstrução da imagem com k eigenfaces
+        double[] reconstructedImage = reconstructImage(meanVector, vetNormalizados, weights, k);
+        System.out.println("Tamanho de reconstructedImage: " + reconstructedImage.length);
+        print_Matrix(new double[][]{reconstructedImage}, "Imagem Reconstruída (1D)");
 
-        double[][] vetNormalizados = normalizarVetores(Z);
-        print_Matrix(vetNormalizados, "Vetores Normalizados");
+        // 8. Conversão para matriz 2D
+        System.out.println("Tamanho de reconstructedImage: " + reconstructedImage.length);
+        System.out.println("Tamanho esperado: " + (arrayOriginal.length * arrayOriginal[0].length));
 
+        System.out.println("Dimensões da imagem original: " + arrayOriginal.length + "x" + arrayOriginal[0].length);
+        System.out.println("Tamanho esperado: " + (arrayOriginal.length * arrayOriginal[0].length));
+        System.out.println("Tamanho do vetor reconstruído: " + reconstructedImage.length);
+        System.out.println("Tamanho do vetor médio (meanVector): " + meanVector.length);
+        System.out.println("Dimensões de vetNormalizados: " + vetNormalizados.length + "x" + vetNormalizados[0].length);
+        System.out.println("Tamanho dos pesos (weights): " + weights.length);
+
+
+        double[][] reconstructedImageMatrix = arrayToMatrix(reconstructedImage, arrayOriginal.length, arrayOriginal[0].length);
+        print_Matrix(reconstructedImageMatrix, "Imagem Reconstruída (2D)");
+        print_Matrix(reconstructedImageMatrix, "Imagem Reconstruída (2D)");
+
+        // 9. Salvar a imagem reconstruída
+        saveImage(reconstructedImageMatrix, csvPath, "Input/TesteFuncao2-3/OutputImagesFunc2-3");
     }
 
+    //* TESTE PARA SALVAR IMAGEM
+    public static double[] matrixToArray(double[][] matrix) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        double[] array = new double[rows * cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                array[i * cols + j] = matrix[i][j];
+            }
+        }
+        return array;
+    }
+
+
+    public static double[] extractMeanVector(double[][] colunaMedia) {
+        double[] meanVector = new double[colunaMedia[0].length];
+        for (int i = 0; i < colunaMedia[0].length; i++) {
+            meanVector[i] = colunaMedia[0][i]; // Extrai o primeiro elemento de cada coluna
+        }
+        return meanVector;
+    }
+
+    public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath) {
+        int height = imageArray.length;
+        int width = imageArray[0].length;
+
+        // Normalize the image to the range 0-255
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
+
+        // Find min and max values
+        for (double[] row : imageArray) {
+            for (double val : row) {
+                if (val < min) min = val;
+                if (val > max) max = val;
+            }
+        }
+
+        int[][] normalizedImage = new int[height][width];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                normalizedImage[y][x] = (int) ((imageArray[y][x] - min) / (max - min) * 255);
+            }
+        }
+
+        // Create output file name
+        String csvFileName = new File(inputCsvPath).getName();
+        String pngFileName = csvFileName.replace(".csv", ".png");
+        String outputPath = outputFolderPath + "/" + pngFileName;
+
+        // Write the image
+        try {
+            writeArrayAsImage(normalizedImage, outputPath);
+            System.out.println("Image saved successfully: " + outputPath);
+        } catch (IOException e) {
+            System.err.println("Failed to save the image: " + e.getMessage());
+        }
+    }
+
+    public static double[] centralizeImage(double[] image, double[] meanVector) {
+        if (image.length != meanVector.length) {
+            throw new IllegalArgumentException("Os tamanhos dos arrays 'image' e 'meanVector' não correspondem.");
+        }
+        double[] phi = new double[image.length];
+        for (int i = 0; i < image.length; i++) {
+            phi[i] = image[i] - meanVector[i];
+        }
+        return phi;
+    }
+
+    public static double[] calculateWeights(double[] phi, double[][] eigenfaces) {
+        if (Math.sqrt(phi.length) != eigenfaces.length) {
+            throw new IllegalArgumentException("O comprimento de 'phi' deve ser igual ao número de linhas em 'eigenfaces'.");
+        }
+        double[] weights = new double[eigenfaces[0].length];
+        for (int j = 0; j < eigenfaces[0].length; j++) {
+            for (int i = 0; i < eigenfaces[0].length; i++) {
+                weights[j] += phi[i] * eigenfaces[i][j];
+            }
+        }
+        return weights;
+    }
+
+    public static double[] reconstructImage(double[] meanVector, double[][] eigenfaces, double[] weights, int k) {
+        // Limita k ao número de eigenfaces disponíveis
+        k = Math.min(k, eigenfaces[0].length);
+
+        // Inicializa o vetor reconstruído com o vetor médio
+        double[] reconstructed = Arrays.copyOf(meanVector, meanVector.length);
+
+        // Soma a contribuição de cada eigenface
+        for (int j = 0; j < k; j++) {
+            for (int i = 0; i < eigenfaces[0].length; i++) {
+                reconstructed[i] += weights[j] * eigenfaces[i][j];
+            }
+        }
+
+        return reconstructed;
+    }
+
+
+
+
+    public static double[][] arrayToMatrix(double[] array, int rows, int cols) {
+        if (array.length != rows * cols) {
+            throw new IllegalArgumentException("O tamanho do vetor não corresponde às dimensões da matriz.");
+        }
+        double[][] matrix = new double[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                matrix[i][j] = array[i * cols + j];
+            }
+        }
+        return matrix;
+    }
+
+
+
+    // Provided function to write an image
+    public static void writeArrayAsImage(int[][] array, String outputFilePath) throws IOException {
+        int height = array.length;
+        int width = array[0].length;
+
+        // Create a BufferedImage
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+
+        // Set the pixel intensities
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int intensity = array[y][x];
+                if (intensity < 0 || intensity > 255) {
+                    throw new IllegalArgumentException("Pixel intensity must be between 0 and 255.");
+                }
+                int rgb = (intensity << 16) | (intensity << 8) | intensity; // Set the same value for R, G, B
+                image.setRGB(x, y, rgb);
+            }
+        }
+
+        // Write the image to the file
+        File outputFile = new File(outputFilePath);
+        ImageIO.write(image, "png", outputFile);
+    }
+
+    //* TESTE PARA SALVAR IMAGEM
+
+    private static double[][] readCSVToArray(String filePath) {
+        ArrayList<double[]> rows = new ArrayList<>();
+        try (Scanner scanner = new Scanner(new File(filePath))) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine().trim();
+                if (!line.isEmpty()) {
+                    String[] values = line.split(",");
+                    double[] row = new double[values.length];
+                    for (int i = 0; i < values.length; i++) {
+                        row[i] = Double.parseDouble(values[i].trim());
+                    }
+                    rows.add(row);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Erro: Arquivo CSV não encontrado no caminho: " + filePath, e);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Erro: Valores inválidos encontrados no arquivo CSV.", e);
+        }
+
+        // Converte a lista de linhas em uma matriz
+        double[][] matrix = new double[rows.size()][];
+        for (int i = 0; i < rows.size(); i++) {
+            matrix[i] = rows.get(i);
+        }
+        return matrix;
+    }
 
     public static double calculateEAM(double[][] A, double[][] Ak) {
         int M = A.length;

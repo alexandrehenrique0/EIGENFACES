@@ -218,10 +218,11 @@ public class Alexandre {
         EigenDecomposition eigenDecomposition = decomposeMatrix(AxAT);
         RealMatrix D = eigenDecomposition.getD();
         double[][] dArray = D.getData();
-        adjustPrecision(dArray, 0.0001);
+        adjustPrecision(dArray, 0.001);
         return dArray;
     }
 
+    //ignora valores negativos muiiiito baixos, para nao obter -0.0
     private static double[][] adjustPrecision(double[][] matrix, double ignoreMinorValues) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {

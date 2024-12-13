@@ -10,7 +10,7 @@ public class Rita {
     public static void main(String[] args) throws IOException {
         String imageFolderLocation = "C:\\Users\\rita\\Documents\\lapr1-24-25_DAB_02\\Input\\TesteFuncao2-3\\csv";
 
-        double[][] imageVectors = convertImagesToVectors(imageFolderLocation);
+        int[][] imageVectors = convertImagesToVectors(imageFolderLocation);
 
         for (int i = 0; i < imageVectors.length; i++) {
             System.out.printf("Imagem %d - Tamanho do vetor: %d", i + 1, imageVectors[i].length);
@@ -25,7 +25,7 @@ public class Rita {
 
         // Matriz M
 
-        double[][] imageMatrix = buildImageMatrixM(imageVectors);
+        int[][] imageMatrix = buildImageMatrixM(imageVectors);
 
         System.out.println("\nMatriz de Imagens M (colunas são imagens):");
         for (int i = 0; i < imageMatrix.length; i++) {
@@ -38,7 +38,7 @@ public class Rita {
 
 //--------1.Transformar cada imagem da base de imagens, com N imagens, para o formato vetor-----------------------------
 
-    public static double[][] convertImagesToVectors(String imageFolderLocation) throws IOException {
+    public static int[][] convertImagesToVectors(String imageFolderLocation) throws IOException {
         File folder = new File(imageFolderLocation);
 
         File[] imageFiles = folder.listFiles();
@@ -71,7 +71,7 @@ public class Rita {
 
         System.out.printf("Encontrados %d arquivos CSV.%n", csvFiles.length);
 
-        double[][] imageVectors = new double[csvFiles.length][];
+        int[][] imageVectors = new int[csvFiles.length][];
 
         for (int i = 0; i < csvFiles.length; i++) {
             imageVectors[i] = loadImageFromCSV(csvFiles[i]);
@@ -81,8 +81,8 @@ public class Rita {
     }
 
 
-    public static double[] loadImageFromCSV(File imageFile) throws IOException {
-        double[] imageVector = new double[0];
+    public static int[] loadImageFromCSV(File imageFile) throws IOException {
+        int[] imageVector = new int[0];
 
         if (!imageFile.exists() || !imageFile.isFile()) {
             throw new FileNotFoundException(String.format("Arquivo não encontrado: %s", imageFile.getName()));
@@ -93,7 +93,6 @@ public class Rita {
         int rowCount = 0;
         int cols = 0;
 
-
         while ((line = reader.readLine()) != null) {
             if (rowCount == 0) {
                 cols = line.split(",").length;
@@ -101,7 +100,7 @@ public class Rita {
             rowCount++;
         }
 
-        imageVector = new double[cols * rowCount];
+        imageVector = new int[cols * rowCount];
 
 
         reader.close();
@@ -112,14 +111,7 @@ public class Rita {
             String[] pixels = line.split(",");
             for (int i = 0; i < pixels.length; i++) {
                 String trimmedPixel = pixels[i].trim();
-
-                if (isValidDouble(trimmedPixel)) {
-                    imageVector[index] = Double.parseDouble(trimmedPixel);
-                } else {
-                    System.out.printf("Valor inválido no arquivo %s na linha: %d", imageFile.getName(), line);
-                    imageVector[index] = 0;
-                }
-
+                imageVector[index] = Integer.parseInt(trimmedPixel);
                 index++;
             }
         }
@@ -128,23 +120,14 @@ public class Rita {
         return imageVector;
     }
 
-    public static boolean isValidDouble(String str) {
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-    }
 
 //------2.Construir uma matriz de imagens, M, em que cada coluna da matriz ´e uma imagem da base de imagens-------------
 
-    public static double[][] buildImageMatrixM(double[][] imageVectors) {
+    public static int[][] buildImageMatrixM(int[][] imageVectors) {
         int numPixels = imageVectors[0].length;
         int numImages = imageVectors.length;
 
-        double[][] imageMatrixM = new double[numPixels][numImages];
+        int[][] imageMatrixM = new int[numPixels][numImages];
 
         for (int i = 0; i < numImages; i++) {
             for (int j = 0; j < numPixels; j++) {

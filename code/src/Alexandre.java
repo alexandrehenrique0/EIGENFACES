@@ -15,6 +15,7 @@ public class Alexandre {
         };
 
         int N = Z[0].length;
+        int k = 2;
 
         //GABRIEL
 
@@ -54,6 +55,9 @@ public class Alexandre {
 
         double[][] vetProC = vetProAxAT;
         print_Matrix(vetProC, "Vetores C");
+
+        double[][] vetNormalizados = normalizarVetores(Z);
+        print_Matrix(vetNormalizados, "Vetores Normalizados");
 
         System.out.println("Valores Próprios Comparação: ");
         System.out.println(Arrays.deepToString(valProATxA));
@@ -232,6 +236,35 @@ public class Alexandre {
     public static double[][] valoresPropriosC(double[][] valoresPropriosAxAT, int N) {
         double[][] lambdai = multiplicaMatrizPorEscalar(valoresPropriosAxAT,1.0/N);
         return lambdai;
+    }
+
+    //------------------------------------------------------
+    //5-----------------------------------------------------
+    public static double[][] normalizarVetores(double[][] vetoresPropriosC) {
+        for (int i = 0; i < vetoresPropriosC[0].length; i++) {
+            double[] vetorAtual = new double[vetoresPropriosC.length];
+
+            for (int j = 0; j < vetoresPropriosC.length; j++) {
+                vetorAtual[j] = vetoresPropriosC[j][i];
+            }
+
+            double norm = calculateNorm(vetorAtual);
+
+            for (int j = 0; j < vetoresPropriosC.length; j++) {
+                vetoresPropriosC[j][i] = vetorAtual[j] / norm;
+            }
+
+        }
+        return vetoresPropriosC;
+    }
+
+
+    private static double calculateNorm(double[] vector) {
+        double sum = 0;
+        for (int i = 0; i < vector.length; i++) {
+            sum = sum + vector[i] * vector[i];
+        }
+        return Math.sqrt(sum);
     }
 
     //------------------------------------------------------

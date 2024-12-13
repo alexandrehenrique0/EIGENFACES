@@ -30,7 +30,7 @@ public class Alexandre {
         print_Matrix(desviosA, " desvioA");
         print_Matrix(desviosAT, " desvioAT");
 
-        print_Matrix(desviosA, "Matriz Z (?)");
+        print_Matrix(desviosA, "Matriz Z = desvioA");
 
         double[][] covariancia = covariancias(desviosA,N);
         print_Matrix(covariancia, "matriz C : covariancia ");
@@ -44,11 +44,21 @@ public class Alexandre {
         double[][] vetProAxAT = vetoresPropriosAxAT(desviosA,desviosAT);
         print_Matrix(vetProAxAT, "Vetores A . A^t");
 
+
+        // algo esta mal nessa funcao
+        double[][] valProAxAt = valoresPropriosAxAT(desviosA,desviosAT);
+        print_Matrix(valProAxAt, "VALORES A^t . A (algo esta mal aqui)");
+
         double[][] valProC = valoresPropriosC(valProATxA,N);
         print_Matrix(valProC, "VALORES C");
 
         double[][] vetProC = vetProAxAT;
         print_Matrix(vetProC, "Vetores C");
+
+        System.out.println("Valores Próprios Comparação: ");
+        System.out.println(Arrays.deepToString(valProATxA));
+        System.out.println(Arrays.deepToString(valProAxAt));
+
     }
 
     //GABRIEL
@@ -197,6 +207,26 @@ public class Alexandre {
         RealMatrix V = eigenDecomposition.getV();
         double[][] ui = V.getData();
         return ui;
+    }
+
+    public static double[][] valoresPropriosAxAT(double[][] A,double[][] AT) {
+        double[][] AxAT = multiplicaMatrizes(A,AT);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(AxAT);
+        RealMatrix D = eigenDecomposition.getD();
+        double[][] dArray = D.getData();
+        adjustPrecision(dArray, 0.0001);
+        return dArray;
+    }
+
+    private static double[][] adjustPrecision(double[][] matrix, double ignoreMinorValues) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                if (Math.abs(matrix[i][j]) < ignoreMinorValues) {
+                    matrix[i][j] = 0.0;
+                }
+            }
+        }
+        return matrix;
     }
 
     public static double[][] valoresPropriosC(double[][] valoresPropriosAxAT, int N) {

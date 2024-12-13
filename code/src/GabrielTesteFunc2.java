@@ -1,10 +1,11 @@
+
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.Arrays;
 
-public class Alexandre {
+public class GabrielTesteFunc2 {
     // Calcula o Erro Absoluto Médio (EAM)
     public static void main(String[] args) {
         // Matriz de exemplo (3x3)

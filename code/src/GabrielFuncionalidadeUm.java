@@ -221,3 +221,30 @@ public class GabrielFuncionalidadeUm {
         return eigenDecomposition;
     }
 }
+
+
+
+//        System.out.println(averageColumn.length);
+//        print_Matrix(deviationMatrixA, "Matriz de Desvios (matrixTotalImages)");
+//        print_Matrix(deviationMatrixATranspose, "Matriz Transposta de Desvios (matrixTotalImages^T)");
+//        print_Matrix(covariance, "Matriz de Covariância (C)");
+//        print_Matrix(eigenValuesATxA, "Valores Próprios de matrixTotalImages^T . matrixTotalImages");
+//        print_Matrix(eigenVectorsATxA, "Vetores Próprios de matrixTotalImages^T . matrixTotalImages");
+//        print_Matrix(eigenVectorsAxAT, "Vetores Próprios de matrixTotalImages . matrixTotalImages^T");
+//        print_Matrix(eigenValuesAxAT, "Valores Próprios de matrixTotalImages . matrixTotalImages^T");
+//        print_Matrix(normalizedEigenVectors, "Vetores Próprios Normalizados");
+//        System.out.println("Tamanho do linearizedOriginalMatrix: " + linearizedOriginalMatrix.length);
+//        System.out.println("Tamanho do vetor médio (meanVector): " + averageColumn.length);
+//        System.out.println("Tamanho de phi ϕ : " + phi.length);
+//        System.out.println("Pesos Calculados (W): " + Arrays.toString(weights));
+//        System.out.println("Tamanho de reconstructedImageArray: " + reconstructedImageArray.length);
+//        print_Matrix(new double[][]{reconstructedImageArray}, "Imagem Reconstruída (1D)");
+//        System.out.println("Tamanho de reconstructedImageArray: " + reconstructedImageArray.length);
+//        System.out.println("Tamanho esperado: " + (originalArray.length * originalArray[0].length));
+//        System.out.println("Dimensões da imagem original: " + originalArray.length + "x" + originalArray[0].length);
+//        System.out.println("Tamanho esperado: " + (originalArray.length * originalArray[0].length));
+//        System.out.println("Tamanho do vetor reconstruído: " + reconstructedImageArray.length);
+//        System.out.println("Tamanho do vetor médio (meanVector): " + averageColumn.length);
+//        System.out.println("Dimensões de normalizedVectors: " + normalizedEigenVectors.length + "x" + normalizedEigenVectors[0].length);
+//        System.out.println("Tamanho dos pesos (weights): " + weights.length);
+//        print_Matrix(reconstructedImageMatrix, "Imagem Reconstruída (2D)");

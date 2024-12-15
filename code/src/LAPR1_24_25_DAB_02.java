@@ -4,6 +4,9 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class LAPR1_24_25_DAB_02 {
@@ -45,7 +48,7 @@ public class LAPR1_24_25_DAB_02 {
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
 
             //FUnção que contém as funções principais
-            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers);
+            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation);
 
         } else if (args.length == 0) {
             // Mostrar as opções num menu e receber os parâmetros
@@ -69,14 +72,14 @@ public class LAPR1_24_25_DAB_02 {
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
 
             //FUnção que contém as funções principais
-            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers);
+            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation);
 
         } else {
             error_General("Erro: Parâmetros inválidos");
         }
     }
 
-    public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers) {
+    public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers, String csvLocation) {
         switch (function) {
             case 1:
                     print_Header_Function("Decomposição Própria de uma Matriz Simétrica");
@@ -92,6 +95,8 @@ public class LAPR1_24_25_DAB_02 {
                     double[][] resultingMatrixAk = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
                     
                     double errorAbsMed = calculateMAE(matrixCSVDouble, resultingMatrixAk);
+                    saveMatrixToFile(resultingMatrixAk, csvLocation, "Output/Func1");
+
 
                     print_Function_1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, resultingMatrixAk, errorAbsMed);
                     
@@ -542,6 +547,42 @@ public class LAPR1_24_25_DAB_02 {
     // serve para A e para Ak
     public static double[][] multiplyVectorsValuesVectorsTransposed(double[][] matrixVectors, double[][] matrixValues, double[][] matrixVectorsTranspose) {
         return multiply_Matrices(multiply_Matrices(matrixVectors, matrixValues), matrixVectorsTranspose);
+    }
+
+    private static void saveMatrixToFile(double[][] matrix, String inputCsvPath, String outputFolderPath) {
+        File outputFolder = new File(outputFolderPath);
+        if (!outputFolder.exists()) {
+            if (outputFolder.mkdirs()) {
+                System.out.println("Diretório criado: " + outputFolderPath);
+            } else {
+                System.err.println("Falha ao criar o diretório: " + outputFolderPath);
+                return;
+            }
+        }
+
+        String csvFileName = new File(inputCsvPath).getName();
+        String newFileName = "Reconstruida-" + csvFileName;
+        String outputPath = outputFolderPath + "/" + newFileName;
+
+        int counter = 1;
+        File file = new File(outputPath);
+        while (file.exists()) {
+            file = new File(outputFolderPath + "/" + newFileName.replace(".csv", "(" + counter + ").csv"));
+            counter++;
+        }
+
+        try (PrintWriter writer = new PrintWriter(file)) {
+            for (double[] row : matrix) {
+                String rowString = String.join(" ; ", Arrays.stream(row)
+                        .mapToObj(val -> String.format("%.3f", val))
+                        .toArray(String[]::new));
+                writer.println(rowString);
+            }
+            System.out.println("Arquivo CSV criado com sucesso: " + file.getName());
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar a matriz no arquivo: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     //* ----------------- Fim funcionalidade 1 ------------------
 

@@ -97,26 +97,12 @@ public class LAPR1_24_25_DAB_02 {
                     
                 break;
             case 2:
-                /*
-                                        print_Header_Function("Decomposição Própria de uma Matriz Simétrica");
-                    EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
-                    double[][] eigenVectors = getEigenVectors(eigenDecomposition);
-                    double[][] eigenValues = getEigenValues(eigenDecomposition);
-                    double[][] eigenVectorsTranspose = getEigenVectorsTranspose(eigenDecomposition);
-                    double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
-
-                    double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
-                    double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
-                    double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
-                    double[][] resultingMatrixAk = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
-                    
-                    double errorAbsMed = calculateMAE(matrixCSVDouble, resultingMatrixAk);
-
-                    print_Function_1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, resultingMatrixAk, errorAbsMed);
-                    
-                */
                 // TODO Reconstrução de Imagens usando Eigenfaces
                 print_Header_Function("Reconstrução de Imagens usando Eigenfaces");
+
+
+
+
                 break;
             case 3:
                 /*
@@ -138,6 +124,11 @@ public class LAPR1_24_25_DAB_02 {
                     */
                 // TODO Identificação de imagem mais próxima
                 print_Header_Function("Identificação de imagem mais próxima");
+                break;
+
+            default:
+                print_Header_Function("Número inválido");
+                error_General("Erro: Opção inválida");
                 break;
         }
     }

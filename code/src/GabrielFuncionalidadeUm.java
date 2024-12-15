@@ -4,12 +4,16 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
+//! FUNCIONALIDADE 1, DECOMPOR UMA MATRIZ SIMETRICA
 public class GabrielFuncionalidadeUm {
     public static void main(String[] args) {
-        String csvPath = "Input/TesteFuncao1/csv/exampleInputFunc2.csv";
+        String csvPath = "Input/Funcao1/exampleInputFunc2.csv";
         double[][] arrayOriginal = readCSVToArray(csvPath);
         int k = 1;
 
@@ -33,6 +37,9 @@ public class GabrielFuncionalidadeUm {
 
         double erroMedio = calculateEAM(arrayOriginal, Ak);
 
+        saveMatrixToFile(Ak, csvPath, "Output/Func1");
+
+
         print_Matrix(arrayOriginal, "Matrix original");
         print_Matrix(eigenVectorsArray, "Matrix P");
         print_Matrix(eigenValuesArray, "Matrix D");
@@ -44,8 +51,44 @@ public class GabrielFuncionalidadeUm {
         print_Matrix(valuesAndIndexArray, "Valores absolutos e índices");
         print_Matrix(vectorsKTransposeArray, "Matrix Pk^t");
         print_Matrix(Ak, "Matrix Ak = Pk.Dk.Pk^t");
-        System.out.printf("Erro médio: %.3f\n",erroMedio);
+        System.out.printf("Erro médio: %.3f\n", erroMedio);
 
+    }
+
+    private static void saveMatrixToFile(double[][] matrix, String inputCsvPath, String outputFolderPath) {
+        File outputFolder = new File(outputFolderPath);
+        if (!outputFolder.exists()) {
+            if (outputFolder.mkdirs()) {
+                System.out.println("Diretório criado: " + outputFolderPath);
+            } else {
+                System.err.println("Falha ao criar o diretório: " + outputFolderPath);
+                return;
+            }
+        }
+
+        String csvFileName = new File(inputCsvPath).getName();
+        String newFileName = "Reconstruida-" + csvFileName;
+        String outputPath = outputFolderPath + "/" + newFileName;
+
+        int counter = 1;
+        File file = new File(outputPath);
+        while (file.exists()) {
+            file = new File(outputFolderPath + "/" + newFileName.replace(".csv", "(" + counter + ").csv"));
+            counter++;
+        }
+
+        try (PrintWriter writer = new PrintWriter(file)) {
+            for (double[] row : matrix) {
+                String rowString = String.join(" ; ", Arrays.stream(row)
+                        .mapToObj(val -> String.format("%.3f", val))
+                        .toArray(String[]::new));
+                writer.println(rowString);
+            }
+            System.out.println("Arquivo CSV criado com sucesso: " + file.getName());
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar a matriz no arquivo: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // serve para A e para Ak
@@ -221,7 +264,6 @@ public class GabrielFuncionalidadeUm {
         return eigenDecomposition;
     }
 }
-
 
 
 //        System.out.println(averageColumn.length);

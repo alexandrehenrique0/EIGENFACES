@@ -7,135 +7,193 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
-//! ESSA CLASSE É APENAS BACKUP DA FUNC 6 FUNCIONAL, JA MUDEI MUITO O CAMINHO NA CLASSE GabrielTesteFunc2
+//! FUNCIONA PARA UMA IMAGEM APENAS
 public class GabrielTeste {
     public static void main(String[] args) {
-        String csvPath = "Input/TesteFuncao2-3/csv/image_001TESTE.csv";
+        String csvPath = "Input/Funcao2-3/csv/image_001TESTE.csv";
         double[][] originalMatrix = readCSVToArray(csvPath);
 
         // Dimensão e número de eigenfaces
-        int numOfColumns = originalMatrix[0].length; // Número de colunas (64)
+        int numOfColumns = originalMatrix[0].length;
         int eigenFaces = numOfColumns; // ajuste conforme necessário, mas se tiver colunas = eigenfaces imagem fica melhor
-
-        print_Matrix(originalMatrix, "originalMatrix");
-        System.out.println("Número de colunas: " + numOfColumns);
-        System.out.println("Número de eigenfaces: " + eigenFaces);
+        int quantidyImages = 1;
 
         //* 1. Cálculo da média - revisto
         double[][] averageColumn = averageColumn(originalMatrix);
         adjustPrecision(averageColumn);
-        print_Matrix(averageColumn, "averageColumn");
 
         //* 2. Centralização (Matriz de desvios) - revisto
         double[][] deviantMatrix = deviantMatrix(originalMatrix, averageColumn);
         adjustPrecision(deviantMatrix);
-        print_Matrix(deviantMatrix, "deviantMatrix");
 
         double[][] deviantMatrixTranspose = transposeMatrix(deviantMatrix);
         adjustPrecision(deviantMatrixTranspose);
-        print_Matrix(deviantMatrixTranspose, "deviantMatrixTranspose");
 
         //* 3. Matriz de Covariância - revisto
         double[][] covariance = covariances(deviantMatrix, numOfColumns);
         adjustPrecision(covariance);
-        print_Matrix(covariance, "covariance");
 
         //* 4. Valores e vetores próprios - revisto
         double[][] eigenValuesATxA = eigenValues(deviantMatrixTranspose, deviantMatrix);
         adjustPrecision(eigenValuesATxA);
-        print_Matrix(eigenValuesATxA, "eigenValuesATxA");
-
         double[][] eigenVectorsATxA = eigenVectors(deviantMatrixTranspose, deviantMatrix);
         adjustPrecision(eigenVectorsATxA);
-        print_Matrix(eigenVectorsATxA, "eigenVectorsATxA");
-
-        double[][] eigenVectorsAxAT = eigenVectors(deviantMatrix, deviantMatrixTranspose);
-        adjustPrecision(eigenVectorsAxAT);
-        print_Matrix(eigenVectorsAxAT, "eigenVectorsAxAT");
 
         double[][] eigenValuesAxAT = eigenValues(deviantMatrix, deviantMatrixTranspose);
         adjustPrecision(eigenValuesAxAT);
-        print_Matrix(eigenValuesAxAT, "eigenValuesAxAT");
+        double[][] eigenVectorsAxAT = eigenVectors(deviantMatrix, deviantMatrixTranspose);
+        adjustPrecision(eigenVectorsAxAT);
 
-        double[][] normalizedVectorsAxAT = normalizeVectors(eigenVectorsAxAT);
-        adjustPrecision(normalizedVectorsAxAT);
-        print_Matrix(normalizedVectorsAxAT, "normalizedVectorsAxAT");
+        double[][] normalizedVectorsATxA = normalizeVectors(eigenVectorsATxA);
+        adjustPrecision(normalizedVectorsATxA);
 
-        //* 5. Centralização da imagem para reconstrução - ATENÇÃO!
-        //! revisar aqui pois preciso confirmar teoria para mais imagens, para uma funciona
-        double[] linearizedOriginal = matrixToArray1D(originalMatrix);
-        System.out.println("linearizedOriginal lenght: " + linearizedOriginal.length);
-        System.out.println("linearizedOriginal: " + Arrays.toString(linearizedOriginal));
+        //* 5. Centralização da imagem para reconstrução - revisto
+        double[] matrixLinearized = matrixToArray1D(originalMatrix);
 
-        //* Calcula o vetor médio para o vetor linearizado - ATENÇÃO!
-        //! revisar aqui pois o metodo meanVector recebe averageColumn mas averageColumn é a media de cada linha
-        //! e não de cada coluna
-        double[] meanVector = matrixToArray1D(originalMatrix);
-        System.out.println("meanVector lenght: " + meanVector.length);
-        System.out.println("meanVector: " + Arrays.toString(meanVector));
+        //! futuramente para várias imagens
+        double[][] linearizedImages = flattenImagesMatrix(originalMatrix);
+        //! precisará adaptar o código daqui pra baixo para suportar várias imagens
 
-        //* Centraliza a imagem original linearizada - ATENÇÃO!
+        //* Calcula o vetor médio para o vetor linearizado - revisto
+        double[] meanVector = calculateMeanVector(linearizedImages);
+
+        //* Centraliza a imagem original linearizada - revisto
         //! pois depende de meanVector que precisa ser revisto
-        double[] phi = centralizeImage(linearizedOriginal, meanVector);
-        System.out.println("phi lenght: " + phi.length);
-        System.out.println("phi: " + Arrays.toString(phi));
+        double[] phi = centralizeImage(matrixLinearized, meanVector);
 
-        //* 6. Cálculo dos pesos (projeção nos eigenfaces) - ATENÇÃO!
-        double[] weights = calculateWeights(phi, normalizedVectorsAxAT);
-        System.out.println("weights lenght: " + weights.length);
-        System.out.println("weights: " + Arrays.toString(weights));
+        //* 6. Cálculo dos pesos (projeção nos eigenfaces) - revisto
+        double[] weights = calculateWeights(phi, normalizedVectorsATxA);
 
-        //* 7. Reconstrução da imagem com eigenFaces eigenfaces - ATENÇÃO!
-        double[] reconstructedImage = reconstructImage(meanVector, normalizedVectorsAxAT, weights, eigenFaces);
-        System.out.println("reconstructedImage lenght: " + reconstructedImage.length);
-        System.out.println("reconstructedImage: " + Arrays.toString(reconstructedImage));
+        //* 7. Reconstrução da imagem com eigenfaces - revisto
+        double[] reconstructedImage = reconstructImage(meanVector, normalizedVectorsATxA, weights, eigenFaces);
 
         //* 8. Conversão para matriz 2D
         double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, originalMatrix);
         adjustPrecision(reconstructedImageMatrix);
-        print_Matrix(reconstructedImageMatrix, "reconstructedImageMatrix");
 
         //* 9. Salvar a imagem reconstruída
-        saveImage(reconstructedImageMatrix, csvPath, "Input/TesteFuncao2-3/OutputImagesFunc2-3");
+        saveImage(reconstructedImageMatrix, csvPath, "Output/Func2/ImagensReconstruidas");
+        saveMatrixToFile(reconstructedImageMatrix, csvPath, "Output/Func2/Eigenfaces");
 
         //! Print para verificar cada etapa
-
+        print_Matrix(originalMatrix, "originalMatrix");
+        System.out.println("Número de colunas: " + numOfColumns);
+        System.out.println("Número de eigenfaces: " + eigenFaces);
+        print_Matrix(averageColumn, "averageColumn");
+        print_Matrix(deviantMatrix, "deviantMatrix");
+        print_Matrix(deviantMatrixTranspose, "deviantMatrixTranspose");
+        print_Matrix(covariance, "covariance");
+        print_Matrix(eigenValuesATxA, "eigenValuesATxA");
+        print_Matrix(eigenVectorsATxA, "eigenVectorsATxA");
+        print_Matrix(eigenVectorsAxAT, "eigenVectorsAxAT");
+        print_Matrix(eigenValuesAxAT, "eigenValuesAxAT");
+        print_Matrix(normalizedVectorsATxA, "normalizedVectorsATxA");
+        System.out.println("matrixLinearized lenght: " + matrixLinearized.length);
+        System.out.println("matrixLinearized: " + Arrays.toString(matrixLinearized));
+        System.out.println("linearizedImages lenght: " + linearizedImages.length);
+        print_Matrix(linearizedImages, "linearizedImages");
+        System.out.println("meanVector lenght: " + meanVector.length);
+        System.out.println("meanVector: " + Arrays.toString(meanVector));
+        System.out.println("phi lenght: " + phi.length);
+        System.out.println("phi: " + Arrays.toString(phi));
+        System.out.println("weights lenght: " + weights.length);
+        System.out.println("weights: " + Arrays.toString(weights));
+        System.out.println("reconstructedImage lenght: " + reconstructedImage.length);
+        System.out.println("reconstructedImage: " + Arrays.toString(reconstructedImage));
+        print_Matrix(reconstructedImageMatrix, "reconstructedImageMatrix");
 
     }
 
+    private static void saveMatrixToFile(double[][] matrix, String inputCsvPath, String outputFolderPath) {
+        File outputFolder = new File(outputFolderPath);
+        if (!outputFolder.exists()) {
+            if (outputFolder.mkdirs()) {
+                System.out.println("Diretório criado: " + outputFolderPath);
+            } else {
+                System.err.println("Falha ao criar o diretório: " + outputFolderPath);
+                return;
+            }
+        }
+
+        String csvFileName = new File(inputCsvPath).getName();
+        String newFileName = "Reconstruida-" + csvFileName;
+        String outputPath = outputFolderPath + "/" + newFileName;
+
+        int counter = 1;
+        File file = new File(outputPath);
+        while (file.exists()) {
+            file = new File(outputFolderPath + "/" + newFileName.replace(".csv", "(" + counter + ").csv"));
+            counter++;
+        }
+
+        try (PrintWriter writer = new PrintWriter(file)) {
+            for (double[] row : matrix) {
+                String rowString = String.join(",", Arrays.stream(row)
+                        .mapToObj(val -> String.format("%.0f", val))
+                        .toArray(String[]::new));
+                writer.println(rowString);
+            }
+            System.out.println("Arquivo CSV criado com sucesso: " + file.getName());
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar a matriz no arquivo: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private static double[][] flattenImagesMatrix(double[][] matrixOfImages) {
+        int rows = matrixOfImages.length;
+        int columns = matrixOfImages[0].length;
+
+        double[][] linearizedImages = new double[rows * columns][1];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                linearizedImages[i * columns + j][0] = matrixOfImages[i][j];
+            }
+        }
+        return linearizedImages;
+    }
+
+
     public static double[] matrixToArray1D(double[][] matrix) {
         int rows = matrix.length;
-        int cols = matrix[0].length;
-        double[] array = new double[rows * cols];
+        int columns = matrix[0].length;
+        double[] array = new double[rows * columns];
         for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                array[i * cols + j] = matrix[i][j];
+            for (int j = 0; j < columns; j++) {
+                array[i * columns + j] = matrix[i][j];
             }
         }
         return array;
     }
 
-    public static double[] extractMeanVector(double[][] averageColumn) {
-        double[] meanVector = new double[averageColumn[0].length];
-        for (int i = 0; i < averageColumn[0].length; i++) {
-            meanVector[i] = averageColumn[0][i]; //! averageColumn revisar
+    public static double[] calculateMeanVector(double[][] linearizedImages) {
+        int numPixels = linearizedImages.length;
+        int numImages = linearizedImages[0].length;
+        double[] meanVector = new double[numPixels];
+
+        for (int i = 0; i < numPixels; i++) {
+            double sum = 0;
+            for (int j = 0; j < numImages; j++) {
+                sum += linearizedImages[i][j];
+            }
+            meanVector[i] = sum / numImages;
         }
         return meanVector;
     }
+
 
     public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath) {
         int height = imageArray.length;
         int width = imageArray[0].length;
 
-        // Normalize the image to the range 0-255
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
 
-        // Find min and max values
         for (double[] row : imageArray) {
             for (double val : row) {
                 if (val < min) min = val;
@@ -150,12 +208,10 @@ public class GabrielTeste {
             }
         }
 
-        // Create output file name
         String csvFileName = new File(inputCsvPath).getName();
         String pngFileName = csvFileName.replace(".csv", ".png");
         String outputPath = outputFolderPath + "/" + pngFileName;
 
-        // Write the image
         try {
             writeArrayAsImage(normalizedImage, outputPath);
             System.out.println("Image saved successfully: " + outputPath);
@@ -323,8 +379,8 @@ public class GabrielTeste {
         return calculatedEAM == expectedEAM;
     }
 
-    //! esta calculando a media de cada linha, e nao de cada coluna
-    public static double[][] averageColumn (double[][] matrix) {
+    //* calcula a media de cada coluna da matriz
+    public static double[][] averageColumn(double[][] matrix) {
         int rows = matrix.length;
         int columns = matrix[0].length;
         double[][] averageColumn = new double[rows][1];
@@ -333,22 +389,23 @@ public class GabrielTeste {
             for (int j = 0; j < columns; j++) {
                 sum = sum + matrix[i][j];
             }
-            averageColumn[i][0] = sum/columns;
+            averageColumn[i][0] = sum / columns;
         }
         return averageColumn;
     }
+
     public static boolean testColunaMedia(double[] matrix, double[] expectedColMedia) {
         return Arrays.equals(matrix, expectedColMedia);
     }
 
-    public static double[][] deviantMatrix (double[][] matrix, double[][] averageColumn) {
+    public static double[][] deviantMatrix(double[][] matrix, double[][] averageColumn) {
         int columns = matrix[0].length;
         int rows = matrix.length;
         double[][] deviant = new double[rows][columns];
 
         for (int j = 0; j < columns; j++) {
             for (int i = 0; i < rows; i++) {
-                deviant[i][j] =  deviantColumn(matrix[i][j], averageColumn[i][0]); //! averageColumn[i][0] é a media de cada linha
+                deviant[i][j] = deviantColumn(matrix[i][j], averageColumn[i][0]); //! averageColumn[i][0] é a media de cada linha
             }
 
         }
@@ -366,10 +423,10 @@ public class GabrielTeste {
         return Arrays.equals(matrix, expectedDesvios);
     }
 
-    public static double[][] covariances(double[][] A, int N) {
-        double[][] AT = transposeMatrix(A);
-        double[][] AAT = multiplyMatrix(A,AT);
-        return multiplyMatrixByScalar(AAT,1.0/N);
+    public static double[][] covariances(double[][] matrixA, int quantityOfColumns) {
+        double[][] matrixATransposed = transposeMatrix(matrixA);
+        double[][] matrixAmultplyByAT = multiplyMatrix(matrixA, matrixATransposed);
+        return multiplyMatrixByScalar(matrixAmultplyByAT, 1.0 / quantityOfColumns);
     }
 
     public static boolean testCovariancia(double[][] C, double[][] expectedC) {
@@ -377,46 +434,28 @@ public class GabrielTeste {
     }
 
 
-    public static double[][] eigenVectors (double[][] matrixOne ,double[][] matrixTwo) {
+    public static double[][] eigenVectors(double[][] matrixOne, double[][] matrixTwo) {
         double[][] matrixThree = multiplyMatrix(matrixOne, matrixTwo);
-        EigenDecomposition eigenDecomposition = decomposeMatrix(matrixThree);
-        RealMatrix decomposedMatrixThree = eigenDecomposition.getD();
-        return decomposedMatrixThree.getData();
+        EigenDecomposition decomposedMatrixThree = decomposeMatrix(matrixThree);
+        RealMatrix eigenVectorsMatrix = decomposedMatrixThree.getV();
+        return eigenVectorsMatrix.getData();
     }
 
-    public static double[][] eigenValues (double[][] matrixOne ,double[][] matrixTwo) {
+    public static double[][] eigenValues(double[][] matrixOne, double[][] matrixTwo) {
         double[][] matrixThree = multiplyMatrix(matrixOne, matrixTwo);
-        EigenDecomposition eigenDecomposition = decomposeMatrix(matrixThree);
-        RealMatrix decomposedMatrixThree = eigenDecomposition.getV();
-        return decomposedMatrixThree.getData();
+        EigenDecomposition decomposedMatrixThree = decomposeMatrix(matrixThree);
+        RealMatrix eigenVectorsMatrix = decomposedMatrixThree.getD();
+        return eigenVectorsMatrix.getData();
     }
 
-    public static double[][] vetoresPropriosATxA(double[][] A,double[][] AT) {
-        double[][] ATxA = multiplyMatrix(AT,A);
-        EigenDecomposition eigenDecomposition = decomposeMatrix(ATxA);
-        RealMatrix V = eigenDecomposition.getV();
-        double[][] vi = V.getData();
-        return vi;
+    public static double[][] eigenVectorsTransposed(double[][] matrixOne, double[][] matrixTwo) {
+        double[][] matrixThree = multiplyMatrix(matrixOne, matrixTwo);
+        EigenDecomposition decomposedMatrixThree = decomposeMatrix(matrixThree);
+        RealMatrix eigenVectorsTransposedMatrix = decomposedMatrixThree.getVT();
+        return eigenVectorsTransposedMatrix.getData();
     }
 
-    public static double[][] vetoresPropriosAxAT(double[][] A,double[][] AT) {
-        double[][] AxAT = multiplyMatrix(A,AT);
-        EigenDecomposition eigenDecomposition = decomposeMatrix(AxAT);
-        RealMatrix V = eigenDecomposition.getV();
-        double[][] ui = V.getData();
-        return ui;
-    }
-
-    public static double[][] valoresPropriosAxAT(double[][] A,double[][] AT) {
-        double[][] AxAT = multiplyMatrix(A,AT);
-        EigenDecomposition eigenDecomposition = decomposeMatrix(AxAT);
-        RealMatrix D = eigenDecomposition.getD();
-        double[][] dArray = D.getData();
-        adjustPrecision(dArray);
-        return dArray;
-    }
-
-    //ignora valores negativos muiiiito baixos, para nao obter -0.0
+    //ignora valores negativos muito baixos, para nao obter -0.0
     private static void adjustPrecision(double[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
@@ -428,34 +467,24 @@ public class GabrielTeste {
     }
 
     public static double[][] valoresPropriosC(double[][] valoresPropriosAxAT, int N) {
-        double[][] lambdai = multiplyMatrixByScalar(valoresPropriosAxAT,1.0/N);
+        double[][] lambdai = multiplyMatrixByScalar(valoresPropriosAxAT, 1.0 / N);
         return lambdai;
     }
 
-    public static double[][] normalizeVectors (double[][] vetoresPropriosC) {
-        for (int i = 0; i < vetoresPropriosC[0].length; i++) {
-            double[] vetorAtual = new double[vetoresPropriosC.length];
+    public static double[][] normalizeVectors(double[][] eigenVectorsATxA) {
+        for (int i = 0; i < eigenVectorsATxA[0].length; i++) {
+            double norm = 0;
 
-            for (int j = 0; j < vetoresPropriosC.length; j++) {
-                vetorAtual[j] = vetoresPropriosC[j][i];
+            for (int j = 0; j < eigenVectorsATxA.length; j++) {
+                norm += eigenVectorsATxA[j][i] * eigenVectorsATxA[j][i];
             }
+            norm = Math.sqrt(norm);
 
-            double norm = calculateNorm(vetorAtual);
-
-            for (int j = 0; j < vetoresPropriosC.length; j++) {
-                vetoresPropriosC[j][i] = vetorAtual[j] / norm;
+            for (int j = 0; j < eigenVectorsATxA.length; j++) {
+                eigenVectorsATxA[j][i] /= norm;
             }
-
         }
-        return vetoresPropriosC;
-    }
-
-    private static double calculateNorm(double[] vector) {
-        double sum = 0;
-        for (int i = 0; i < vector.length; i++) {
-            sum = sum + vector[i] * vector[i];
-        }
-        return Math.sqrt(sum);
+        return eigenVectorsATxA;
     }
 
     public static EigenDecomposition decomposeMatrix(double[][] matrix) {

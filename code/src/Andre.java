@@ -1,30 +1,52 @@
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-
+import java.util.Arrays;
 import java.util.Random;
 
 public class Andre {
 
     /**
      * Método para normalizar os vetores próprios de uma matriz.
-     * @param eigenVectors Matriz cujas colunas são os vetores próprios.
+     * @param eigenVectors Matriz cujas colunas representam os vetores próprios.
+     *                     A matriz é alterada diretamente com os vetores normalizados.
      */
     public static void normalizeEigenVectors(RealMatrix eigenVectors) {
-        for (int i = 0; i < eigenVectors.getColumnDimension(); i++) {
-            double[] eigenVector = eigenVectors.getColumn(i);
-            double norm = calculateNorm(eigenVector);
+        double[][] data = eigenVectors.getData(); // Extrair os dados como array bidimensional
 
-            // Normalizar o vetor
-            for (int j = 0; j < eigenVector.length; j++) {
-                eigenVector[j] /= norm;
+        for (int i = 0; i < data[0].length; i++) { // Iterar por cada coluna
+            double norm = 0.0;
+
+            // Calcular a norma da coluna
+            for (int j = 0; j < data.length; j++) {
+                norm += data[j][i] * data[j][i];
+            }
+            norm = Math.sqrt(norm);
+
+            // Verificar se a norma é válida antes de normalizar
+            if (norm > 0) {
+                for (int j = 0; j < data.length; j++) {
+                    data[j][i] /= norm; // Normalizar cada valor
+                }
+            } else {
+                // Reportar que a coluna é nula e deixá-la inalterada
+                System.out.println("Vetor Próprio " + (i + 1) + " possui apenas zeros. Não foi normalizado.");
             }
 
-            // Exibir o vetor normalizado
-            System.out.println("Normalized eigenvector " + (i + 1) + ":");
-            printVector(eigenVector);
+            // Exibir o vetor normalizado ou inalterado
+            System.out.print("Vetor Próprio Normalizado " + (i + 1) + ": [");
+            for (int j = 0; j < data.length; j++) {
+                System.out.print(data[j][i] + (j < data.length - 1 ? ", " : ""));
+            }
+            System.out.println("]");
         }
+
+        // Substituir os dados normalizados na matriz original
+        eigenVectors.setSubMatrix(data, 0, 0);
     }
+
+
+
 
     /**
      * Método para calcular a norma (L2) de um vetor.

@@ -7,112 +7,170 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.io.PrintWriter;
+import java.util.*;
 
-//! TESTE PARA MAIS IMAGENS
+//! PRECISA SER ESTUDADO MAS JÀ ESTÁ FUNCIONANDO PARA VARIAS IMAGENS
 public class GabrielTesteFunc2 {
     public static void main(String[] args) {
-        String csvPath = "Input/Funcao2-3/csv/image_001TESTE.csv";
-        double[][] originalMatrix = readCSVToArray(csvPath);
+        String csvPath = "Input/Funcao2-3/csv";
 
-        // Dimensão e número de eigenfaces
-        int numOfColumns = originalMatrix[0].length;
-        int eigenFaces = numOfColumns; // ajuste conforme necessário, mas se tiver colunas = eigenfaces imagem fica melhor
-        int quantidyImages = 1;
+        // Lista os nomes dos arquivos CSV
+        String[] CSVFileNames = getCSVFileNames(csvPath);
 
-        //* 1. Cálculo da média - revisto
-        double[][] averageColumn = averageColumn(originalMatrix);
-        adjustPrecision(averageColumn);
+        // Carrega todas as matrizes
+        double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(csvPath);
 
-        //* 2. Centralização (Matriz de desvios) - revisto
-        double[][] deviantMatrix = deviantMatrix(originalMatrix, averageColumn);
-        adjustPrecision(deviantMatrix);
+        // Consolidar todas as imagens em uma matriz 2D (linearizada)
+        double[][] linearizedImages = new double[matrixCSVDouble3D[0].length * matrixCSVDouble3D[0][0].length][matrixCSVDouble3D.length];
+        for (int img = 0; img < matrixCSVDouble3D.length; img++) {
+            linearizedImages = flattenImagesMatrix(matrixCSVDouble3D[img]);
+        }
 
-        double[][] deviantMatrixTranspose = transposeMatrix(deviantMatrix);
-        adjustPrecision(deviantMatrixTranspose);
-
-        //* 3. Matriz de Covariância - revisto
-        double[][] covariance = covariances(deviantMatrix, numOfColumns);
-        adjustPrecision(covariance);
-
-        //* 4. Valores e vetores próprios - revisto
-        double[][] eigenValuesATxA = eigenValues(deviantMatrixTranspose, deviantMatrix);
-        adjustPrecision(eigenValuesATxA);
-        double[][] eigenVectorsATxA = eigenVectors(deviantMatrixTranspose, deviantMatrix);
-        adjustPrecision(eigenVectorsATxA);
-
-        double[][] eigenValuesAxAT = eigenValues(deviantMatrix, deviantMatrixTranspose);
-        adjustPrecision(eigenValuesAxAT);
-        double[][] eigenVectorsAxAT = eigenVectors(deviantMatrix, deviantMatrixTranspose);
-        adjustPrecision(eigenVectorsAxAT);
-
-        double[][] normalizedVectorsATxA = normalizeVectors(eigenVectorsATxA);
-        adjustPrecision(normalizedVectorsATxA);
-
-        //* 5. Centralização da imagem para reconstrução - revisto
-        double[] matrixLinearized = matrixToArray1D(originalMatrix);
-
-        //! futuramente para várias imagens
-        double[][] linearizedImages = flattenImagesMatrix(originalMatrix);
-        //! precisará adaptar o código daqui pra baixo para suportar várias imagens
-
-        //* Calcula o vetor médio para o vetor linearizado - revisto
+        // Calcula o vetor médio global
         double[] meanVector = calculateMeanVector(linearizedImages);
 
-        //* Centraliza a imagem original linearizada - revisto
-        //! pois depende de meanVector que precisa ser revisto
-        double[] phi = centralizeImage(matrixLinearized, meanVector);
+        // Centraliza todas as imagens (Matriz Φ)
+        double[][] phi = centralizeImages(linearizedImages, meanVector);
 
-        //* 6. Cálculo dos pesos (projeção nos eigenfaces) - revisto
-        double[] weights = calculateWeights(phi, normalizedVectorsATxA);
+        // Calcula valores e vetores próprios com base na matriz centralizada
+        int numOfColumns = matrixCSVDouble3D[0][0].length; // Número de colunas de uma matriz original
+        double[][] covariance = covariances(phi, numOfColumns);
+        double[][] eigenVectors = eigenVectors(covariance, phi);
+        double[][] normalizedVectors = normalizeVectors(eigenVectors);
 
-        //* 7. Reconstrução da imagem com eigenfaces - revisto
-        double[] reconstructedImage = reconstructImage(meanVector, normalizedVectorsATxA, weights, eigenFaces);
+        // Itera sobre cada imagem para calcular pesos e reconstruir
+        for (int img = 0; img < linearizedImages[0].length; img++) {
+            // Projeta a imagem atual nos eigenfaces
+            double[] weights = calculateWeights(phi[img], normalizedVectors);
 
-        //* 8. Conversão para matriz 2D
-        double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, originalMatrix);
-        adjustPrecision(reconstructedImageMatrix);
+            // Reconstrói a imagem
+            double[] reconstructedImage = reconstructImage(meanVector, normalizedVectors, weights, numOfColumns);
 
-        //* 9. Salvar a imagem reconstruída
-        saveImage(reconstructedImageMatrix, csvPath, "Input/TesteFuncao2-3/OutputImagesFunc2-3");
+            // Converte para matriz 2D
+            double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, matrixCSVDouble3D[img]);
+
+            // Ajusta a precisão e salva a imagem
+            adjustPrecision(reconstructedImageMatrix);
+            saveImage(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/ImagensReconstruidas");
+            saveMatrixToFile(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/Eigenfaces");
+        }
+
 
         //! Print para verificar cada etapa
-        print_Matrix(originalMatrix, "originalMatrix");
-        System.out.println("Número de colunas: " + numOfColumns);
-        System.out.println("Número de eigenfaces: " + eigenFaces);
-        print_Matrix(averageColumn, "averageColumn");
-        print_Matrix(deviantMatrix, "deviantMatrix");
-        print_Matrix(deviantMatrixTranspose, "deviantMatrixTranspose");
-        print_Matrix(covariance, "covariance");
-        print_Matrix(eigenValuesATxA, "eigenValuesATxA");
-        print_Matrix(eigenVectorsATxA, "eigenVectorsATxA");
-        print_Matrix(eigenVectorsAxAT, "eigenVectorsAxAT");
-        print_Matrix(eigenValuesAxAT, "eigenValuesAxAT");
-        print_Matrix(normalizedVectorsATxA, "normalizedVectorsATxA");
-        System.out.println("matrixLinearized lenght: " + matrixLinearized.length);
-        System.out.println("matrixLinearized: " + Arrays.toString(matrixLinearized));
-        System.out.println("linearizedImages lenght: " + linearizedImages.length);
-        print_Matrix(linearizedImages, "linearizedImages");
-        System.out.println("meanVector lenght: " + meanVector.length);
-        System.out.println("meanVector: " + Arrays.toString(meanVector));
-        System.out.println("phi lenght: " + phi.length);
-        System.out.println("phi: " + Arrays.toString(phi));
-        System.out.println("weights lenght: " + weights.length);
-        System.out.println("weights: " + Arrays.toString(weights));
-        System.out.println("reconstructedImage lenght: " + reconstructedImage.length);
-        System.out.println("reconstructedImage: " + Arrays.toString(reconstructedImage));
-        print_Matrix(reconstructedImageMatrix, "reconstructedImageMatrix");
+//        print_Matrix(originalMatrix, "originalMatrix");
+//        System.out.println("Número de colunas: " + numOfColumns);
+//        System.out.println("Número de eigenfaces: " + eigenFaces);
+//        print_Matrix(averageColumn, "averageColumn");
+//        print_Matrix(deviantMatrix, "deviantMatrix");
+//        print_Matrix(deviantMatrixTranspose, "deviantMatrixTranspose");
+//        print_Matrix(covariance, "covariance");
+//        print_Matrix(eigenValuesATxA, "eigenValuesATxA");
+//        print_Matrix(eigenVectorsATxA, "eigenVectorsATxA");
+//        print_Matrix(eigenVectorsAxAT, "eigenVectorsAxAT");
+//        print_Matrix(eigenValuesAxAT, "eigenValuesAxAT");
+//        print_Matrix(normalizedVectorsATxA, "normalizedVectorsATxA");
+//        System.out.println("matrixLinearized lenght: " + matrixLinearized.length);
+//        System.out.println("matrixLinearized: " + Arrays.toString(matrixLinearized));
+//        System.out.println("linearizedImages lenght: " + linearizedImages.length);
+//        print_Matrix(linearizedImages, "linearizedImages");
+//        System.out.println("meanVector lenght: " + meanVector.length);
+//        System.out.println("meanVector: " + Arrays.toString(meanVector));
+//        System.out.println("phi lenght: " + phi.length);
+//        System.out.println("phi: " + Arrays.toString(phi));
+//        System.out.println("weights lenght: " + weights.length);
+//        System.out.println("weights: " + Arrays.toString(weights));
+//        System.out.println("reconstructedImage lenght: " + reconstructedImage.length);
+//        System.out.println("reconstructedImage: " + Arrays.toString(reconstructedImage));
+//        print_Matrix(reconstructedImageMatrix, "reconstructedImageMatrix");
 
+    }
+
+    public static String[] getCSVFileNames(String folderLocation) {
+        File folder = new File(folderLocation);
+        File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+        if (csvFiles == null || csvFiles.length == 0) {
+            throw new RuntimeException("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
+        }
+
+        String[] fileNames = new String[csvFiles.length];
+        for (int i = 0; i < csvFiles.length; i++) {
+            fileNames[i] = csvFiles[i].getName();
+        }
+
+        return fileNames;
+    }
+
+    public static double[][][] get_Matrices_From_CSV_Folder(String folderLocation) {
+        File folder = new File(folderLocation);
+        File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+        if (csvFiles == null || csvFiles.length == 0) {
+            throw new RuntimeException("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
+        }
+
+        for (int i = 0; i < csvFiles.length - 1; i++) {
+            for (int j = i + 1; j < csvFiles.length; j++) {
+                if (csvFiles[i].getName().compareTo(csvFiles[j].getName()) > 0) {
+                    File temp = csvFiles[i];
+                    csvFiles[i] = csvFiles[j];
+                    csvFiles[j] = temp;
+                }
+            }
+        }
+
+        double[][][] matrices = new double[csvFiles.length][][];
+
+        int index = 0;
+        for (File csvFile : csvFiles) {
+            matrices[index] = readCSVToArray(csvFile.getPath());
+            index++;
+        }
+
+        return matrices;
+    }
+
+
+    private static void saveMatrixToFile(double[][] matrix, String inputCsvPath, String outputFolderPath) {
+        File outputFolder = new File(outputFolderPath);
+        if (!outputFolder.exists()) {
+            if (outputFolder.mkdirs()) {
+                System.out.println("Diretório criado: " + outputFolderPath);
+            } else {
+                System.err.println("Falha ao criar o diretório: " + outputFolderPath);
+                return;
+            }
+        }
+
+        String csvFileName = new File(inputCsvPath).getName();
+        String newFileName = "Reconstruida-" + csvFileName;
+        String outputPath = outputFolderPath + "/" + newFileName;
+
+        int counter = 1;
+        File file = new File(outputPath);
+        while (file.exists()) {
+            file = new File(outputFolderPath + "/" + newFileName.replace(".csv", "(" + counter + ").csv"));
+            counter++;
+        }
+
+        try (PrintWriter writer = new PrintWriter(file)) {
+            for (double[] row : matrix) {
+                String rowString = String.join(",", Arrays.stream(row)
+                        .mapToObj(val -> String.format("%.0f", val))
+                        .toArray(String[]::new));
+                writer.println(rowString);
+            }
+            System.out.println("Arquivo CSV criado com sucesso: " + file.getName());
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar a matriz no arquivo: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private static double[][] flattenImagesMatrix(double[][] matrixOfImages) {
         int rows = matrixOfImages.length;
         int columns = matrixOfImages[0].length;
 
-        // Supondo que queremos suportar múltiplas imagens no futuro
-        double[][] linearizedImages = new double[rows * columns][1]; // Apenas uma imagem agora
+        double[][] linearizedImages = new double[rows * columns][1];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 linearizedImages[i * columns + j][0] = matrixOfImages[i][j];
@@ -120,7 +178,6 @@ public class GabrielTesteFunc2 {
         }
         return linearizedImages;
     }
-
 
     public static double[] matrixToArray1D(double[][] matrix) {
         int rows = matrix.length;
@@ -149,17 +206,13 @@ public class GabrielTesteFunc2 {
         return meanVector;
     }
 
-
-
     public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath) {
         int height = imageArray.length;
         int width = imageArray[0].length;
 
-        // Normalize the image to the range 0-255
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
 
-        // Find min and max values
         for (double[] row : imageArray) {
             for (double val : row) {
                 if (val < min) min = val;
@@ -174,12 +227,10 @@ public class GabrielTesteFunc2 {
             }
         }
 
-        // Create output file name
         String csvFileName = new File(inputCsvPath).getName();
         String pngFileName = csvFileName.replace(".csv", ".png");
         String outputPath = outputFolderPath + "/" + pngFileName;
 
-        // Write the image
         try {
             writeArrayAsImage(normalizedImage, outputPath);
             System.out.println("Image saved successfully: " + outputPath);
@@ -188,16 +239,25 @@ public class GabrielTesteFunc2 {
         }
     }
 
-    public static double[] centralizeImage(double[] image, double[] meanVector) {
-        if (image.length != meanVector.length) {
-            throw new IllegalArgumentException("Os tamanhos dos arrays 'image' e 'meanVector' não correspondem.");
+    public static double[][] centralizeImages(double[][] images, double[] meanVector) {
+        int numPixels = meanVector.length;      // Número de pixels por imagem
+        int numImages = images[0].length;      // Número de imagens
+
+        if (images.length != numPixels) {
+            throw new IllegalArgumentException("O número de linhas em 'images' deve ser igual ao tamanho do 'meanVector'.");
         }
-        double[] phi = new double[image.length];
-        for (int i = 0; i < image.length; i++) {
-            phi[i] = image[i] - meanVector[i];
+
+        double[][] phi = new double[numPixels][numImages]; // Matriz para armazenar as imagens centralizadas
+
+        for (int i = 0; i < numPixels; i++) { // Para cada pixel
+            for (int j = 0; j < numImages; j++) { // Para cada imagem
+                phi[i][j] = images[i][j] - meanVector[i]; // Centraliza o valor
+            }
         }
-        return phi;
+
+        return phi; // Retorna a matriz centralizada
     }
+
 
     //! se para calcular os pesos pega phi e eigenfaces, revisar pois esta recebendo uma matriz
     //! de vetores normalizados e não a quantidade de eigenfaces (que nesse caso é a mesma qtd de colunas)
@@ -299,21 +359,6 @@ public class GabrielTesteFunc2 {
         return matrix;
     }
 
-    public static double calculateEAM(double[][] A, double[][] Ak) {
-        int M = A.length;
-        int N = A[0].length;
-        double erroAbsMed = 0;
-        // Percorre cada elemento da matriz
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                erroAbsMed += Math.abs(A[i][j] - Ak[i][j]);
-            }
-        }
-
-        // Calcula o erro médio
-        return erroAbsMed / (M * N);
-    }
-
     private static void print_Line(int length, String pattern) {
         for (int i = 0; i < length; i++) {
             System.out.print(pattern);
@@ -339,14 +384,6 @@ public class GabrielTesteFunc2 {
         System.out.println();
     }
 
-    public static boolean testCalculateEAM(double[][] A, double[][] Ak, double expectedEAM) {
-        // Chama a função que calcula o EAM
-        double calculatedEAM = calculateEAM(A, Ak);
-
-        // Compara o valor calculado com o esperado
-        return calculatedEAM == expectedEAM;
-    }
-
     //* calcula a media de cada coluna da matriz
     public static double[][] averageColumn(double[][] matrix) {
         int rows = matrix.length;
@@ -360,10 +397,6 @@ public class GabrielTesteFunc2 {
             averageColumn[i][0] = sum / columns;
         }
         return averageColumn;
-    }
-
-    public static boolean testColunaMedia(double[] matrix, double[] expectedColMedia) {
-        return Arrays.equals(matrix, expectedColMedia);
     }
 
     public static double[][] deviantMatrix(double[][] matrix, double[][] averageColumn) {
@@ -387,20 +420,11 @@ public class GabrielTesteFunc2 {
         return deviant;
     }
 
-    public static boolean testCalDesvios(double[][] matrix, double[][] expectedDesvios) {
-        return Arrays.equals(matrix, expectedDesvios);
-    }
-
     public static double[][] covariances(double[][] matrixA, int quantityOfColumns) {
         double[][] matrixATransposed = transposeMatrix(matrixA);
         double[][] matrixAmultplyByAT = multiplyMatrix(matrixA, matrixATransposed);
         return multiplyMatrixByScalar(matrixAmultplyByAT, 1.0 / quantityOfColumns);
     }
-
-    public static boolean testCovariancia(double[][] C, double[][] expectedC) {
-        return C == expectedC;
-    }
-
 
     public static double[][] eigenVectors(double[][] matrixOne, double[][] matrixTwo) {
         double[][] matrixThree = multiplyMatrix(matrixOne, matrixTwo);
@@ -416,13 +440,6 @@ public class GabrielTesteFunc2 {
         return eigenVectorsMatrix.getData();
     }
 
-    public static double[][] eigenVectorsTransposed(double[][] matrixOne, double[][] matrixTwo) {
-        double[][] matrixThree = multiplyMatrix(matrixOne, matrixTwo);
-        EigenDecomposition decomposedMatrixThree = decomposeMatrix(matrixThree);
-        RealMatrix eigenVectorsTransposedMatrix = decomposedMatrixThree.getVT();
-        return eigenVectorsTransposedMatrix.getData();
-    }
-
     //ignora valores negativos muito baixos, para nao obter -0.0
     private static void adjustPrecision(double[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
@@ -432,11 +449,6 @@ public class GabrielTesteFunc2 {
                 }
             }
         }
-    }
-
-    public static double[][] valoresPropriosC(double[][] valoresPropriosAxAT, int N) {
-        double[][] lambdai = multiplyMatrixByScalar(valoresPropriosAxAT, 1.0 / N);
-        return lambdai;
     }
 
     public static double[][] normalizeVectors(double[][] eigenVectorsATxA) {
@@ -492,3 +504,76 @@ public class GabrielTesteFunc2 {
         return resultMatrix;
     }
 }
+
+//public static void main(String[] args) {
+//        String csvPath = "Input/Funcao2-3/csv";
+//
+//        String[] CSVFileNames = getCSVFileNames(csvPath);
+//
+//        double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(csvPath);
+//
+//        for (int i = 0; i < matrixCSVDouble3D.length; i++) {
+//            double[][] originalMatrix = matrixCSVDouble3D[i];
+//            String outputPath = CSVFileNames[i];
+//
+//            // Dimensão e número de eigenfaces
+//            int numOfColumns = originalMatrix[0].length;
+//            int eigenFaces = numOfColumns; // ajuste conforme necessário, mas se tiver colunas = eigenfaces imagem fica melhor
+//
+//            //* 1. Cálculo da média - revisto
+//            double[][] averageColumn = averageColumn(originalMatrix);
+//            adjustPrecision(averageColumn);
+//
+//            //* 2. Centralização (Matriz de desvios) - revisto
+//            double[][] deviantMatrix = deviantMatrix(originalMatrix, averageColumn);
+//            adjustPrecision(deviantMatrix);
+//
+//            double[][] deviantMatrixTranspose = transposeMatrix(deviantMatrix);
+//            adjustPrecision(deviantMatrixTranspose);
+//
+//            //* 3. Matriz de Covariância - revisto
+//            double[][] covariance = covariances(deviantMatrix, numOfColumns);
+//            adjustPrecision(covariance);
+//
+//            //* 4. Valores e vetores próprios - revisto
+//            double[][] eigenValuesATxA = eigenValues(deviantMatrixTranspose, deviantMatrix);
+//            adjustPrecision(eigenValuesATxA);
+//            double[][] eigenVectorsATxA = eigenVectors(deviantMatrixTranspose, deviantMatrix);
+//            adjustPrecision(eigenVectorsATxA);
+//
+//            double[][] eigenValuesAxAT = eigenValues(deviantMatrix, deviantMatrixTranspose);
+//            adjustPrecision(eigenValuesAxAT);
+//            double[][] eigenVectorsAxAT = eigenVectors(deviantMatrix, deviantMatrixTranspose);
+//            adjustPrecision(eigenVectorsAxAT);
+//
+//            double[][] normalizedVectorsATxA = normalizeVectors(eigenVectorsATxA);
+//            adjustPrecision(normalizedVectorsATxA);
+//
+//            //* 5. Centralização da imagem para reconstrução - revisto
+//            double[] matrixLinearized = matrixToArray1D(originalMatrix);
+//
+//            //! futuramente para várias imagens
+//            double[][] linearizedImages = flattenImagesMatrix(originalMatrix);
+//            //! precisará adaptar o código daqui pra baixo para suportar várias imagens
+//
+//            //* Calcula o vetor médio para o vetor linearizado - revisto
+//            double[] meanVector = calculateMeanVector(linearizedImages);
+//
+//            //* Centraliza a imagem original linearizada - revisto
+//            //! pois depende de meanVector que precisa ser revisto
+//            double[] phi = centralizeImage(matrixLinearized, meanVector);
+//
+//            //* 6. Cálculo dos pesos (projeção nos eigenfaces) - revisto
+//            double[] weights = calculateWeights(phi, normalizedVectorsATxA);
+//
+//            //* 7. Reconstrução da imagem com eigenfaces - revisto
+//            double[] reconstructedImage = reconstructImage(meanVector, normalizedVectorsATxA, weights, eigenFaces);
+//
+//            //* 8. Conversão para matriz 2D
+//            double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, originalMatrix);
+//            adjustPrecision(reconstructedImageMatrix);
+//
+//            //* 9. Salvar a imagem reconstruída
+//            saveImage(reconstructedImageMatrix, outputPath, "Output/Func2/ImagensReconstruidas");
+//            saveMatrixToFile(reconstructedImageMatrix, outputPath, "Output/Func2/Eigenfaces");
+//        }

@@ -8,14 +8,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 //! FUNCIONA PARA UMA IMAGEM APENAS
 public class GabrielTeste {
     public static void main(String[] args) {
-        String csvPath = "Input/Funcao2-3/csv/image_001TESTE.csv";
+        String csvPath = "Input/Funcao2-3/csv/image_001.csv";
         double[][] originalMatrix = readCSVToArray(csvPath);
 
         // Dimensão e número de eigenfaces
@@ -109,6 +107,50 @@ public class GabrielTeste {
 
     }
 
+    public static String[] getCSVFileNames(String folderLocation) {
+        File folder = new File(folderLocation);
+        File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+        if (csvFiles == null || csvFiles.length == 0) {
+            throw new RuntimeException("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
+        }
+
+        String[] fileNames = new String[csvFiles.length];
+        for (int i = 0; i < csvFiles.length; i++) {
+            fileNames[i] = csvFiles[i].getName();
+        }
+
+        return fileNames;
+    }
+
+    public static double[][][] get_Matrices_From_CSV_Folder(String folderLocation) {
+        File folder = new File(folderLocation);
+        File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+        if (csvFiles == null || csvFiles.length == 0) {
+            throw new RuntimeException("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
+        }
+
+        for (int i = 0; i < csvFiles.length - 1; i++) {
+            for (int j = i + 1; j < csvFiles.length; j++) {
+                if (csvFiles[i].getName().compareTo(csvFiles[j].getName()) > 0) {
+                    File temp = csvFiles[i];
+                    csvFiles[i] = csvFiles[j];
+                    csvFiles[j] = temp;
+                }
+            }
+        }
+
+        double[][][] matrices = new double[csvFiles.length][][];
+
+        int index = 0;
+        for (File csvFile : csvFiles) {
+            matrices[index] = readCSVToArray(csvFile.getPath());
+            index++;
+        }
+
+        return matrices;
+    }
+
+
     private static void saveMatrixToFile(double[][] matrix, String inputCsvPath, String outputFolderPath) {
         File outputFolder = new File(outputFolderPath);
         if (!outputFolder.exists()) {
@@ -158,7 +200,6 @@ public class GabrielTeste {
         return linearizedImages;
     }
 
-
     public static double[] matrixToArray1D(double[][] matrix) {
         int rows = matrix.length;
         int columns = matrix[0].length;
@@ -185,7 +226,6 @@ public class GabrielTeste {
         }
         return meanVector;
     }
-
 
     public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath) {
         int height = imageArray.length;
@@ -331,21 +371,6 @@ public class GabrielTeste {
         return matrix;
     }
 
-    public static double calculateEAM(double[][] A, double[][] Ak) {
-        int M = A.length;
-        int N = A[0].length;
-        double erroAbsMed = 0;
-        // Percorre cada elemento da matriz
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                erroAbsMed += Math.abs(A[i][j] - Ak[i][j]);
-            }
-        }
-
-        // Calcula o erro médio
-        return erroAbsMed / (M * N);
-    }
-
     private static void print_Line(int length, String pattern) {
         for (int i = 0; i < length; i++) {
             System.out.print(pattern);
@@ -371,14 +396,6 @@ public class GabrielTeste {
         System.out.println();
     }
 
-    public static boolean testCalculateEAM(double[][] A, double[][] Ak, double expectedEAM) {
-        // Chama a função que calcula o EAM
-        double calculatedEAM = calculateEAM(A, Ak);
-
-        // Compara o valor calculado com o esperado
-        return calculatedEAM == expectedEAM;
-    }
-
     //* calcula a media de cada coluna da matriz
     public static double[][] averageColumn(double[][] matrix) {
         int rows = matrix.length;
@@ -392,10 +409,6 @@ public class GabrielTeste {
             averageColumn[i][0] = sum / columns;
         }
         return averageColumn;
-    }
-
-    public static boolean testColunaMedia(double[] matrix, double[] expectedColMedia) {
-        return Arrays.equals(matrix, expectedColMedia);
     }
 
     public static double[][] deviantMatrix(double[][] matrix, double[][] averageColumn) {
@@ -419,20 +432,11 @@ public class GabrielTeste {
         return deviant;
     }
 
-    public static boolean testCalDesvios(double[][] matrix, double[][] expectedDesvios) {
-        return Arrays.equals(matrix, expectedDesvios);
-    }
-
     public static double[][] covariances(double[][] matrixA, int quantityOfColumns) {
         double[][] matrixATransposed = transposeMatrix(matrixA);
         double[][] matrixAmultplyByAT = multiplyMatrix(matrixA, matrixATransposed);
         return multiplyMatrixByScalar(matrixAmultplyByAT, 1.0 / quantityOfColumns);
     }
-
-    public static boolean testCovariancia(double[][] C, double[][] expectedC) {
-        return C == expectedC;
-    }
-
 
     public static double[][] eigenVectors(double[][] matrixOne, double[][] matrixTwo) {
         double[][] matrixThree = multiplyMatrix(matrixOne, matrixTwo);
@@ -448,13 +452,6 @@ public class GabrielTeste {
         return eigenVectorsMatrix.getData();
     }
 
-    public static double[][] eigenVectorsTransposed(double[][] matrixOne, double[][] matrixTwo) {
-        double[][] matrixThree = multiplyMatrix(matrixOne, matrixTwo);
-        EigenDecomposition decomposedMatrixThree = decomposeMatrix(matrixThree);
-        RealMatrix eigenVectorsTransposedMatrix = decomposedMatrixThree.getVT();
-        return eigenVectorsTransposedMatrix.getData();
-    }
-
     //ignora valores negativos muito baixos, para nao obter -0.0
     private static void adjustPrecision(double[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
@@ -464,11 +461,6 @@ public class GabrielTeste {
                 }
             }
         }
-    }
-
-    public static double[][] valoresPropriosC(double[][] valoresPropriosAxAT, int N) {
-        double[][] lambdai = multiplyMatrixByScalar(valoresPropriosAxAT, 1.0 / N);
-        return lambdai;
     }
 
     public static double[][] normalizeVectors(double[][] eigenVectorsATxA) {
@@ -524,3 +516,6 @@ public class GabrielTeste {
         return resultMatrix;
     }
 }
+
+
+

@@ -6,11 +6,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 public class LAPR1_24_25_DAB_02 {
-
 
     // CONSTANTES PARA LIMITES (MAX E MIN) DE MATRIZES
     public static final int MAX_SIZE_ROWS = 256;
@@ -47,8 +45,12 @@ public class LAPR1_24_25_DAB_02 {
             // Obter a matriz do CSV
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
 
+            // Obter a matriz do CSV para a função 2
+            // TODO: metodo para ler matrizes e gerar uma matriz 3D
+            double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(csvLocation);
+
             //FUnção que contém as funções principais
-            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation);
+            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation, matrixCSVDouble3D);
 
         } else if (args.length == 0) {
             // Mostrar as opções num menu e receber os parâmetros
@@ -71,15 +73,20 @@ public class LAPR1_24_25_DAB_02 {
             // Obter a matriz do CSV
             double[][] matrixCSVDouble = get_Matrix_From_CSV(csvLocation);
 
+            // Obter a matriz do CSV para a função 2
+            // TODO: metodo para ler matrizes e gerar uma matriz 3D
+            double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(csvLocation);
+
             //FUnção que contém as funções principais
-            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation);
+            switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation, matrixCSVDouble3D);
+
 
         } else {
             error_General("Erro: Parâmetros inválidos");
         }
     }
 
-    public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers, String csvLocation) {
+    public static void switch_Primary_Functions(int function, double[][] matrixCSVDouble, int vectorNumbers, String csvLocation, double[][][] matrixCSVDouble3D) {
         switch (function) {
             case 1:
                     print_Header_Function("Decomposição Própria de uma Matriz Simétrica");
@@ -102,7 +109,6 @@ public class LAPR1_24_25_DAB_02 {
                     
                 break;
             case 2:
-                // TODO Reconstrução de Imagens usando Eigenfaces
                 print_Header_Function("Reconstrução de Imagens usando Eigenfaces");
 
 
@@ -110,25 +116,10 @@ public class LAPR1_24_25_DAB_02 {
 
                 break;
             case 3:
-                /*
-                    print_Header_Function("Decomposição Própria de uma Matriz Simétrica");
-                    EigenDecomposition eigenDecomposition = decompose_Matrix(matrixCSVDouble);
-                    double[][] eigenVectors = getEigenVectors(eigenDecomposition);
-                    double[][] eigenValues = getEigenValues(eigenDecomposition);
-                    double[][] eigenVectorsTranspose = getEigenVectorsTranspose(eigenDecomposition);
-                    double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
-
-                    double[][] newEigenVectorsK = create_submatrix_Keep_cols(eigenVectors, valuesAndIndexArray);
-                    double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
-                    double[][] newEigenVectorsTransposeK = transposed_Matrix(newEigenVectorsK);
-                    double[][] resultingMatrixAk = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
-                    
-                    double errorAbsMed = calculateMAE(matrixCSVDouble, resultingMatrixAk);
-
-                    print_Function_1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, resultingMatrixAk, errorAbsMed);
-                    */
                 // TODO Identificação de imagem mais próxima
                 print_Header_Function("Identificação de imagem mais próxima");
+
+
                 break;
 
             default:
@@ -585,6 +576,27 @@ public class LAPR1_24_25_DAB_02 {
         }
     }
     //* ----------------- Fim funcionalidade 1 ------------------
+
+    //* ----------------- Funcionalidade 2 ------------------
+    public static double[][][] get_Matrices_From_CSV_Folder(String folderLocation) {
+        File folder = new File(folderLocation);
+        File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+        if (csvFiles == null || csvFiles.length == 0) {
+            throw new RuntimeException("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
+        }
+
+        Arrays.sort(csvFiles, Comparator.comparing(File::getName));
+
+        List<double[][]> matrices = new ArrayList<>();
+        for (File csvFile : csvFiles) {
+            matrices.add(get_Matrix_From_CSV(csvFile.getPath()));
+        }
+
+        return matrices.toArray(new double[0][][]);
+    }
+
+
+    //* ----------------- Fim funcionalidade 2 ------------------
 
 
     //! ------------------ Error Messages ------------------

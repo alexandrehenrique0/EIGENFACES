@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public class Rita {
     public static void main(String[] args) throws IOException {
-        String imageFolderLocation = "C:\\Users\\rita\\Documents\\lapr1-24-25_DAB_02\\Input\\TesteFuncao2-3\\csv";
-
+        //String imageFolderLocation = "C:\\Users\\rita\\Documents\\lapr1-24-25_DAB_02\\Input\\TesteFuncao2-3\\csv";
+        String imageFolderLocation = "Input/Funcao2-3/csv";
         int[][] imageVectors = convertImagesToVectors(imageFolderLocation);
 
         for (int i = 0; i < imageVectors.length; i++) {
@@ -79,46 +79,47 @@ public class Rita {
 
         return imageVectors;
     }
-
-
     public static int[] loadImageFromCSV(File imageFile) throws IOException {
-        int[] imageVector = new int[0];
-
-        if (!imageFile.exists() || !imageFile.isFile()) {
-            throw new FileNotFoundException(String.format("Arquivo não encontrado: %s", imageFile.getName()));
-        }
 
         BufferedReader reader = new BufferedReader(new FileReader(imageFile));
         String line;
-        int rowCount = 0;
-        int cols = 0;
-
-        while ((line = reader.readLine()) != null) {
-            if (rowCount == 0) {
-                cols = line.split(",").length;
-            }
-            rowCount++;
-        }
-
-        imageVector = new int[cols * rowCount];
-
-
-        reader.close();
-        reader = new BufferedReader(new FileReader(imageFile));
-        int index = 0;
+        int numRows = 0;
+        int numCols = 0;
 
         while ((line = reader.readLine()) != null) {
             String[] pixels = line.split(",");
-            for (int i = 0; i < pixels.length; i++) {
-                String trimmedPixel = pixels[i].trim();
-                imageVector[index] = Integer.parseInt(trimmedPixel);
-                index++;
-            }
+            numCols = pixels.length;
+            numRows++;
         }
         reader.close();
 
+        String[][] imageData = new String[numRows][numCols];
+
+        reader = new BufferedReader(new FileReader(imageFile));
+        int rowIndex = 0;
+        while ((line = reader.readLine()) != null) {
+            String[] pixels = line.split(",");
+            for (int colIndex = 0; colIndex < pixels.length; colIndex++) {
+                imageData[rowIndex][colIndex] = pixels[colIndex].trim();
+            }
+            rowIndex++;
+        }
+        reader.close();
+
+        int[] imageVector = new int[numRows * numCols];
+        int index = 0;
+
+        for (int col = 0; col < numCols; col++) {
+            for (int row = 0; row < numRows; row++) {
+                imageVector[index++] = Integer.parseInt(imageData[row][col]);
+            }
+        }
+
         return imageVector;
     }
+
+
+
 
 
 //------2.Construir uma matriz de imagens, M, em que cada coluna da matriz ´e uma imagem da base de imagens-------------

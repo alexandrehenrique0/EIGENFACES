@@ -1,3 +1,2 @@
-public class RitaTeste {
-
+public class RitaTeste{
 }

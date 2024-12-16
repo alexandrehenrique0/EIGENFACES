@@ -31,7 +31,7 @@ public class Andre_Alexandre_RitaTest {
         System.out.println("A testar convertImagesToVectors com 40 ficheiros...");
 
         // Caminho para a pasta contendo os 40 ficheiros CSV
-        String csvPath = "C:/Users/andre/IdeaProjects/lapr1-24-25_DAB_02/Input/Funcao2-3/csv";
+        String csvPath = "Input/Funcao2-3/csv";
 
         try {
             // Chama o método para converter os ficheiros CSV em vetores

@@ -47,7 +47,7 @@ public class LAPR1_24_25_DAB_02 {
 
             // Obter a matriz do CSV para a função 2
             // TODO: metodo para ler matrizes e gerar uma matriz 3D
-            double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(csvLocation);
+            double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(imageFolderLocation);
 
             //FUnção que contém as funções principais
             switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation, matrixCSVDouble3D);
@@ -75,7 +75,7 @@ public class LAPR1_24_25_DAB_02 {
 
             // Obter a matriz do CSV para a função 2
             // TODO: metodo para ler matrizes e gerar uma matriz 3D
-            double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(csvLocation);
+            double[][][] matrixCSVDouble3D = get_Matrices_From_CSV_Folder(imageFolderLocation);
 
             //FUnção que contém as funções principais
             switch_Primary_Functions(function, matrixCSVDouble, vectorNumbers, csvLocation, matrixCSVDouble3D);

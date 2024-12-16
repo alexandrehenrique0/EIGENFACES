@@ -27,8 +27,6 @@ public class Alexandre {
         print_Matrix(desviosA, " desvioA");
         print_Matrix(desviosAT, " desvioAT");
 
-        print_Matrix(desviosA, "Matriz Z = desvioA");
-
         double[][] covariancia = covariancias(desviosA,N);
         print_Matrix(covariancia, "matriz C : covariancia ");
 
@@ -38,13 +36,8 @@ public class Alexandre {
         double[][] vetProATxA = vetoresPropriosATxA(desviosA,desviosAT);
         print_Matrix(vetProATxA, "Vetores A^t . A");
 
-        double[][] vetProAxAT = vetoresPropriosAxAT(desviosA,desviosAT);
+        double[][] vetProAxAT = vetoresPropriosAxAT(desviosA,vetProATxA);
         print_Matrix(vetProAxAT, "Vetores A . A^t");
-
-
-        // algo esta mal nessa funcao
-        double[][] valProAxAt = valoresPropriosAxAT(desviosA,desviosAT);
-        print_Matrix(valProAxAt, "VALORES A^t . A");
 
         double[][] valProC = valoresPropriosC(valProATxA,N);
         print_Matrix(valProC, "VALORES C");
@@ -129,12 +122,12 @@ public class Alexandre {
         int linhas = matrix.length;
         double[][] desvios = new double[linhas][colunas];
 
-        for (int j = 0; j < colunas; j++) {
-            for (int i = 0; i < linhas; i++) {
-                desvios[i][j] =  colunaDesvio(matrix[i][j],colunaMedia[i][0]);
+        for (int j = 0; j < colunas; j++) { // Percorre cada imagem (coluna)
+            for (int i = 0; i < linhas; i++) { // Percorre cada dimensão da imagem
+                desvios[i][j] = matrix[i][j] - colunaMedia[i][0];
             }
-
         }
+
         return desvios;
     }
 
@@ -194,9 +187,9 @@ public class Alexandre {
         return vi;
     }
 
-    public static double[][] vetoresPropriosAxAT(double[][] A,double[][] AT) {
-        double[][] AxAT = multiplicaMatrizes(A,AT);
-        EigenDecomposition eigenDecomposition = decomposeMatrix(AxAT);
+    public static double[][] vetoresPropriosAxAT(double[][] A,double[][] vi) {
+        double[][] AxVI = multiplicaMatrizes(A,vi);
+        EigenDecomposition eigenDecomposition = decomposeMatrix(AxVI);
         RealMatrix V = eigenDecomposition.getV();
         double[][] ui = V.getData();
         return ui;

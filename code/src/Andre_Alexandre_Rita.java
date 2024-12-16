@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class Andre_Alexandre_Rita {
 
     public static void main(String[] args) {
-        String csvPath = "C:/Users/andre/IdeaProjects/lapr1-24-25_DAB_02/Input/Funcao2-3/csv";
+        String csvPath = "Input/Funcao2-3/csv";
 
         try {
             // 1. Carregar e converter imagens CSV para matriz M
@@ -40,7 +40,7 @@ public class Andre_Alexandre_Rita {
             //printMatrix(matrizC, "Matriz de Covariâncias C");
             System.out.println("✅ Matriz de covariâncias C calculada com sucesso!");
 
-// 5. Calcular os vetores próprios e normalizá-los
+            // 5. Calcular os vetores próprios e normalizá-los
             RealMatrix covarianceMatrix = new Array2DRowRealMatrix(matrizC);
             EigenDecomposition eigenDecomposition = new EigenDecomposition(covarianceMatrix);
             RealMatrix eigenVectors = eigenDecomposition.getV();
@@ -186,19 +186,42 @@ public class Andre_Alexandre_Rita {
          * Calcula a matriz de covariância.
          */
         public static double[][] calcularCovariancia ( double[][] matrizA){
-            int linhas = matrizA.length, colunas = matrizA[0].length;
-            double[][] covariancia = new double[linhas][linhas];
+            int N = matrizA[0].length;
+            double[][] AT = transpostaMatriz(matrizA);
+            double[][] AAT = multiplicaMatrizes(matrizA,AT);
+            return multiplicaMatrizPorEscalar(AAT,1.0/N);
+        }
 
-            for (int i = 0; i < linhas; i++) {
-                for (int j = 0; j < linhas; j++) {
-                    double soma = 0;
-                    for (int k = 0; k < colunas; k++) {
-                        soma += matrizA[i][k] * matrizA[j][k];
-                    }
-                    covariancia[i][j] = soma / colunas;
+        public static double[][] transpostaMatriz(double[][] matriz) {
+            double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
+            for (int i = 0; i < matriz.length; i++) {
+                for (int j = 0; j < matriz[0].length; j++) {
+                    matrizTransposta[j][i] = matriz[i][j];
                 }
             }
-            return covariancia;
+            return matrizTransposta;
+        }
+
+        public static double[][] multiplicaMatrizes(double[][] matrizLeft, double[][] matrizRight) {
+            double[][] matrizResultante = new double[matrizLeft.length][matrizRight[0].length];
+            for (int i = 0; i < matrizLeft.length; i++) {
+                for (int j = 0; j < matrizRight[0].length; j++) {
+                    for (int k = 0; k < matrizRight.length; k++) {
+                        matrizResultante[i][j] += matrizLeft[i][k] * matrizRight[k][j];
+                    }
+                }
+            }
+            return matrizResultante;
+        }
+
+        public static double[][] multiplicaMatrizPorEscalar(double[][] matriz, double escalar) {
+            double[][] matrizResultante = new double[matriz.length][matriz[0].length];
+            for (int i = 0; i < matriz.length; i++) {
+                for (int j = 0; j < matriz[0].length; j++) {
+                    matrizResultante[i][j] = matriz[i][j] * escalar;
+                }
+            }
+            return matrizResultante;
         }
 
         /**

@@ -50,6 +50,13 @@ import java.util.Arrays;public class Alexandre {
         double[][] vetNormalizados = normalizarVetores(vetProC);
         print_Matrix(vetNormalizados, "Vetores Normalizados");
 
+        double[] imagemNova = {2.0, 0.0, 0.0};
+
+        double[][] phi = phiNova(imagemNova, vetorMedio);
+        for (int i = 0; i < phi.length; i++) {
+            System.out.println(phi[i][0]);
+        };
+
     }
 
 
@@ -189,11 +196,6 @@ import java.util.Arrays;public class Alexandre {
 
     public static double[][] vetoresPropriosAxAT(double[][] A,double[][] vi) {
         double[][] AxVI = multiplicaMatrizes(A,vi);
-        for (int i = 0; i < vi.length; i++) {
-            for (int j = 0; j < vi[0].length; j++) {
-                System.out.println(vi[i][j]);
-            }
-        }
         return AxVI;
     }
 
@@ -253,7 +255,18 @@ import java.util.Arrays;public class Alexandre {
     }
 
     //------------------------------------------------------
+    //6-----------------------------------------------------
+    public static double[][] phiNova(double[] imagemNova, double[] media) {
+        int dimensao = imagemNova.length;
+        double[][] phi = new double[dimensao][1];
 
+        for (int i = 0; i < dimensao; i++) {
+            phi[i][0] = imagemNova[i] - media[i];
+        }
+
+        return phi;
+    }
+    //------------------------------------------------------
     public static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayParaDecompor);
         EigenDecomposition eigenDecomposition = new EigenDecomposition(matrix);

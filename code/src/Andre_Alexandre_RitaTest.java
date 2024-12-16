@@ -6,373 +6,248 @@ import java.io.File;
 import java.util.Arrays;
 
 public class Andre_Alexandre_RitaTest {
+    public static double[][] matrizBase7x7 = {
+            {1, 2, 3, 4, 5, 6, 7},
+            {8, 9, 10, 11, 12, 13, 14},
+            {15, 16, 17, 18, 19, 20, 21},
+            {22, 23, 24, 25, 26, 27, 28},
+            {29, 30, 31, 32, 33, 34, 35},
+            {36, 37, 38, 39, 40, 41, 42},
+            {43, 44, 45, 46, 47, 48, 49}
+    };
     public static void main(String[] args) {
-        System.out.println("==== Testes Unitários da Classe Andre_Alexandre_Rita ====");
 
-        testFindMaxEigenValue();
-        testMatrixDesvios();
-        testCovariancias();
-        testNormalizeEigenVectors();
-        testConvertIntToDouble();
-        testColunaMedia();
-        testTranspostaMatriz();
-        testMultiplicaMatrizes();
-        testMultiplicaMatrizPorEscalar();
-        testBuildImageMatrixM();
-        testConvertImagesToVectors();
-
-        System.out.println("==== Testes Finalizados ====");
+        testarConvertImagesToVectors();
+        testarBuildImageMatrixM();
+        testarCalcularVetorMedio();
+        testarCentralizarMatriz();
+        testarCalcularCovariancia();
+        testarNormalizeEigenVectors();
+        testarPrintMatrix();
     }
 
-    /**
-     * Teste para calcular o maior valor próprio.
-     */
-    public static void testFindMaxEigenValue() {
-        System.out.println("Teste 1: Calcular o maior valor próprio");
+    // Teste do método convertImagesToVectors
+    public static void testarConvertImagesToVectors() {
+        System.out.println("A testar convertImagesToVectors com 40 ficheiros...");
 
-        double[][] matrix = {
-                {4.0, -2.0},
-                {-2.0, 4.0}
-        };
-        double expected = 6.0;
-        double result = findMaxEigenValue(matrix);
+        // Caminho para a pasta contendo os 40 ficheiros CSV
+        String csvPath = "C:/Users/andre/IdeaProjects/lapr1-24-25_DAB_02/Input/Funcao2-3/csv";
 
-        if (Double.compare(result, expected) == 0) {
-            System.out.println("Sucesso: O maior valor próprio é " + result);
-        } else {
-            System.out.println("Falha: Esperado " + expected + ", mas obteve " + result);
+        try {
+            // Chama o método para converter os ficheiros CSV em vetores
+            int[][] result = Andre_Alexandre_Rita.convertImagesToVectors(csvPath);
+
+            // Verificação 1: Se a matriz tem exatamente 40 linhas (40 ficheiros)
+            if (result.length == 40) {
+                System.out.println("convertImagesToVectors: Teste de quantidade de ficheiros bem sucedido!");
+
+                // Verificação 2: Se cada linha (vetor) tem o mesmo número de colunas
+                int numColunas = result[0].length; // Pega o tamanho do primeiro vetor
+                boolean colunasConsistentes = true;
+
+                for (int i = 0; i < result.length; i++) {
+                    if (result[i].length != numColunas) {
+                        colunasConsistentes = false;
+                        System.out.println("Falha: Vetor no ficheiro " + (i + 1) + " tem tamanho inconsistente.");
+                        break;
+                    }
+                }
+
+                if (colunasConsistentes) {
+                    System.out.println("convertImagesToVectors: Teste de consistência de colunas bem sucedido!");
+                } else {
+                    System.out.println("convertImagesToVectors: Falha - Inconsistência no tamanho dos vetores.");
+                }
+
+            } else {
+                System.out.println("convertImagesToVectors: Falha - Esperava 40 ficheiros, mas obteve " + result.length + ".");
+            }
+
+        } catch (IOException e) {
+            System.out.println("convertImagesToVectors: Falha - Exceção lançada: " + e.getMessage());
         }
     }
 
-    /**
-     * Teste para centralizar a matriz.
-     */
-    public static void testMatrixDesvios() {
-        System.out.println("Teste 2: Centralizar a matriz");
 
-        double[][] matrix = {
-                {1.0, 2.0, 3.0},
-                {4.0, 5.0, 6.0}
-        };
-        double[][] colunaMedia = {
-                {2.0},
-                {5.0}
+    // Teste do método buildImageMatrixM
+    public static void testarBuildImageMatrixM() {
+        System.out.println("A testar buildImageMatrixM...");
+        int[][] imageVectors = {
+                {1, 2, 3, 4, 5, 6, 7},
+                {8, 9, 10, 11, 12, 13, 14},
+                {15, 16, 17, 18, 19, 20, 21},
+                {22, 23, 24, 25, 26, 27, 28},
+                {29, 30, 31, 32, 33, 34, 35},
+                {36, 37, 38, 39, 40, 41, 42},
+                {43, 44, 45, 46, 47, 48, 49}
         };
         double[][] expected = {
-                {-1.0, 0.0, 1.0},
-                {-1.0, 0.0, 1.0}
+                {1, 8, 15, 22, 29, 36, 43},
+                {2, 9, 16, 23, 30, 37, 44},
+                {3, 10, 17, 24, 31, 38, 45},
+                {4, 11, 18, 25, 32, 39, 46},
+                {5, 12, 19, 26, 33, 40, 47},
+                {6, 13, 20, 27, 34, 41, 48},
+                {7, 14, 21, 28, 35, 42, 49}
         };
 
-        double[][] result = Andre_Alexandre_Rita.matrixDesvios(matrix, colunaMedia);
+        double[][] result = Andre_Alexandre_Rita.buildImageMatrixM(imageVectors);
 
-        if (matricesAreEqual(result, expected)) {
-            System.out.println("Sucesso: Centralização correta");
+        if (matrizesIguais(result, expected)) {
+            System.out.println("buildImageMatrixM: Teste bem sucedido!");
         } else {
-            System.out.println("Falha: Centralização incorreta");
+            System.out.println("buildImageMatrixM: Falha - Resultado incorreto.");
         }
     }
 
-    /**
-     * Teste para calcular a matriz de covariância.
-     */
-    public static void testCovariancias() {
-        System.out.println("Teste 3: Cálculo da matriz de covariância");
+    // Teste do método calcularVetorMedio
+    public static void testarCalcularVetorMedio() {
+        System.out.println("A testar calcularVetorMedio...");
+        double[] expected= {4.0, 11.0, 18.0, 25.0, 32.0, 39.0, 46.0}; // Média das linhas
 
-        double[][] centralizada = {
-                {-1.0, 0.0, 1.0},
-                {-1.0, 0.0, 1.0}
+        double[][] matrizBase7x7 = {
+                {1, 2, 3, 4, 5, 6, 7},
+                {8, 9, 10, 11, 12, 13, 14},
+                {15, 16, 17, 18, 19, 20, 21},
+                {22, 23, 24, 25, 26, 27, 28},
+                {29, 30, 31, 32, 33, 34, 35},
+                {36, 37, 38, 39, 40, 41, 42},
+                {43, 44, 45, 46, 47, 48, 49}
+        };
+        double[] result = Andre_Alexandre_Rita.calcularVetorMedio(matrizBase7x7);
+
+        if (vetoresIguais(result, expected)) {
+            System.out.println("calcularVetorMedio: Teste bem sucedido!");
+        } else {
+            System.out.println("calcularVetorMedio: Falha - Resultado incorreto.");
+        }
+    }
+
+    // Teste do método centralizarMatriz
+    public static void testarCentralizarMatriz() {
+        System.out.println("A testar centralizarMatriz...");
+        double[] vetorMedio = {4.0, 11.0, 18.0, 25.0, 32.0, 39.0, 46.0};
+
+
+        double[][] expected = {
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3}
+        };
+
+        double[][] result = Andre_Alexandre_Rita.centralizarMatriz(matrizBase7x7, vetorMedio);
+
+        if (matrizesIguais(result, expected)) {
+            System.out.println("centralizarMatriz: Teste bem sucedido!");
+        } else {
+            System.out.println("centralizarMatriz: Falha - Resultado incorreto.");
+        }
+    }
+
+    // Teste do método calcularCovariancia
+    public static void testarCalcularCovariancia() {
+        System.out.println("A testar calcularCovariancia...");
+        double[][] matrizCentralizada = {
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3},
+                {-3, -2, -1, 0, 1, 2, 3}
         };
         double[][] expected = {
-                {0.6667, 0.6667},
-                {0.6667, 0.6667}
+                {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0}
         };
 
-        double[][] result = Andre_Alexandre_Rita.covariancias(centralizada, 3);
+        double[][] result = Andre_Alexandre_Rita.calcularCovariancia(matrizCentralizada);
 
-        if (matricesAreApproximatelyEqual(result, expected, 0.001)) {
-            System.out.println("Sucesso: Covariância correta");
+        if (matrizesIguais(result, expected)) {
+            System.out.println("calcularCovariancia: Teste bem sucedido!");
         } else {
-            System.out.println("Falha: Covariância incorreta");
+            System.out.println("calcularCovariancia: Falha - Resultado incorreto.");
         }
     }
 
-    /**
-     * Teste para normalizar os vetores próprios.
-     */
-    public static void testNormalizeEigenVectors() {
-        System.out.println("Teste 4: Normalizar os vetores próprios");
-
-        double[][] data = {
-                {7.0, 4.0},
-                {0.0, 0.0}
+    // Teste do método normalizeEigenVectors
+    public static void testarNormalizeEigenVectors() {
+        System.out.println("A testar normalizeEigenVectors...");
+        double[][] eigenVectors = {
+                {3, 4},
+                {0, 0}
         };
-
-
-        RealMatrix matrix = new Array2DRowRealMatrix(data);
-        Andre_Alexandre_Rita.normalizeEigenVectors(matrix);
 
         double[][] expected = {
                 {1.0, 1.0},
                 {0.0, 0.0}
         };
 
+        RealMatrix matrix = new org.apache.commons.math3.linear.Array2DRowRealMatrix(eigenVectors);
+        Andre_Alexandre_Rita.normalizeEigenVectors(matrix);
+        double[][] result = matrix.getData();
 
-
-        if (matricesAreApproximatelyEqual(matrix.getData(), expected, 0.01)) {
-            System.out.println("Sucesso: Normalização correta");
+        if (matrizesIguais(result, expected)) {
+            System.out.println("normalizeEigenVectors: Teste bem sucedido!");
         } else {
-            System.out.println("Falha: Normalização incorreta");
+            System.out.println("normalizeEigenVectors: Falha - Resultado incorreto.");
         }
     }
 
-    /**
-     * Teste para converter int[][] em double[][].
-     */
-    public static void testConvertIntToDouble() {
-        System.out.println("Teste 5: Conversão de int[][] para double[][]");
-
-        int[][] intMatrix = {
-                {1, 2, 3},
-                {4, 5, 6}
-        };
-
-        double[][] expected = {
-                {1.0, 2.0, 3.0},
-                {4.0, 5.0, 6.0}
-        };
-
-        double[][] result = Andre_Alexandre_Rita.convertIntToDouble(intMatrix);
-
-        if (matricesAreEqual(result, expected)) {
-            System.out.println("Sucesso: Conversão correta");
-        } else {
-            System.out.println("Falha: Conversão incorreta");
-        }
-    }
-
-    /**
-     * Testa o cálculo da média das colunas de uma matriz.
-     * Verifica se o resultado corresponde à média esperada.
-     */
-    public static void testColunaMedia() {
-        System.out.println("Teste 6: Cálculo da coluna média");
-
-        double[][] matrix = {
-                {1.0, 2.0, 3.0},
-                {4.0, 5.0, 6.0}
-        };
-
-        double[][] expected = {
-                {2.0},
-                {5.0}
-        };
-
-        double[][] result = Andre_Alexandre_Rita.colunaMedia(matrix);
-
-        if (matricesAreApproximatelyEqual(result, expected, 0.001)) {
-            System.out.println("Sucesso: Cálculo da coluna média correto");
-        } else {
-            System.out.println("Falha: Resultado incorreto");
-        }
-    }
-
-    /**
-     * Testa a transposição de uma matriz.
-     * Verifica se linhas e colunas foram corretamente invertidas.
-     */
-    public static void testTranspostaMatriz() {
-        System.out.println("Teste 7: Transposição de matriz");
-
-        double[][] matrix = {
-                {1.0, 2.0, 3.0},
-                {4.0, 5.0, 6.0}
-        };
-
-        double[][] expected = {
-                {1.0, 4.0},
-                {2.0, 5.0},
-                {3.0, 6.0}
-        };
-
-        double[][] result = Andre_Alexandre_Rita.transpostaMatriz(matrix);
-
-        if (matricesAreEqual(result, expected)) {
-            System.out.println("Sucesso: Transposição correta");
-        } else {
-            System.out.println("Falha: Resultado incorreto");
-        }
-    }
-
-    /**
-     * Testa a multiplicação de duas matrizes.
-     * Confirma se o produto das matrizes está correto.
-     */
-    public static void testMultiplicaMatrizes() {
-        System.out.println("Teste 8: Multiplicação de matrizes");
-
-        double[][] A = {
+    // Teste do método printMatrix
+    public static void testarPrintMatrix() {
+        System.out.println("A testar printMatrix...");
+        double[][] matriz = {
                 {1.0, 2.0},
                 {3.0, 4.0}
         };
 
-        double[][] B = {
-                {2.0, 0.0},
-                {1.0, 2.0}
-        };
+        System.out.println("Saída esperada:");
+        System.out.println("[1.0, 2.0]");
+        System.out.println("[3.0, 4.0]");
+        System.out.println("Saída do método:");
+        Andre_Alexandre_Rita.printMatrix(matriz, "Matriz imprimida:");
+    }
 
-        double[][] expected = {
-                {4.0, 4.0},
-                {10.0, 8.0}
-        };
-
-        double[][] result = Andre_Alexandre_Rita.multiplicaMatrizes(A, B);
-
-        if (matricesAreApproximatelyEqual(result, expected, 0.001)) {
-            System.out.println("Sucesso: Multiplicação correta");
-        } else {
-            System.out.println("Falha: Resultado incorreto");
+    // Funções auxiliares para comparar matrizes e vetores
+    private static boolean matrizesIguais(double[][] matriz1, double[][] matriz2) {
+        if (matriz1.length != matriz2.length || matriz1[0].length != matriz2[0].length) {
+            return false;
         }
-    }
 
-    /**
-     * Testa a multiplicação de uma matriz por um escalar.
-     * Verifica se cada elemento é corretamente multiplicado pelo escalar.
-     */
-    public static void testMultiplicaMatrizPorEscalar() {
-        System.out.println("Teste 9: Multiplicação de matriz por escalar");
-
-        double[][] matrix = {
-                {1.0, 2.0},
-                {3.0, 4.0}
-        };
-
-        double escalar = 2.0;
-
-        double[][] expected = {
-                {2.0, 4.0},
-                {6.0, 8.0}
-        };
-
-        double[][] result = Andre_Alexandre_Rita.multiplicaMatrizPorEscalar(matrix, escalar);
-
-        if (matricesAreEqual(result, expected)) {
-            System.out.println("Sucesso: Multiplicação por escalar correta");
-        } else {
-            System.out.println("Falha: Resultado incorreto");
-        }
-    }
-
-    /**
-     * Testa a construção da matriz M a partir de vetores de imagens.
-     * Confirma se os vetores são organizados corretamente como colunas.
-     */
-    public static void testBuildImageMatrixM() {
-        System.out.println("Teste 10: Construção da matriz M");
-
-        int[][] imageVectors = {
-                {1, 2, 3},
-                {4, 5, 6}
-        };
-
-        int[][] expected = {
-                {1, 4},
-                {2, 5},
-                {3, 6}
-        };
-
-        int[][] result = Andre_Alexandre_Rita.buildImageMatrixM(imageVectors);
-
-        if (matricesAreEqual(result, expected)) {
-            System.out.println("Sucesso: Construção da matriz M correta");
-        } else {
-            System.out.println("Falha: Resultado incorreto");
-        }
-    }
-
-    /**
-     * Testa a conversão de um ficheiro CSV em um vetor unidimensional.
-     * Verifica se o vetor gerado corresponde ao conteúdo original do ficheiro.
-     */
-    public static void testConvertImagesToVectors() {
-        System.out.println("Teste 11: Conversão de imagens para vetores");
-
-        // Caminho para a pasta com as imagens CSV
-        String folderPath = "C:/Users/andre/IdeaProjects/lapr1-24-25_DAB_02/Input/Funcao2-3/csv";
-
-        try {
-            // Obter a lista de ficheiros CSV na pasta
-            File folder = new File(folderPath);
-            File[] imageFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
-
-            if (imageFiles == null || imageFiles.length == 0) {
-                throw new IOException("Nenhum ficheiro CSV encontrado na pasta.");
-            }
-
-            // Selecionar o primeiro ficheiro CSV
-            File firstImage = imageFiles[0];
-            System.out.println("Primeiro ficheiro encontrado: " + firstImage.getName());
-
-            // Converter o conteúdo do ficheiro para um vetor unidimensional
-            int[] resultVector = Andre_Alexandre_Rita.loadImageFromCSV(firstImage);
-
-            // Recarregar o mesmo ficheiro e verificar igualdade
-            int[] expectedVector = Andre_Alexandre_Rita.loadImageFromCSV(firstImage);
-
-            if (Arrays.equals(resultVector, expectedVector)) {
-                System.out.println("Sucesso: Vetor convertido corresponde ao conteúdo original.");
-            } else {
-                System.out.println("Falha: Vetor convertido não corresponde ao conteúdo original.");
-            }
-
-        } catch (IOException e) {
-            System.out.println("Falha: Erro ao ler os ficheiros CSV - " + e.getMessage());
-        }
-    }
-
-
-
-
-    // Métodos de apoio
-    public static double findMaxEigenValue(double[][] matrix) {
-        RealMatrix realMatrix = new Array2DRowRealMatrix(matrix);
-        return new org.apache.commons.math3.linear.EigenDecomposition(realMatrix).getRealEigenvalue(0);
-    }
-
-    public static boolean matricesAreEqual(double[][] a, double[][] b) {
-        if (a.length != b.length || a[0].length != b[0].length) return false;
-
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[i].length; j++) {
-                if (a[i][j] != b[i][j]) return false;
+        for (int i = 0; i < matriz1.length; i++) {
+            for (int j = 0; j < matriz1[0].length; j++) {
+                if (Math.abs(matriz1[i][j] - matriz2[i][j]) > 1e-6) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
-    public static boolean matricesAreApproximatelyEqual(double[][] a, double[][] b, double epsilon) {
-        if (a.length != b.length || a[0].length != b[0].length) return false;
+    private static boolean vetoresIguais(double[] vetor1, double[] vetor2) {
+        if (vetor1.length != vetor2.length) {
+            return false;
+        }
 
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[i].length; j++) {
-                if (Math.abs(a[i][j] - b[i][j]) > epsilon) return false;
+        for (int i = 0; i < vetor1.length; i++) {
+            if (Math.abs(vetor1[i] - vetor2[i]) > 1e-6) {
+                return false;
             }
         }
         return true;
     }
-
-    public static boolean matricesAreEqual(int[][] a, int[][] b) {
-        if (a.length != b.length || a[0].length != b[0].length) return false;
-
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[i].length; j++) {
-                if (a[i][j] != b[i][j]) return false;
-            }
-        }
-        return true;
-    }
-
-
-
 }
+
+
 
 

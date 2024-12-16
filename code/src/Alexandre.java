@@ -30,7 +30,7 @@ import java.util.Arrays;public class Alexandre {
         print_Matrix(desviosAT, " desvioAT");
 
         double[][] covariancia = covariancias(desviosA,N);
-        print_Matrix(covariancia, "matriz C : covariancia ");
+        print_Matrix(covariancia, "matriz c : covariancia ");
 
         double[][] valProATxA = valoresPropriosATxA(desviosA,desviosAT);
         print_Matrix(valProATxA, "VALORES A^t . A");
@@ -42,21 +42,33 @@ import java.util.Arrays;public class Alexandre {
         print_Matrix(vetProAxAT, "Vetores A . vi");
 
         double[][] valProC = valoresPropriosC(valProATxA,N);
-        print_Matrix(valProC, "VALORES C");
+        print_Matrix(valProC, "VALORES c");
 
-        double[][] vetProC = vetProAxAT;
-        print_Matrix(vetProC, "Vetores C");
+        RealMatrix covarianciaMatrix = new Array2DRowRealMatrix(covariancia);
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(covarianciaMatrix);
+        RealMatrix eigenVectors = eigenDecomposition.getV();
+        double[][] c = eigenVectors.getData();
+        print_Matrix(c, "Vetores c");
 
-        double[][] vetNormalizados = normalizarVetores(vetProC);
+        double[][] vetNormalizados = normalizarVetores(c);
         print_Matrix(vetNormalizados, "Vetores Normalizados");
 
         double[] imagemNova = {2.0, 0.0, 0.0};
 
-        double[][] phi = phiNova(imagemNova, vetorMedio);
-        for (int i = 0; i < phi.length; i++) {
-            System.out.println(phi[i][0]);
-        };
+        System.out.println("Phi Nova");
 
+        double[] phi = phiNova(imagemNova, vetorMedio);
+        for (int i = 0; i < phi.length; i++) {
+            System.out.println(phi[i]);
+        }
+        System.out.println();
+
+        System.out.println("Pesos Novos");
+
+        double[] pesosNovos =calcularOmegaNova(phi,transpostaMatriz(c));
+        for (int i = 0; i < pesosNovos.length; i++) {
+            System.out.println(pesosNovos[i]);
+        }
     }
 
 
@@ -256,15 +268,34 @@ import java.util.Arrays;public class Alexandre {
 
     //------------------------------------------------------
     //6-----------------------------------------------------
-    public static double[][] phiNova(double[] imagemNova, double[] media) {
+    public static double[] phiNova(double[] imagemNova, double[] media) {
         int dimensao = imagemNova.length;
-        double[][] phi = new double[dimensao][1];
+        double[] phi = new double[dimensao];
 
         for (int i = 0; i < dimensao; i++) {
-            phi[i][0] = imagemNova[i] - media[i];
+            phi[i] = imagemNova[i] - media[i];
         }
 
         return phi;
+    }
+
+    public static double[] calcularPesos(double[] phiNova, double[][] eigenfacesTransposta) {
+        int numEigenfaces = eigenfacesTransposta.length;
+        double[] pesos = new double[numEigenfaces];
+
+        for (int i = 0; i < numEigenfaces; i++) {
+            pesos[i] = 0;
+            for (int j = 0; j < phiNova.length; j++) {
+                pesos[i] += eigenfacesTransposta[i][j] * phiNova[j];
+            }
+        }
+
+        return pesos;
+    }
+
+    // Função para calcular o vetor Ωnova = [w_nova1, ..., w_novak] para a imagem nova
+    public static double[] calcularOmegaNova(double[] phiNova, double[][] eigenfacesTransposta) {
+        return calcularPesos(phiNova, eigenfacesTransposta);
     }
     //------------------------------------------------------
     public static EigenDecomposition decomposeMatrix(double[][] arrayParaDecompor) {

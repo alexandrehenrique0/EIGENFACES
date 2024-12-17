@@ -1,6 +1,7 @@
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -8,8 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-//! PRECISA SER ESTUDADO MAS JÀ ESTÁ FUNCIONANDO PARA VARIAS IMAGENS
-public class GabrielTesteFunc2 {
+public class Garibel {
     public static void main(String[] args) {
         String csvPath = "Input/Funcao2-3/csv";
 
@@ -19,7 +19,7 @@ public class GabrielTesteFunc2 {
 
         double[][] linearizedImages = new double[matrixCSVDouble3D[0].length * matrixCSVDouble3D[0].length][matrixCSVDouble3D.length];
         for (int img = 0; img < matrixCSVDouble3D.length; img++) {
-            double[] matrixLinearized= matrixToArray1D(matrixCSVDouble3D[img]);
+            double[] matrixLinearized = matrixToArray1D(matrixCSVDouble3D[img]);
             for (int i = 0; i < matrixLinearized.length; i++) {
                 linearizedImages[i][img] = matrixLinearized[i];
             }
@@ -29,9 +29,9 @@ public class GabrielTesteFunc2 {
 
         double[][] phi = centralizeImages(linearizedImages, meanVector);
 
-        double[][] covariance = covariances(phi);
+        double[][] ATxA = multiplyMatrix(transposeMatrix(phi), phi);
 
-        double[][] eigenVectors = eigenVectors(covariance);
+        double[][] eigenVectors = eigenVectors(ATxA);
 
         double[][] eigenfaces = multiplyMatrix(phi, eigenVectors);
 
@@ -187,7 +187,7 @@ public class GabrielTesteFunc2 {
         }
 
         String csvFileName = new File(inputCsvPath).getName();
-        String pngFileName = csvFileName.replace(".csv", ".jpg");
+        String pngFileName = csvFileName.replace(".csv", ".png");
         String outputPath = outputFolderPath + "/" + pngFileName;
 
         File outputFolder = new File(outputFolderPath);
@@ -345,17 +345,8 @@ public class GabrielTesteFunc2 {
         }
     }
 
-    public static double[][] covariances(double[][] matrixA) {
-        int quantityOfImages = matrixA[0].length;
-        double[][] matrixATransposed = transposeMatrix(matrixA);
-        double[][] matrixATmultiplyByA = multiplyMatrix(matrixATransposed, matrixA);
-        return multiplyMatrixByScalar(matrixATmultiplyByA, 1.0 / quantityOfImages);
-    }
-
     public static double[][] eigenVectors(double[][] matrix) {
-        double[][] matrixTransposed = transposeMatrix(matrix);
-        double[][] eigenVectors = multiplyMatrix(matrixTransposed, matrix);
-        EigenDecomposition decomposedMatrixThree = decomposeMatrix(eigenVectors);
+        EigenDecomposition decomposedMatrixThree = decomposeMatrix(matrix);
         RealMatrix eigenVectorsMatrix = decomposedMatrixThree.getV();
         return eigenVectorsMatrix.getData();
     }

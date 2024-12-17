@@ -62,8 +62,8 @@ public class RafaelTeste {
         double[] reconstructedVetorPrincipal = reconstructImage(meanVector, normalizedEigenfaces, weightsVetorPrincipal);
 
         //* ISTO FUNCIONA
-        double[] matrizEuclidiana = calculate_Euclidian_Distance(normalizedEigenfacesVectorArray, normalizedEigenfaces);
-        System.out.println(check_Closer_Vetor(matrizEuclidiana));
+//        double[] matrizEuclidiana = calculate_Euclidian_Distance(normalizedEigenfacesVectorArray, normalizedEigenfaces);
+//        System.out.println(check_Closer_Vetor(matrizEuclidiana));
     }
 
     public static double[] calculate_Euclidian_Distance(double[] vetorPrincipal, double[][] matrizVetores) {

@@ -25,10 +25,10 @@ public class mainGabriel {
     public static void main(String[] args) {
 
         // PARÂMETROS DE ENTRADA
-        int function;
-        int vectorNumbers;
-        String csvLocation;
-        String imageFolderLocation;
+        int function = 0;
+        int vectorNumbers = -1;
+        String csvLocation = null;
+        String imageFolderLocation = null;
 
         // VERIFICAÇÃO DE PARÂMETROS (ARGS) PARA MÉTODOS DE INPUT
         if (checkCorrectParametersStructure(args)) {
@@ -53,8 +53,15 @@ public class mainGabriel {
 
         } else if (args.length == 0) {
             // Mostrar as opções num menu e receber os parâmetros
-            uiFunctionParameterMenu();
-            function = receiveFunction(null);
+            do {
+                uiFunctionParameterMenu();
+                function = receiveFunction(null);
+            } while (!check_function(function));
+
+            if (function == 4) {
+                uiQuitParameterMenu();
+                receiveExitConfirmation(null);
+            }
 
             uiVectorNumbersParameterMenu();
             vectorNumbers = receiveNumberVectors(null);
@@ -64,8 +71,6 @@ public class mainGabriel {
 
             uiImageLocationParameterMenu();
             imageFolderLocation = receiveImageLocation(null);
-
-            // ---------------------------------------
 
             // Verificar se os arquivo e diretório existem
             checkExistanceFileDirectory(csvLocation, imageFolderLocation);
@@ -86,68 +91,66 @@ public class mainGabriel {
     }
 
     public static void switchPrimaryFunctions(int function, double[][] matrixCSVDouble, int vectorNumbers, String csvLocation, double[][][] matrixCSVDouble3D, String imageFolderLocation) {
-        // Common variables
+        // Common variables for all 3 functions
         String[] csvFiles = getCSVFileNames(imageFolderLocation);
-        double[][] primaryMatrix = readCSVToArray(csvLocation);
-        double[][][] imageMatrices = getMatricesFromCsvFolder(imageFolderLocation);
-        double[][] linearizedImages = new double[imageMatrices[0].length * imageMatrices[0].length][imageMatrices.length];
-        double[] meanVector;
+        double[][] linearizedImages = new double[matrixCSVDouble3D[0].length * matrixCSVDouble3D[0].length][matrixCSVDouble3D.length];
+        double[] averageVectors;
         double[][] phi;
         double[][] covariance;
-        double[][] eigenVecs;
-        double[][] selectedColumns;
-        double[][] eigenVecsK;
+        double[][] eigenVectors;
+        double[][] selectedColumnsK;
+        double[][] newEigenVectorsK;
+        double[][] expandedVectorsK;
         double[][] eigenfaces;
-        double[][] normEigenfaces;
-        double[][] weightsMatrix;
+        double[][] weightsMatrix = new double[matrixCSVDouble3D.length][matrixCSVDouble3D[0].length * matrixCSVDouble3D[0].length];
         double[] phiVector;
-        double[] weightsVetorPrincipal;
+        double[] principalWeightsVector;
         double[] euclideanDistances;
         int closestImageIndex;
 
-        populateLinearizedImages(linearizedImages, imageMatrices);
+        populateLinearizedImages(linearizedImages, matrixCSVDouble3D);
 
         switch (function) {
             case 1:
                 printHeaderFunction("Decomposição Própria de uma Matriz Simétrica");
-                EigenDecomposition eigenDecomposition = decomposeMatrix(matrixCSVDouble);
-                double[][] eigenVectors = getEigenVectors(eigenDecomposition);
-                double[][] eigenValues = getEigenValues(eigenDecomposition);
-                double[][] eigenVectorsTranspose = getEigenVectorsTranspose(eigenDecomposition);
+                eigenVectors = getEigenVectors(matrixCSVDouble);
+                double[][] eigenValues = getEigenValues(matrixCSVDouble);
                 double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
 
-                double[][] newEigenVectorsK = createSubmatrixKeepCols(eigenVectors, valuesAndIndexArray);
+                newEigenVectorsK = createSubmatrix(eigenVectors, valuesAndIndexArray);
                 double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
-                double[][] newEigenVectorsTransposeK = transposedMatrix(newEigenVectorsK);
-                double[][] resultingMatrixAk = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
+                double[][] newEigenVectorsTransposeK = transposeMatrix(newEigenVectorsK);
+                double[][] matrixEigenFaces = multiplyVectorsValuesVectorsTransposed(newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK);
 
-                double errorAbsMed = calculateMAE(matrixCSVDouble, resultingMatrixAk);
-                saveMatrixToFile(resultingMatrixAk, csvLocation, "Output/Func1");
-                printFunction1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, resultingMatrixAk, errorAbsMed);
+                double maximumAbsolutError = calculateMAE(matrixCSVDouble, matrixEigenFaces);
+
+                saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1");
+                printFunction1(matrixCSVDouble, vectorNumbers, newEigenVectorsK, newEigenValuesK, newEigenVectorsTransposeK, matrixEigenFaces, maximumAbsolutError);
                 break;
             case 2:
                 printHeaderFunction("Reconstrução de Imagens usando Eigenfaces");
 
-                meanVector = calculateMeanVector(linearizedImages);
-                phi = centralizeImages(linearizedImages, meanVector);
-                covariance = covariances(phi);
-                eigenVecs = eigenVectors(covariance);
+                averageVectors = calculateAverageVector(linearizedImages);
+                phi = centralizeImages(linearizedImages, averageVectors);
+                double[][] phiT = transposeMatrix(phi);
+                double[][] phiTxPhi = multiplyMatrices(phiT, phi);
+                eigenVectors = getEigenVectors(phiTxPhi);
 
-                if (vectorNumbers == -1 || vectorNumbers > eigenVecs[0].length) {
-                    vectorNumbers = eigenVecs[0].length;
+                if (vectorNumbers == -1 || vectorNumbers > eigenVectors[0].length) {
+                    vectorNumbers = eigenVectors[0].length;
                 }
 
-                selectedColumns = getValuesAndIndexArray(eigenVecs, vectorNumbers);
-                eigenVecsK = createSubmatrixKeepCols(eigenVecs, selectedColumns);
-                eigenfaces = multiplyMatrices(phi, eigenVecsK);
-                normEigenfaces = normalize(eigenfaces);
+                selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorNumbers);
+                newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+                expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
+                eigenfaces = normalize(expandedVectorsK);
 
-                weightsMatrix = new double[phi.length][phi[0].length];
-                populateWeightsMatrix(weightsMatrix, phi, normEigenfaces);
+                populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
                 for (int img = 0; img < linearizedImages[0].length; img++) {
-                    double[] reconstructedImage = reconstructImage(meanVector, normEigenfaces, getColumn(weightsMatrix, img));
-                    double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, imageMatrices[img]);
+                    double[] columnWeights = getColumn(weightsMatrix, img);
+                    double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights);
+                    double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, matrixCSVDouble3D[img]);
 
                     saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas");
                     saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces");
@@ -156,37 +159,49 @@ public class mainGabriel {
             case 3:
                 printHeaderFunction("Identificação de imagem mais próxima");
 
-                meanVector = calculateMeanVector(linearizedImages);
-                phi = centralizeImages(linearizedImages, meanVector);
+                averageVectors = calculateAverageVector(linearizedImages);
+                phi = centralizeImages(linearizedImages, averageVectors);
                 covariance = covariances(phi);
-                eigenVecs = eigenVectors(covariance);
+                eigenVectors = getEigenVectors(covariance);
 
-                if (vectorNumbers == -1 || vectorNumbers > eigenVecs[0].length) {
-                    vectorNumbers = eigenVecs[0].length;
+                if (vectorNumbers == -1 || vectorNumbers > eigenVectors[0].length) {
+                    vectorNumbers = eigenVectors[0].length;
                 }
 
-                selectedColumns = getValuesAndIndexArray(eigenVecs, vectorNumbers);
-                eigenVecsK = createSubmatrixKeepCols(eigenVecs, selectedColumns);
-                eigenfaces = multiplyMatrices(phi, eigenVecsK);
-                normEigenfaces = normalize(eigenfaces);
+                selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorNumbers);
+                newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+                expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
+                eigenfaces = normalize(expandedVectorsK);
+                populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
-                weightsMatrix = new double[phi.length][phi[0].length];
-                populateWeightsMatrix(weightsMatrix, phi, normEigenfaces);
+                double[] matrixLinearized = matrixToArray1D(matrixCSVDouble);
+                phiVector = centralizeVector(matrixLinearized, averageVectors);
 
-                phiVector = centralizeVector(matrixToArray1D(matrixCSVDouble), meanVector);
-                weightsVetorPrincipal = calculateWeights(phiVector, transposedMatrix(normEigenfaces));
+                double[][] eigenfacesTransposed = transposeMatrix(eigenfaces);
+                principalWeightsVector = calculateWeights(phiVector, eigenfacesTransposed);
 
-                euclideanDistances = calculate_Euclidian_Distance(weightsVetorPrincipal, weightsMatrix);
-                closestImageIndex = check_Closer_Vetor(euclideanDistances);
+                euclideanDistances = calculateEuclidianDistance(principalWeightsVector, weightsMatrix);
+                closestImageIndex = checkCloserVetor(euclideanDistances);
 
-                double[] reconstructedImage = reconstructImage(meanVector, normEigenfaces, getColumn(weightsMatrix, closestImageIndex));
+                double[] columnWeights = getColumn(weightsMatrix, closestImageIndex);
+
+                double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights);
 
                 System.out.println("A imagem mais próxima é: " + csvFiles[closestImageIndex]);
-                saveImage(array1DToMatrix(reconstructedImage, imageMatrices[closestImageIndex]), csvFiles[closestImageIndex], "Output/Func3");
+
+                double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, matrixCSVDouble3D[0]);
+
+                saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex], "Output/Func3");
+                break;
+            case 4:
+                printHeaderFunction("Tem certeza ?");
                 break;
             default:
                 printHeaderFunction("Número inválido");
-                errorGeneral("Erro: Opção inválida");
+                System.out.println("Por favor, insira uma opção válida.");
+                uiFunctionParameterMenu();
+                receiveFunction(null);
+                switchPrimaryFunctions(function, matrixCSVDouble, vectorNumbers, csvLocation, matrixCSVDouble3D, imageFolderLocation);
                 break;
         }
     }
@@ -200,9 +215,9 @@ public class mainGabriel {
         }
     }
 
-    private static void populateWeightsMatrix(double[][] weightsMatrix, double[][] phi, double[][] normEigenfaces) {
+    private static void populateWeightsMatrix(double[][] weightsMatrix, double[][] phi, double[][] eigenfaces) {
         for (int img = 0; img < phi[0].length; img++) {
-            double[] weights = calculateWeightsOne(getColumn(phi, img), normEigenfaces);
+            double[] weights = calculateWeightsOne(getColumn(phi, img), eigenfaces);
             for (int i = 0; i < weights.length; i++) {
                 weightsMatrix[i][img] = weights[i];
             }
@@ -216,9 +231,11 @@ public class mainGabriel {
         }
         return false;
     }
+
     public static boolean check_function(int function) {
-        return function >= 1 && function <= 3;
+        return function >= 1 && function <= 4;
     }
+
     public static boolean check_csvLocation(String csvLocation) {
         File csv = new File(csvLocation);
         if (csvLocation.equals("")) {
@@ -227,6 +244,7 @@ public class mainGabriel {
             return false;
         } else return csv.exists();
     }
+
     public static boolean check_imageFolderLocation(String imageFolderLocation) {
         File imageDirectory = new File(imageFolderLocation);
         if (imageFolderLocation.isEmpty()) {
@@ -234,6 +252,7 @@ public class mainGabriel {
         }
         return imageDirectory.exists();
     }
+
     public static void checkExistanceFileDirectory(String csvLocation, String imageFolderLocation) {
         try {
             SCANNER_CSV = new Scanner(new File(csvLocation));
@@ -251,31 +270,44 @@ public class mainGabriel {
         System.out.println("1 - Decomposição Própria de uma Matriz Simétrica");
         System.out.println("2 - Reconstrução de Imagens usando Eigenfaces");
         System.out.println("3 - Identificação de imagem mais próxima");
+        System.out.println("4 - Deseja sair da aplicação ? ");
         System.out.println("-------------------------------------------------------");
         System.out.printf("Opção: ");
     }
+
     public static void uiVectorNumbersParameterMenu() {
         System.out.println("------ Quantos vetores próprios deseja utilizar? ------");
         System.out.printf("Quantidade: ");
     }
+
     public static void uiCsvLocationParameterMenu() {
         System.out.println("---- Qual a localização do csv que deseja utilizar? ---");
         System.out.printf("Localização: ");
     }
+
     public static void uiImageLocationParameterMenu() {
         System.out.println("-------- Qual a localização da base de imagens? -------");
         System.out.printf("Localização: ");
     }
+
+    public static void uiQuitParameterMenu() {
+        System.out.println("-------------------------------------------------------");
+        System.out.println("Deseja sair da aplicação? (S/N)");
+        System.out.printf("Opção: ");
+    }
+
     //* --------------------- Fim menus de opções ------------------
 
 
     //* ------------------ Receber parâmetros ------------------
     public static int receiveFunction(String[] args) {
-        int functionArgs = 0;
+        int functionArgs;
         if (args == null) {
             int function = SCANNER.nextInt();
             if (!check_function(function)) {
-                errorGeneral("Erro: Opção inválida");
+                System.out.println("Erro: Opção inválida.");
+                System.out.println("Retornando ao menu de opções.");
+                System.out.println();
             }
             return function;
         } else {
@@ -286,8 +318,9 @@ public class mainGabriel {
             return functionArgs;
         }
     }
+
     public static int receiveNumberVectors(String[] args) {
-        int vectorNumbersArgs = 0;
+        int vectorNumbersArgs;
         if (args == null) {
             return SCANNER.nextInt();
         } else {
@@ -295,8 +328,9 @@ public class mainGabriel {
             return vectorNumbersArgs;
         }
     }
+
     public static String receiveCsvLocation(String[] args) {
-        String csvLocationArgs = "";
+        String csvLocationArgs;
         if (args == null) {
             String csvLocation = SCANNER.next();
             if (!check_csvLocation(csvLocation)) {
@@ -311,8 +345,9 @@ public class mainGabriel {
             return csvLocationArgs;
         }
     }
+
     public static String receiveImageLocation(String[] args) {
-        String imageFolderLocationArgs = "";
+        String imageFolderLocationArgs;
         if (args == null) {
             String imageFolderLocation = SCANNER.next();
             if (!check_imageFolderLocation(imageFolderLocation)) {
@@ -325,6 +360,23 @@ public class mainGabriel {
                 errorGeneral("Erro: Localização inválida da pasta de imagens");
             }
             return imageFolderLocationArgs;
+        }
+    }
+
+    public static void receiveExitConfirmation(String[] args) {
+        if (args == null) {
+            String confirmeExit;
+            do {
+                confirmeExit = SCANNER.next().toUpperCase();
+                if (confirmeExit.equals("S")) {
+                    System.exit(0);
+                } else if (confirmeExit.equals("N")) {
+                    System.out.println("Retornando ao menu de opções.");
+                    uiFunctionParameterMenu();
+                } else {
+                    System.out.println("Erro: Responda com S/N");
+                }
+            } while (!confirmeExit.equals("N"));
         }
     }
     //* -------------------- Fim receber parâmetros ------------------
@@ -341,6 +393,7 @@ public class mainGabriel {
 
         return matrix;
     }
+
     private static int[] get_Dimensions() {
         int rows = 0;
         int cols = 0;
@@ -358,9 +411,11 @@ public class mainGabriel {
         }
         return new int[]{rows, cols};
     }
+
     private static boolean check_Size_Boundaries(int rows, int cols) {
         return rows > MAX_SIZE_ROWS || cols > MAX_SIZE_COLS || rows < MIN_SIZE_ROWS || cols < MIN_SIZE_COLS;
     }
+
     private static void populateMatrix(double[][] matrix, String csvLocation) {
         try {
             SCANNER_CSV = new Scanner(new File(csvLocation));
@@ -377,6 +432,7 @@ public class mainGabriel {
         }
         SCANNER_CSV.close();
     }
+
     private static void populateRow(double[][] matrix, int row, String line) {
         String[] values = line.split(",");
         for (int col = 0; col < values.length; col++) {
@@ -400,6 +456,7 @@ public class mainGabriel {
         }
         return matrizResultante;
     }
+
     public static double[][] subtractionMatrices(double[][] matrizLeft, double[][] matrizRight) {
         double[][] matrizResultante = new double[matrizLeft.length][matrizLeft[0].length];
         for (int i = 0; i < matrizLeft.length; i++) {
@@ -432,28 +489,28 @@ public class mainGabriel {
         return matrizResultante;
     }
 
-    public static double[][] transposedMatrix(double[][] matriz) {
-        double[][] matrizTransposta = new double[matriz[0].length][matriz.length];
-        for (int i = 0; i < matriz.length; i++) {
-            for (int j = 0; j < matriz[0].length; j++) {
-                matrizTransposta[j][i] = matriz[i][j];
+    public static double[][] transposeMatrix(double[][] matrix) {
+        double[][] transposedMatrix = new double[matrix[0].length][matrix.length];
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                transposedMatrix[j][i] = matrix[i][j];
             }
         }
-        return matrizTransposta;
+        return transposedMatrix;
     }
 
-    public static double[][] createSubmatrixKeepCols(double[][] matrixP, double[][] keepColumns) {
+    public static double[][] createSubmatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {
 
-        boolean[] keepColumnsBOL = new boolean[matrixP[0].length];
+        boolean[] keepColumnsBOL = new boolean[eigenVectors[0].length];
 
-        for (double[] col : keepColumns) {
+        for (double[] col : valuesAndIndexArray) {
             keepColumnsBOL[(int) col[1]] = true;
         }
 
-        double[][] submatrix = new double[matrixP.length][keepColumns.length];
+        double[][] submatrix = new double[eigenVectors.length][valuesAndIndexArray.length];
 
         int sub_i = 0;
-        for (double[] doubles : matrixP) {
+        for (double[] doubles : eigenVectors) {
             int sub_j = 0;
             for (int j = 0; j < doubles.length; j++) {
                 if (keepColumnsBOL[j]) {
@@ -487,6 +544,7 @@ public class mainGabriel {
         printLine(matrixToPrint[0].length, "============");
         System.out.println();
     }
+
     // Metodo para printar linhas de caracteres no console.
     private static void printLine(int length, String pattern) {
         for (int i = 0; i < length; i++) {
@@ -505,6 +563,7 @@ public class mainGabriel {
         printMatrix(newEigenVectorsTransposeK, "Matriz Vetores Próprios Transpostos k:" + vectorNumbers);
         System.out.println("Erro Absoluto Médio: " + errorAbsMed);
     }
+
     public static void printHeaderFunction(String functionName) {
         System.out.println();
         printLine(1, "-------------------------------------------------------");
@@ -520,29 +579,36 @@ public class mainGabriel {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(arrayToDecompose);
         return new EigenDecomposition(matrix);
     }
-    public static double calculateMAE(double[][] A, double[][] Ak) {
-        int M = A.length;
-        int N = A[0].length;
+
+    public static double calculateMAE(double[][] originalMatrix, double[][] matrixEigenFaces) {
+        int M = originalMatrix.length;
+        int N = originalMatrix[0].length;
         double errorAbsMed = 0;
         // Percorre cada elemento da matriz
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                errorAbsMed += Math.abs(A[i][j] - Ak[i][j]);
+                errorAbsMed += Math.abs(originalMatrix[i][j] - matrixEigenFaces[i][j]);
             }
         }
 
         // Calcula o erro médio
         return errorAbsMed / (M * N);
     }
-    public static double[][] getEigenVectors(EigenDecomposition eigenDecomposition) {
+
+    public static double[][] getEigenVectors(double[][] matrix) {
+        EigenDecomposition eigenDecomposition = decomposeMatrix(matrix);
         RealMatrix eigenVectors = eigenDecomposition.getV();
         return eigenVectors.getData();
     }
-    public static double[][] getEigenValues(EigenDecomposition eigenDecomposition) {
+
+    public static double[][] getEigenValues(double[][] matrix) {
+        EigenDecomposition eigenDecomposition = decomposeMatrix(matrix);
         RealMatrix eigenValues = eigenDecomposition.getD();
         return eigenValues.getData();
     }
-    public static double[][] getEigenVectorsTranspose(EigenDecomposition eigenDecomposition) {
+
+    public static double[][] getEigenVectorsTranspose(double[][] matrix) {
+        EigenDecomposition eigenDecomposition = decomposeMatrix(matrix);
         RealMatrix eigenVectorsTranspose = eigenDecomposition.getVT();
         return eigenVectorsTranspose.getData();
     }
@@ -555,8 +621,8 @@ public class mainGabriel {
         return matrixvaluesKPrint;
     }
 
-    private static double[][] getValuesAndIndexArray(double[][] eigenValuesArray, int k) {
-        double[][] valuesAndIndexArray = new double[k][2];
+    private static double[][] getValuesAndIndexArray(double[][] eigenValuesArray, int eigenfaces) {
+        double[][] valuesAndIndexArray = new double[eigenfaces][2];
 
         for (int i = 0; i < valuesAndIndexArray.length; i++) {
             valuesAndIndexArray[i][0] = Double.MIN_VALUE;
@@ -648,6 +714,7 @@ public class mainGabriel {
 
         return matrices;
     }
+
     private static double[][] readCSVToArray(String filePath) {
         ArrayList<double[]> rows = new ArrayList<>();
         try (Scanner scanner = new Scanner(new File(filePath))) {
@@ -675,6 +742,7 @@ public class mainGabriel {
         }
         return matrix;
     }
+
     public static double[] centralizeVector(double[] vector, double[] meanVector) {
         if (vector.length != meanVector.length) {
             throw new IllegalArgumentException("O comprimento do vetor deve ser igual ao tamanho do vetor médio.");
@@ -688,7 +756,8 @@ public class mainGabriel {
 
         return phi; // Retorna o vetor centralizado
     }
-    public static double[] calculate_Euclidian_Distance(double[] vetorPrincipal, double[][] matrizVetores) {
+
+    public static double[] calculateEuclidianDistance(double[] vetorPrincipal, double[][] matrizVetores) {
         double[] resultado = new double[matrizVetores[0].length];
         for (int i = 0; i < matrizVetores[0].length; i++) {
             double soma = 0;
@@ -699,7 +768,8 @@ public class mainGabriel {
         }
         return resultado;
     }
-    public static int check_Closer_Vetor(double[] resultado) {
+
+    public static int checkCloserVetor(double[] resultado) {
         double min = resultado[0];
         int min_Pos = 0;
         for (int j = 1; j < resultado.length; j++) {
@@ -710,6 +780,7 @@ public class mainGabriel {
         }
         return min_Pos;
     }
+
     public static double[] getColumn(double[][] matrix, int column) {
         double[] columnData = new double[matrix.length];
         for (int i = 0; i < matrix.length; i++) {
@@ -717,6 +788,7 @@ public class mainGabriel {
         }
         return columnData;
     }
+
     public static String[] getCSVFileNames(String folderLocation) {
         File folder = new File(folderLocation);
         File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
@@ -743,7 +815,8 @@ public class mainGabriel {
         }
         return array;
     }
-    public static double[] calculateMeanVector(double[][] linearizedImages) {
+
+    public static double[] calculateAverageVector(double[][] linearizedImages) {
         int numPixels = linearizedImages.length;
         int numImages = linearizedImages[0].length;
         double[] meanVector = new double[numPixels];
@@ -757,6 +830,7 @@ public class mainGabriel {
         }
         return meanVector;
     }
+
     public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath) {
         int height = imageArray.length;
         int width = imageArray[0].length;
@@ -804,6 +878,7 @@ public class mainGabriel {
             System.err.println("Erro ao salvar a imagem: " + e.getMessage());
         }
     }
+
     public static double[][] centralizeImages(double[][] images, double[] meanVector) {
         int numPixels = meanVector.length;      // Número de pixels por imagem
         int numImages = images[0].length;      // Número de imagens
@@ -822,7 +897,8 @@ public class mainGabriel {
 
         return phi; // Retorna a matriz centralizada
     }
-    public static double[] calculateWeightsOne (double[] phi, double[][] matrixU) {
+
+    public static double[] calculateWeightsOne(double[] phi, double[][] matrixU) {
         System.out.println("phi: " + phi.length);
         System.out.println("matrixU: " + matrixU.length);
         System.out.println("matrixU[0]: " + matrixU[0].length);
@@ -839,6 +915,7 @@ public class mainGabriel {
         }
         return weights;
     }
+
     public static double[] calculateWeights(double[] phi, double[][] matrixU) {
         if (phi.length != matrixU[0].length) {
             throw new IllegalArgumentException("O comprimento de 'phi' deve ser igual ao número de linhas em 'eigenfaces'.");
@@ -853,37 +930,38 @@ public class mainGabriel {
         }
         return weights;
     }
-    public static double[] reconstructImage(double[] meanVector, double[][] eigenfaces, double[] weights) {
+
+    public static double[] reconstructImage(double[] averageVector, double[][] eigenfaces, double[] columnWeights) {
         int quantityEigenfaces = eigenfaces[0].length;
 
-        double[] reconstructed = new double[meanVector.length];
-        for (int i = 0; i < meanVector.length; i++) {
-            reconstructed[i] = meanVector[i];
+        double[] reconstructed = new double[averageVector.length];
+        for (int i = 0; i < averageVector.length; i++) {
+            reconstructed[i] = averageVector[i];
         }
 
         for (int j = 0; j < quantityEigenfaces; j++) {
             for (int i = 0; i < eigenfaces.length; i++) {
-                reconstructed[i] += weights[j] * eigenfaces[i][j];
+                reconstructed[i] += columnWeights[j] * eigenfaces[i][j];
             }
         }
-        System.out.println("Reconstruído: " + reconstructed);
         return reconstructed;
     }
 
-    public static double[][] array1DToMatrix(double[] array, double[][] originalMatrix) {
-        int rows = originalMatrix.length;
-        int columns = originalMatrix[0].length;
-        if (array.length != rows * columns) {
+    public static double[][] array1DToMatrix(double[] reconstructedImage, double[][] matrixSizeExample) {
+        int rows = matrixSizeExample.length;
+        int columns = matrixSizeExample[0].length;
+        if (reconstructedImage.length != rows * columns) {
             throw new IllegalArgumentException("O tamanho do vetor não corresponde às dimensões da matriz.");
         }
-        double[][] matrix = new double[rows][columns];
+        double[][] reconstructedMatrix = new double[rows][columns];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                matrix[i][j] = array[i * columns + j];
+                reconstructedMatrix[i][j] = reconstructedImage[i * columns + j];
             }
         }
-        return matrix;
+        return reconstructedMatrix;
     }
+
     public static void writeArrayAsImage(int[][] array, String outputFilePath) throws IOException {
         int height = array.length;
         int width = array[0].length;
@@ -907,6 +985,7 @@ public class mainGabriel {
         File outputFile = new File(outputFilePath);
         ImageIO.write(image, "png", outputFile);
     }
+
     private static double[][] readCSVToMatrix(String path) {
         try {
             // Conta o número de linhas no arquivo
@@ -947,21 +1026,15 @@ public class mainGabriel {
             throw new RuntimeException("Erro ao ler o arquivo CSV: " + e.getMessage(), e);
         }
     }
+
     public static double[][] covariances(double[][] matrixA) {
         int quantityOfImages = matrixA[0].length;
-        double[][] matrixATransposed = transposedMatrix(matrixA);;
+        double[][] matrixATransposed = transposeMatrix(matrixA);
+        ;
         double[][] matrixATmultiplyByA = multiplyMatrices(matrixATransposed, matrixA);
         return multiplyMatrixEscalar(matrixATmultiplyByA, 1.0 / quantityOfImages);
     }
-    public static double[][] eigenVectors(double[][] matrix) {
-        double[][] matrixTransposed = transposedMatrix(matrix);
-        double[][] eigenVectors = multiplyMatrices(matrixTransposed, matrix);
 
-        //! Verificar se o decompose funciona
-        EigenDecomposition decomposedMatrixThree = decomposeMatrix(eigenVectors);
-        RealMatrix eigenVectorsMatrix = decomposedMatrixThree.getV();
-        return eigenVectorsMatrix.getData();
-    }
     public static double[][] normalize(double[][] eigenVectorsATxA) {
         for (int i = 0; i < eigenVectorsATxA[0].length; i++) {
             double norm = 0;
@@ -986,5 +1059,7 @@ public class mainGabriel {
         System.out.println(error);
         System.exit(1);
     }
+
+
     //! ------------------ Fim error messages --------------
 }

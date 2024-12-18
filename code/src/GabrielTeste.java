@@ -14,7 +14,7 @@ import java.util.*;
 //! classe para testar func 2 e 3
 public class GabrielTeste {
     public static void main(String[] args) {
-        String csvPath = "Input/Funcao2-3/csvTESTE";
+        String csvPath = "Input/Funcao2-3/csv";
 
         String[] CSVFileNames = getCSVFileNames(csvPath);
 
@@ -38,27 +38,14 @@ public class GabrielTeste {
 
         double[][] ATxA = multiplyMatrix(phiT, phi);
 
-        // double[][] covariance = covariances(phi);
-
         double[][] eigenVectors = eigenVectors(ATxA);
 
         double[][] eigenVectorsExpand = multiplyMatrix(phi, eigenVectors);
 
-        double[][] eigenfaces = new double[eigenVectorsExpand.length][eigenVectorsExpand[0].length];
-        eigenfaces = normalize(eigenVectorsExpand);
+        double[][] eigenfaces = normalize(eigenVectorsExpand);
 
         double[][] weightsMatrix = new double[phi.length][phi[0].length];
 
-        printMatrix(linearizedImages, "linearizedImages");
-        System.out.println("vetor medio");
-        System.out.println(Arrays.toString(meanVector));
-        printMatrix(phi, "phi");
-        printMatrix(phiT, "phiT");
-        printMatrix(eigenVectors, "eigenVectors");
-        printMatrix(eigenVectorsExpand, "eigenVectorsExpand");
-        //printMatrix(eigenfaces, "eigenfaces");
-
-        // Itera sobre cada imagem para calcular pesos e reconstruir
         for (int img = 0; img < linearizedImages[0].length; img++) {
             double[] weights = calculateWeightsOne(getColumn(phi, img), eigenfaces);
 
@@ -73,8 +60,8 @@ public class GabrielTeste {
 
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, matrixCSVDouble3D[img]);
 
-           saveImage(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/TESTE");
-           saveMatrixToFile(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/TESTE");
+            saveImage(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/ImagensReconstruidas");
+            saveMatrixToFile(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/Eigenfaces");
         }
 
 //        double[] phiVector = centralizeVector(matrixToArray1D(matrixCSVDouble), meanVector);
@@ -114,6 +101,7 @@ public class GabrielTeste {
         printLine(matrixToPrint[0].length, "============");
         System.out.println();
     }
+
     // Metodo para printar linhas de caracteres no console.
     private static void printLine(int length, String pattern) {
         for (int i = 0; i < length; i++) {
@@ -263,7 +251,7 @@ public class GabrielTeste {
 
         try (PrintWriter writer = new PrintWriter(file)) {
             for (double[] row : matrix) {
-                String rowString = String.join(",", Arrays.stream(row)
+                String rowString = String.join(" ; ", Arrays.stream(row)
                         .mapToObj(val -> String.format("%.0f", val))
                         .toArray(String[]::new));
                 writer.println(rowString);
@@ -339,7 +327,7 @@ public class GabrielTeste {
         int counter = 1;
         File file = new File(outputPath);
         while (file.exists()) {
-            file = new File(outputFolderPath + "/" + pngFileName.replace(".png", "(" + counter + ").png"));
+            file = new File(outputFolderPath + "/" + pngFileName.replace(".jpg", "(" + counter + ").jpg"));
             counter++;
         }
 
@@ -370,7 +358,7 @@ public class GabrielTeste {
         return phi; // Retorna a matriz centralizada
     }
 
-    public static double[] calculateWeightsOne (double[] phi, double[][] matrixU) {
+    public static double[] calculateWeightsOne(double[] phi, double[][] matrixU) {
         System.out.println("phi: " + phi.length);
         System.out.println("matrixU: " + matrixU.length);
         System.out.println("matrixU[0]: " + matrixU[0].length);
@@ -429,7 +417,13 @@ public class GabrielTeste {
         double[][] matrix = new double[rows][columns];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                matrix[i][j] = array[i * columns + j];
+                if (array[i * columns + j] < 0) {
+                    matrix[i][j] = 0;
+                } else if (array[i * columns + j] > 255) {
+                    matrix[i][j] = 255;
+                } else {
+                    matrix[i][j] = array[i * columns + j];
+                }
             }
         }
         return matrix;
@@ -446,8 +440,11 @@ public class GabrielTeste {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int intensity = array[y][x];
-                if (intensity < 0 || intensity > 255) {
-                    throw new IllegalArgumentException("Pixel intensity must be between 0 and 255.");
+                if (intensity < 0) {
+                    intensity = 0;
+                }
+                if (intensity > 255){
+                    intensity = 255;
                 }
                 int rgb = (intensity << 16) | (intensity << 8) | intensity; // Set the same value for R, G, B
                 image.setRGB(x, y, rgb);
@@ -514,19 +511,31 @@ public class GabrielTeste {
     }
 
     public static double[][] normalize(double[][] eigenVectorsATxA) {
-        for (int i = 0; i < eigenVectorsATxA[0].length; i++) {
+        double[][] eigenVectorsATxACopy = new double[eigenVectorsATxA.length][eigenVectorsATxA[0].length];
+
+        for (int i = 0; i < eigenVectorsATxA.length; i++) {
+            for (int j = 0; j < eigenVectorsATxA[0].length; j++) {
+                eigenVectorsATxACopy[i][j] = eigenVectorsATxA[i][j];
+            }
+        }
+
+        for (int i = 0; i < eigenVectorsATxACopy[0].length; i++) {
             double norm = 0;
 
-            for (int j = 0; j < eigenVectorsATxA.length; j++) {
-                norm += eigenVectorsATxA[j][i] * eigenVectorsATxA[j][i];
+            for (int j = 0; j < eigenVectorsATxACopy.length; j++) {
+                norm += eigenVectorsATxACopy[j][i] * eigenVectorsATxACopy[j][i];
             }
             norm = Math.sqrt(norm);
 
             for (int j = 0; j < eigenVectorsATxA.length; j++) {
-                eigenVectorsATxA[j][i] /= norm;
+                if (norm == 0) {
+                    eigenVectorsATxACopy[j][i] = 0;
+                } else {
+                    eigenVectorsATxACopy[j][i] /= norm;
+                }
             }
         }
-        return eigenVectorsATxA;
+        return eigenVectorsATxACopy;
     }
 
     public static EigenDecomposition decomposeMatrix(double[][] matrix) {

@@ -8,12 +8,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.util.*;
 
 //! classe para testar func 2 e 3
 public class GabrielTeste {
     public static void main(String[] args) {
-        String csvPath = "Input/Funcao2-3/csv";
+        String csvPath = "Input/Funcao2-3/csvTESTE";
 
         String[] CSVFileNames = getCSVFileNames(csvPath);
 
@@ -33,41 +34,93 @@ public class GabrielTeste {
 
         double[][] phi = centralizeImages(linearizedImages, meanVector);
 
-        double[][] covariance = covariances(phi);
+        double[][] phiT = transposeMatrix(phi);
 
-        double[][] eigenVectors = eigenVectors(covariance);
+        double[][] ATxA = multiplyMatrix(phiT, phi);
 
-        double[][] eigenfaces = multiplyMatrix(phi, eigenVectors);
+        // double[][] covariance = covariances(phi);
 
-        double[][] normalizedEigenfaces = normalize(eigenfaces);
+        double[][] eigenVectors = eigenVectors(ATxA);
+
+        double[][] eigenVectorsExpand = multiplyMatrix(phi, eigenVectors);
+
+        double[][] eigenfaces = new double[eigenVectorsExpand.length][eigenVectorsExpand[0].length];
+        eigenfaces = normalize(eigenVectorsExpand);
 
         double[][] weightsMatrix = new double[phi.length][phi[0].length];
 
+        printMatrix(linearizedImages, "linearizedImages");
+        System.out.println("vetor medio");
+        System.out.println(Arrays.toString(meanVector));
+        printMatrix(phi, "phi");
+        printMatrix(phiT, "phiT");
+        printMatrix(eigenVectors, "eigenVectors");
+        printMatrix(eigenVectorsExpand, "eigenVectorsExpand");
+        //printMatrix(eigenfaces, "eigenfaces");
+
         // Itera sobre cada imagem para calcular pesos e reconstruir
         for (int img = 0; img < linearizedImages[0].length; img++) {
-            double[] weights = calculateWeightsOne(getColumn(phi, img), normalizedEigenfaces);
+            double[] weights = calculateWeightsOne(getColumn(phi, img), eigenfaces);
 
             for (int i = 0; i < weights.length; i++) {
                 weightsMatrix[i][img] = weights[i];
             }
 
-            double[] reconstructedImage = reconstructImage(meanVector, normalizedEigenfaces, weights);
+            System.out.println("pesos");
+            System.out.println(Arrays.toString(weights));
+
+            double[] reconstructedImage = reconstructImage(meanVector, eigenfaces, weights);
 
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, matrixCSVDouble3D[img]);
 
-           // saveImage(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/ImagensReconstruidas");
-            // saveMatrixToFile(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/Eigenfaces");
+           saveImage(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/TESTE");
+           saveMatrixToFile(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/TESTE");
         }
 
-        double[] phiVector = centralizeVector(matrixToArray1D(matrixCSVDouble), meanVector);
-        double[] weightsVetorPrincipal = calculateWeights(phiVector, transposeMatrix(normalizedEigenfaces));
+//        double[] phiVector = centralizeVector(matrixToArray1D(matrixCSVDouble), meanVector);
+//        double[] weightsVetorPrincipal = calculateWeights(phiVector, transposeMatrix(normalizedEigenfaces));
+//
+//        double[] matrizEuclidiana = calculate_Euclidian_Distance(weightsVetorPrincipal, weightsMatrix);
+//        int posicaoMaisProxima = check_Closer_Vetor(matrizEuclidiana);
 
-        double[] matrizEuclidiana = calculate_Euclidian_Distance(weightsVetorPrincipal, weightsMatrix);
-        int posicaoMaisProxima = check_Closer_Vetor(matrizEuclidiana);
-
-        System.out.println("A imagem mais próxima é: " + CSVFileNames[posicaoMaisProxima]);
+//        System.out.println("A imagem mais próxima é: " + CSVFileNames[posicaoMaisProxima]);
     }
 
+    private static void adjustPrecision(double[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                if (Math.abs(matrix[i][j]) < 1e-10) { // Limite para evitar valores muito pequenos
+                    matrix[i][j] = 0.0;
+                }
+            }
+        }
+    }
+
+    public static void printMatrix(double[][] matrixToPrint, String matrixName) {
+        System.out.println("Matriz: " + matrixName + " ↓");
+        printLine(matrixToPrint[0].length, "____________");
+
+        for (int j = 0; j < matrixToPrint.length; j++) {
+            double[] row = matrixToPrint[j];
+            System.out.print("|");
+            for (int i = 0; i < row.length; i++) {
+                System.out.printf("%8.3f\t", row[i]);
+                if (i == row.length - 1) {
+                    System.out.print("|");
+                }
+            }
+            System.out.println();
+        }
+        printLine(matrixToPrint[0].length, "============");
+        System.out.println();
+    }
+    // Metodo para printar linhas de caracteres no console.
+    private static void printLine(int length, String pattern) {
+        for (int i = 0; i < length; i++) {
+            System.out.print(pattern);
+        }
+        System.out.println();
+    }
 
     private static double[][] readCSVToArray(String filePath) {
         ArrayList<double[]> rows = new ArrayList<>();
@@ -455,9 +508,7 @@ public class GabrielTeste {
     }
 
     public static double[][] eigenVectors(double[][] matrix) {
-        double[][] matrixTransposed = transposeMatrix(matrix);
-        double[][] eigenVectors = multiplyMatrix(matrixTransposed, matrix);
-        EigenDecomposition decomposedMatrixThree = decomposeMatrix(eigenVectors);
+        EigenDecomposition decomposedMatrixThree = decomposeMatrix(matrix);
         RealMatrix eigenVectorsMatrix = decomposedMatrixThree.getV();
         return eigenVectorsMatrix.getData();
     }
@@ -494,10 +545,22 @@ public class GabrielTeste {
     }
 
     public static double[][] multiplyMatrix(double[][] matrixLeft, double[][] matrixRight) {
+        if (matrixLeft[0].length != matrixRight.length) {
+            throw new IllegalArgumentException("Matrizes incompatíveis para multiplicação: colunas de matrixLeft != linhas de matrixRight");
+        }
+
         double[][] resultMatrix = new double[matrixLeft.length][matrixRight[0].length];
         for (int i = 0; i < matrixLeft.length; i++) {
             for (int j = 0; j < matrixRight[0].length; j++) {
+                resultMatrix[i][j] = 0;
                 for (int k = 0; k < matrixRight.length; k++) {
+                    double partialProduct = matrixLeft[i][k] * matrixRight[k][j];
+                    if (Double.isNaN(partialProduct) || Double.isInfinite(partialProduct)) {
+                        System.out.println("Erro: Valor inválido em matrixLeft[" + i + "][" + k + "] * matrixRight[" + k + "][" + j + "]");
+                        System.out.println("matrixLeft[" + i + "][" + k + "] = " + matrixLeft[i][k]);
+                        System.out.println("matrixRight[" + k + "][" + j + "] = " + matrixRight[k][j]);
+                        System.exit(1);
+                    }
                     resultMatrix[i][j] += matrixLeft[i][k] * matrixRight[k][j];
                 }
             }

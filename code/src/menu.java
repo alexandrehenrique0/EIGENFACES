@@ -180,14 +180,14 @@ public class menu {
 
         double[] closestImageWeight = calculateEuclidianDistance(principalWeightsVector, weightsMatrix);
         double[][] allEuclidianDistances = calculateAllEuclidianDistances(principalWeightsVector, weightsMatrix);
-        int closestImageIndex = checkCloserVetor(allEuclidianDistances[0]);
+        int closestImageIndex = checkCloserVetor(allEuclidianDistances);
 
         double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeight);
 
         System.out.println("O número de vetores próprios utilizados foi de: " + vectorNumbers);
         System.out.println("A imagem mais próxima é: " + csvFiles[closestImageIndex] + " e foi salva em Identificação!");
 
-        double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
+        double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[closestImageIndex]);
 
 
         for (int i = 0; i < csvFiles.length; i++) {
@@ -198,6 +198,7 @@ public class menu {
             }
         }
 
+        //! PRINTA CORRETAMENTE, O ERRO ESTA NA MATRIZ QUE ELE RECEBE.
         saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex], "Output/Func3/Identificacao", 1);
     }
     //* ------------------ fim dos metodos principais ------------------
@@ -519,13 +520,18 @@ public class menu {
         return allEuclidianDistances;
     }
 
-    public static int checkCloserVetor(double[] result) {
-        double min = result[0];
-        int closestImageIndex = 0;
-        for (int j = 1; j < result.length; j++) {
-            if (result[j] < min) {
-                min = result[j];
-                closestImageIndex = j;
+    public static int checkCloserVetor(double[][] allEuclidianDistances) {
+        double minSum = Double.MAX_VALUE;
+        int closestImageIndex = -1;
+
+        for (int i = 0; i < allEuclidianDistances.length; i++) {
+            double sum = 0;
+            for (int j = 0; j < allEuclidianDistances[i].length; j++) {
+                sum += allEuclidianDistances[i][j];
+            }
+            if (sum < minSum) {
+                minSum = sum;
+                closestImageIndex = i;
             }
         }
         return closestImageIndex;
@@ -596,7 +602,7 @@ public class menu {
         }
 
         try {
-            String relativePath = "Output/Func3/Identificação/" + file.getName();
+            String relativePath = "Output/Func3/Identificacao/" + file.getName();
             writeArrayAsImage(normalizedImage, relativePath);
             if (printOrNot == 1) {
                 System.out.println("A imagem mais proxima foi salva com sucesso: " + relativePath);

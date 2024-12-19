@@ -101,25 +101,36 @@ public class menu {
         populateLinearizedImages(linearizedImages, allMatricesCsv);
         double[] averageVectors = calculateAverageVector(linearizedImages);
         double[][] phi = centralizeImages(linearizedImages, averageVectors);
+        int vectorK = validateEigenVectors(linearizedImages, vectorNumbers);
+
+        double[][] phiT = transposeMatrix(phi);
+        double[][] phiTxPhi = multiplyMatrices(phiT, phi);
+        double[][] eigenVectors = getEigenVectors(phiTxPhi);
+        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
+        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+        double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
+        double[][] eigenfaces = normalize(expandedVectorsK);
+
+        populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
         switch (function) {
             case 1:
                 printHeaderFunction("Decomposição Própria de uma Matriz Simétrica");
-                decomposeSymmetricMatrix(oneMatrixCsv, vectorNumbers, csvLocation);
+                decomposeSymmetricMatrix(oneMatrixCsv, vectorK, csvLocation);
                 System.out.println("Funcionalidade 1 finalizada.");
                 printLine(1, "===============================");
                 runInterative();
                 break;
             case 2:
                 printHeaderFunction("Reconstrução de Imagens usando Eigenfaces");
-                reconstructImagesWithEigenfaces(vectorNumbers, csvFiles, averageVectors, phi, linearizedImages, weightsMatrix, allMatricesCsv);
+                reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv);
                 System.out.println("Funcionalidade 2 finalizada.");
                 printLine(1, "===============================");
                 runInterative();
                 break;
             case 3:
                 printHeaderFunction("Identificação de imagem mais próxima");
-                identifyClosestImage(vectorNumbers, csvFiles, averageVectors, phi, oneMatrixCsv, weightsMatrix, allMatricesCsv);
+                identifyClosestImage(vectorK, csvFiles, averageVectors, oneMatrixCsv, weightsMatrix, allMatricesCsv, eigenfaces);
                 System.out.println("Funcionalidade 3 finalizada.");
                 printLine(1, "===============================");
                 runInterative();
@@ -131,9 +142,7 @@ public class menu {
         double[][] eigenVectors = getEigenVectors(oneMatrixCsv);
         double[][] eigenValues = getEigenValues(oneMatrixCsv);
 
-        int numbersEigenfaces = validateEigenVectors(eigenVectors, vectorNumbers);
-
-        double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, numbersEigenfaces);
+        double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
         double[][] newEigenVectorsK = createSubmatrix(eigenVectors, valuesAndIndexArray);
         double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
         double[][] newEigenVectorsTransposeK = transposeMatrix(newEigenVectorsK);
@@ -142,24 +151,13 @@ public class menu {
         double maximumAbsolutError = calculateMAE(oneMatrixCsv, matrixEigenFaces);
 
         saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1");
-        printFunction1(numbersEigenfaces, newEigenValuesK, newEigenVectorsK, maximumAbsolutError);
+        printFunction1(vectorNumbers, newEigenValuesK, newEigenVectorsK, maximumAbsolutError);
     }
 
-    public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] phi, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv) {
-        double[][] phiT = transposeMatrix(phi);
-        double[][] phiTxPhi = multiplyMatrices(phiT, phi);
-        double[][] eigenVectors = getEigenVectors(phiTxPhi);
-
-        int numbersEigenfaces = validateEigenVectors(eigenVectors, vectorNumbers);
-
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, numbersEigenfaces);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
-        double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
-        double[][] eigenfaces = normalize(expandedVectorsK);
-        populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
+    public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv) {
 
         System.out.println("O vetor médio é: " + Arrays.toString(averageVectors));
-        System.out.println("O número de vetores próprios utilizados foi de: " + numbersEigenfaces);
+        System.out.println("O número de vetores próprios utilizados foi de: " + vectorNumbers);
 
         for (int img = 0; img < linearizedImages[0].length; img++) {
             double[] columnWeights = getColumn(weightsMatrix, img);
@@ -173,47 +171,34 @@ public class menu {
         }
     }
 
-    public static void identifyClosestImage(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] phi, double[][] oneMatrixCsv, double[][] weightsMatrix, double[][][] allMatricesCsv) {
-        double[][] covariance = covariances(phi);
-        double[][] eigenVectors = getEigenVectors(covariance);
+    public static void identifyClosestImage(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] oneMatrixCsv, double[][] weightsMatrix, double[][][] allMatricesCsv, double[][] eigenfaces) {
+        double[] linearizedPrincipalImage = matrixToArray1D(oneMatrixCsv);
+        double[] phiPrincipalImage = subtractionColumns(linearizedPrincipalImage, averageVectors);
 
-        int numbersEigenfaces = validateEigenVectors(eigenVectors, vectorNumbers);
-
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, numbersEigenfaces);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
-        double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
-        double[][] eigenfaces = normalize(expandedVectorsK);
-        //! OBSERVAR AQUI
-        populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
-
-        //! ERA ENVIADA PARA calculateWeights EIGENFACES TRANSPOSTA, MAS METODO FUNCIONA PRA FUNC DOIS
         double[][] eigenfacesTransposed = transposeMatrix(eigenfaces);
-        double[] matrixLinearized = matrixToArray1D(oneMatrixCsv);
-        double[] phiVector = centralizeVector(matrixLinearized, averageVectors);
-        //! ERRO EM populateWeightsMatrix(weightsMatrix) EM calculateWeights
-        //! phiVector.length tá igual a 4096 e eigenfacesTransposed.length
-        //! ESTAVA ENVIANDO EIGENFACES TRANSPOSTA NAO SEI PQ, ENVIEI EIGENFACES NORMAL E FUNCIONOU
-        double[] principalWeightsVector = calculateWeights(phiVector, eigenfaces);
-        double[] euclideanDistances = calculateEuclidianDistance(principalWeightsVector, weightsMatrix);
+        double[] principalWeightsVector = calculateWeights(phiPrincipalImage, eigenfacesTransposed);
 
-        int closestImageIndex = checkCloserVetor(euclideanDistances);
+        double[] closestImageWeight = calculateEuclidianDistance(principalWeightsVector, weightsMatrix);
+        double[][] allEuclidianDistances = calculateAllEuclidianDistances(principalWeightsVector, weightsMatrix);
+        int closestImageIndex = checkCloserVetor(allEuclidianDistances[0]);
 
-        double[] columnWeights = getColumn(weightsMatrix, closestImageIndex);
-        double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights);
+        double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeight);
 
-        System.out.println("O número de vetores próprios utilizados foi de: " + numbersEigenfaces);
-        System.out.println("A imagem mais próxima é: " + csvFiles[closestImageIndex]);
+        System.out.println("O número de vetores próprios utilizados foi de: " + vectorNumbers);
+        System.out.println("A imagem mais próxima é: " + csvFiles[closestImageIndex] + " e foi salva em Identificação!");
 
         double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
 
-        //! AQUI DEU: Index 40 out of bounds for length 40
-        //! MAS TEORICAMENTE O ARRAY DE euclideanDistances NÃO TEM O MESMO TAMANHO DE csvFiles ??
-        for (int i = 0; i < euclideanDistances.length; i++) {
-            double distance = euclideanDistances[i];
-            System.out.printf("Distância euclidiana para a imagem %s é de: %.2f\n", csvFiles[i], distance);
+
+        for (int i = 0; i < csvFiles.length; i++) {
+            if (i == closestImageIndex) {
+                System.out.printf("Essa foi a imagem solicitada! %s E sua distância é de: %.1f\n", csvFiles[i], allEuclidianDistances[i][0]);
+            } else {
+                System.out.printf("Distância euclidiana para da imagem: %s para a imagem solicitada é de: %.1f\n", csvFiles[i], allEuclidianDistances[i][0]);
+            }
         }
 
-        saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex], "Output/Identificacao", 1);
+        saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex], "Output/Func3/Identificacao", 1);
     }
     //* ------------------ fim dos metodos principais ------------------
 
@@ -241,11 +226,13 @@ public class menu {
     }
 
     public static void populateWeightsMatrix(double[][] weightsMatrix, double[][] phi, double[][] eigenfaces) {
-        for (int img = 0; img < phi[0].length; img++) {
+        for (int img = 0; img < weightsMatrix.length; img++) {
             double[] actualPhiColumn = getColumn(phi, img);
-            double[] weights = calculateWeights(actualPhiColumn, eigenfaces);
-            for (int i = 0; i < weights.length; i++) {
-                weightsMatrix[i][img] = weights[i];
+            double[][] eigenfacesTransposed = transposeMatrix(eigenfaces);
+            double[] weights = calculateWeights(actualPhiColumn, eigenfacesTransposed);
+
+            for (int i = 0; i < weightsMatrix.length; i++) {
+                weightsMatrix[img][i] = weights[i];
             }
         }
     }
@@ -304,20 +291,16 @@ public class menu {
         return array;
     }
 
-    //! FUNCIONA PRA DOIS, ENTENDER PORQUE NÃO FUNCIONA PRA 3
-    public static double[] calculateWeights(double[] phi, double[][] matrixU) {
-        if (phi.length != matrixU.length) {
-            System.out.println(phi.length);
-            System.out.println(matrixU.length);
-            System.out.println(matrixU[0].length);
+    public static double[] calculateWeights(double[] phi, double[][] eigenfaces) {
+        if (phi.length != eigenfaces[0].length) {
             errorGeneral("O comprimento de 'phi' deve ser igual ao número de linhas em 'eigenfaces'.");
         }
 
-        double[] weights = new double[matrixU[0].length];
+        double[] weights = new double[eigenfaces[0].length];
 
-        for (int j = 0; j < matrixU[0].length; j++) {
-            for (int i = 0; i < matrixU.length; i++) {
-                weights[j] += phi[i] * matrixU[i][j];
+        for (int j = 0; j < eigenfaces[0].length; j++) {
+            for (int i = 0; i < eigenfaces.length; i++) {
+                weights[j] += phi[i] * eigenfaces[i][j];
             }
         }
         return weights;
@@ -501,33 +484,47 @@ public class menu {
             errorGeneral("O comprimento do vetor deve ser igual ao tamanho do vetor médio.");
         }
 
-        double[] phi = new double[vector.length]; // Vetor para armazenar o vetor centralizado
+        double[] phi = new double[vector.length];
 
         for (int i = 0; i < vector.length; i++) {
-            phi[i] = vector[i] - meanVector[i]; // Centraliza o valor
+            phi[i] = vector[i] - meanVector[i];
         }
 
-        return phi; // Retorna o vetor centralizado
+        return phi;
     }
 
-    public static double[] calculateEuclidianDistance(double[] vetorPrincipal, double[][] matrizVetores) {
-        double[] resultado = new double[matrizVetores[0].length];
-        for (int i = 0; i < matrizVetores[0].length; i++) {
-            double soma = 0;
-            for (int j = 0; j < matrizVetores.length; j++) {
-                soma += Math.pow(vetorPrincipal[j] - matrizVetores[j][i], 2);
+    public static double[] calculateEuclidianDistance(double[] principalVector, double[][] weightsMatrix) {
+        double[] result = new double[weightsMatrix[0].length];
+        for (int i = 0; i < weightsMatrix[0].length; i++) {
+            double sum = 0;
+            for (int j = 0; j < weightsMatrix.length; j++) {
+                sum += Math.pow(principalVector[j] - weightsMatrix[j][i], 2);
             }
-            resultado[i] = Math.sqrt(soma);
+            result[i] = Math.sqrt(sum);
         }
-        return resultado;
+        return result;
     }
 
-    public static int checkCloserVetor(double[] resultado) {
-        double min = resultado[0];
+    public static double[][] calculateAllEuclidianDistances(double[] principalVector, double[][] weightsMatrix) {
+        double[][] allEuclidianDistances = new double[weightsMatrix.length][weightsMatrix[0].length];
+        for (int i = 0; i < weightsMatrix.length; i++) {
+            for (int j = 0; j < weightsMatrix[0].length; j++) {
+                double sum = 0;
+                for (int k = 0; k < principalVector.length; k++) {
+                    sum += Math.pow(principalVector[k] - weightsMatrix[i][k], 2);
+                }
+                allEuclidianDistances[i][j] = Math.sqrt(sum);
+            }
+        }
+        return allEuclidianDistances;
+    }
+
+    public static int checkCloserVetor(double[] result) {
+        double min = result[0];
         int closestImageIndex = 0;
-        for (int j = 1; j < resultado.length; j++) {
-            if (resultado[j] < min) {
-                min = resultado[j];
+        for (int j = 1; j < result.length; j++) {
+            if (result[j] < min) {
+                min = result[j];
                 closestImageIndex = j;
             }
         }
@@ -599,9 +596,10 @@ public class menu {
         }
 
         try {
-            writeArrayAsImage(normalizedImage, file.getAbsolutePath());
+            String relativePath = "Output/Func3/Identificação/" + file.getName();
+            writeArrayAsImage(normalizedImage, relativePath);
             if (printOrNot == 1) {
-                System.out.println("A imagem mais proxima foi salva com sucesso: " + file.getAbsolutePath());
+                System.out.println("A imagem mais proxima foi salva com sucesso: " + relativePath);
             }
         } catch (IOException e) {
             System.err.println("Erro ao salvar a imagem: " + e.getMessage());
@@ -869,12 +867,14 @@ public class menu {
 
     //* ------------------ Menus de opções ------------------
     public static void uiFunctionParameterMenu() {
-        System.out.println("------------ Que função deseja realizar? ------------");
+        System.out.println("_____________________________________________________");
+        System.out.println("             Que função deseja realizar?             ");
+        System.out.println();
         System.out.println("1 - Decomposição Própria de uma Matriz Simétrica.");
         System.out.println("2 - Reconstrução de Imagens usando Eigenfaces.");
         System.out.println("3 - Identificação de imagem mais próxima.");
         System.out.println("4 - Deseja sair da aplicação ?");
-        System.out.println("-----------------------------------------------------");
+        System.out.println("_____________________________________________________");
         System.out.print("Opção: ");
     }
 
@@ -987,6 +987,15 @@ public class menu {
             }
         }
         return transposedMatrix;
+    }
+
+    public static double[] subtractionColumns(double[] columnLeft, double[] columnRight) {
+        double[] matrixResult = new double[columnLeft.length];
+        for (int i = 0; i < columnLeft.length; i++) {
+            matrixResult[i] = columnLeft[i] - columnRight[i];
+        }
+
+        return matrixResult;
     }
 
     public static double[][] createSubmatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {

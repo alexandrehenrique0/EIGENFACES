@@ -103,7 +103,7 @@ public class Alexandre {
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         double[][] weightsMatrix = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
-        double[] averageVectors = calculateAverageVector(linearizedImages);
+        double[] averageVectors = calculateMeanVector(linearizedImages);
         double[][] phi = centralizeImages(linearizedImages, averageVectors);
         int vectorK = validateEigenVectors(linearizedImages, vectorNumbers);
 
@@ -310,7 +310,7 @@ public class Alexandre {
         return weights;
     }
 
-    public static double[] calculateAverageVector(double[][] linearizedImages) {
+    public static double[] calculateMeanVector(double[][] linearizedImages) {
         int numPixels = linearizedImages.length;
         int numImages = linearizedImages[0].length;
         double[] meanVector = new double[numPixels];
@@ -871,16 +871,16 @@ public class Alexandre {
 
     public static void checkAverageVector() {
         System.out.println("Teste : Vetor Médio");
-        double[] expected= {2.0,5.0,8.0};
+        double[] expectedResult= {2.0,5.0,8.0};
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {1, 2, 3},
                 {4, 5, 6},
                 {7, 8, 9}
         };
-        double[] result =calculateAverageVector(matrizEntrada);
+        double[] obtainedResult = calculateMeanVector(inputMatrix);
 
-        if (checkIgualdadeVetores(result, expected)) {
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
             System.out.println("calcularVetorMedio: Teste bem sucedido!");
         } else {
             System.out.println("calcularVetorMedio: Falha - Resultado incorreto.");
@@ -890,23 +890,23 @@ public class Alexandre {
 
     public static void checkCentralizeImage() {
         System.out.println("Teste : Centralicação de Imagens");
-        double[] vetorMedio = {2.0,5.0,8.0};
+        double[] meanVector = {2.0,5.0,8.0};
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {1, 2, 3},
                 {4, 5, 6},
                 {7, 8, 9}
         };
 
-        double[][] expected = {
+        double[][] expectedResult = {
                 {-1, 0, 1},
                 {-1, 0, 1},
                 {-1, 0, 1}
         };
 
-        double[][] result = centralizeImages(matrizEntrada, vetorMedio);
+        double[][] obtainedResult = centralizeImages(inputMatrix, meanVector);
 
-        if (checkIgualdadeMatrizes(result, expected)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("centralizarMatriz: Teste bem sucedido!");
         } else {
             System.out.println("centralizarMatriz: Falha - Resultado incorreto.");
@@ -915,22 +915,22 @@ public class Alexandre {
     }
 
     public static void checkMultiplication(){
-        double[][] matrizLeft = {
+        double[][] leftMatrix = {
                 {1, 2},
                 {3, 4}
         };
-        double[][] matrizRight = {
+        double[][] rightMatrix = {
                 {5, 6},
                 {7, 8}
         };
-        double[][] resultadoEsperado = {
+        double[][] expectedResult = {
                 {19, 22},
                 {43, 50}
         };
-        double[][] resultadoObtido = multiplyMatrices(matrizLeft, matrizRight);
-        checkIgualdadeMatrizes(resultadoObtido, resultadoEsperado);
+        double[][] obtainedResult = multiplyMatrices(leftMatrix, rightMatrix);
+        checkIgualdadeMatrizes(obtainedResult, expectedResult);
 
-        if (checkIgualdadeMatrizes(resultadoObtido, resultadoEsperado)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("Multiplicação: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação: Falha - Resultado incorreto.");
@@ -940,24 +940,24 @@ public class Alexandre {
 
     public static void checkNormalization(){
         System.out.println("Teste 2: Normalização de matrizes");
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {3, 4},
                 {2, 6},
                 {4, 2}
         };
 
 
-        double[][] matrizEsperada = {
+        double[][] expectedResult = {
                 {0.557, 0.535},
                 {0.371, 0.802},
                 {0.743, 0.267}
         };
 
 
-        double[][] matrizNormalizada = normalize(matrizEntrada);
-        checkIgualdadeMatrizes(matrizNormalizada,matrizEsperada);
+        double[][] obtainedResult = normalize(inputMatrix);
+        checkIgualdadeMatrizes(obtainedResult,expectedResult);
 
-        if (checkIgualdadeMatrizes(matrizNormalizada, matrizEsperada)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("Normalização: Teste bem sucedido!");
         } else {
             System.out.println("Normalização: Falha - Resultado incorreto.");
@@ -968,22 +968,22 @@ public class Alexandre {
     public static void checkTranspose(){
         System.out.println("Teste : Transposta");
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {1, 2, 3},
                 {4, 5, 6},
                 {7, 8, 9}
         };
 
-        double [][] matrizEsperada = {
+        double [][] expectedResult = {
                 {1, 4, 7},
                 {2, 5, 8},
                 {3, 6, 9}
         };
 
-        double[][] matrizTransposta = transposeMatrix(matrizEntrada);
-        checkIgualdadeMatrizes(matrizTransposta,matrizEsperada);
+        double[][] obtainedResult = transposeMatrix(inputMatrix);
+        checkIgualdadeMatrizes(obtainedResult,expectedResult);
 
-        if (checkIgualdadeMatrizes(matrizTransposta, matrizEsperada)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("Transposta: Teste bem sucedido!");
         } else {
             System.out.println("Transposta: Falha - Resultado incorreto.");
@@ -994,7 +994,7 @@ public class Alexandre {
     public static void checkMultiplicationEscalar(){
         System.out.println("Teste : Multiplicação por escalar");
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {1, 2, 3},
                 {4, 5, 6},
                 {7, 8, 9}
@@ -1002,16 +1002,16 @@ public class Alexandre {
 
         int x = 2;
 
-        double[][] matrizEsperada = {
+        double[][] expectedResult = {
                 {2, 4, 6},
                 {8, 10, 12},
                 {14, 16, 18}
         };
 
-        double[][] matrizMultiplicada = multiplyMatrixEscalar(matrizEntrada, x);
-        checkIgualdadeMatrizes(matrizMultiplicada,matrizEsperada);
+        double[][] obtainedResult = multiplyMatrixEscalar(inputMatrix, x);
+        checkIgualdadeMatrizes(obtainedResult,expectedResult);
 
-        if (checkIgualdadeMatrizes(matrizMultiplicada, matrizEsperada)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("Multiplicação por escalar: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação por escalar: Falha - Resultado incorreto.");
@@ -1022,15 +1022,15 @@ public class Alexandre {
     public static void checkSubtractionColumns(){
         System.out.println("Teste : Subtração de colunas");
 
-        double[] colunaEsquerda = {1, 2, 3};
-        double[] colunaDireita = {4, 5, 6};
+        double[] leftColumn = {1, 2, 3};
+        double[] rightColumn = {4, 5, 6};
 
-        double[] resultadoEsperado = {-3, -3, -3};
+        double[] expectedResult = {-3, -3, -3};
 
-        double[] resultadoObtido = subtractionColumns(colunaEsquerda, colunaDireita);
-        checkIgualdadeVetores(resultadoObtido,resultadoEsperado);
+        double[] obtainedResult = subtractionColumns(leftColumn, rightColumn);
+        checkIgualdadeVetores(obtainedResult,expectedResult);
 
-        if (checkIgualdadeVetores(resultadoObtido, resultadoEsperado)) {
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
             System.out.println("Subtração de colunas: Teste bem sucedido!");
         } else {
             System.out.println("Subtração de colunas: Falha - Resultado incorreto.");
@@ -1041,13 +1041,13 @@ public class Alexandre {
     public static void checkSubmatrix(){
         System.out.println("Teste : Submatriz");
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {1, 2, 3},
                 {4, 5, 6},
                 {7, 8, 9}
         };
 
-        double[][] matrizEsperada = {
+        double[][] expectedResult = {
                 {1, 2},
                 {4, 5}
         };
@@ -1057,10 +1057,10 @@ public class Alexandre {
                 {0, 1}   // Segunda coluna
         };
 
-        double[][] matrizSub = createSubmatrix(matrizEntrada,valuesAndIndexArray);
-        checkIgualdadeMatrizes(matrizSub,matrizEsperada);
+        double[][] obtainedResult = createSubmatrix(inputMatrix,valuesAndIndexArray);
+        checkIgualdadeMatrizes(obtainedResult,expectedResult);
 
-        if (checkIgualdadeMatrizes(matrizSub, matrizEsperada)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("Submatriz: Teste bem sucedido!");
         } else {
             System.out.println("Submatriz: Falha - Resultado incorreto.");
@@ -1071,19 +1071,19 @@ public class Alexandre {
     public static void checkEuclidianDistance(){
         System.out.println("Teste : Distância Euclidiana");
 
-        double[] vetorPrincipal = {1, 2, 3};
-        double[][] matrizPesos = {
+        double[] principalVector = {1, 2, 3};
+        double[][] weigthMatrix = {
                 {4, 5},
                 {6, 7},
                 {8, 9}
         };
 
-        double[] resultadoEsperado = {7.071, 8.775};
+        double[] expectedResult = {7.071, 8.775};
 
-        double[] resultadoObtido = calculateEuclidianDistance(vetorPrincipal, matrizPesos);
-        checkIgualdadeVetores(resultadoObtido,resultadoEsperado);
+        double[] obtainedResult = calculateEuclidianDistance(principalVector, weigthMatrix);
+        checkIgualdadeVetores(obtainedResult,expectedResult);
 
-        if (checkIgualdadeVetores(resultadoObtido, resultadoEsperado)) {
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
             System.out.println("Distância Euclidiana: Teste bem sucedido!");
         } else {
             System.out.println("Distância Euclidiana: Falha - Resultado incorreto.");
@@ -1094,13 +1094,13 @@ public class Alexandre {
     public static void checkCloserVetorTest() {
         System.out.println("Teste: Verificação do vetor mais próximo");
 
-        double[] distancias = {5.3, 3.2, 7.8, 1.4, 6.9};
+        double[] distances = {5.3, 3.2, 7.8, 1.4, 6.9};
 
-        int resultadoEsperado = 3;
+        int expectedResult = 3;
 
-        int resultadoObtido = checkCloserVetor(distancias);
+        int obtainedResult = checkCloserVetor(distances);
 
-        if (resultadoObtido == resultadoEsperado) {
+        if (obtainedResult == expectedResult) {
             System.out.println("Verificação do vetor mais próximo: Teste bem sucedido!");
         } else {
             System.out.println("Verificação do vetor mais próximo: Falha - Resultado incorreto.");
@@ -1112,7 +1112,7 @@ public class Alexandre {
         System.out.println("Teste: Cálculo do MAE");
 
         // Matrizes de exemplo
-        double[][] matrizOriginal = {
+        double[][] originalMatrix = {
                 {1.0, 2.0, 3.0},
                 {4.0, 5.0, 6.0},
                 {7.0, 8.0, 9.0}
@@ -1124,11 +1124,11 @@ public class Alexandre {
                 {7.1, 8.1, 9.1}
         };
 
-        double resultadoEsperado = 0.1;
+        double expectedResult = 0.1;
 
-        double resultadoObtido = calculateMAE(matrizOriginal, matrizEigenFaces);
+        double obtainedResult = calculateMAE(originalMatrix, matrizEigenFaces);
 
-        if (Math.abs(resultadoObtido - resultadoEsperado) < 1e-3) {
+        if (Math.abs(obtainedResult - expectedResult) < 1e-3) {
             System.out.println("Cálculo do MAE: Teste bem sucedido!");
         } else {
             System.out.println("Cálculo do MAE: Falha - Resultado incorreto.");
@@ -1148,11 +1148,11 @@ public class Alexandre {
                 {7.0, 8.0, 9.0}
         };
 
-        double[] resultadoEsperado = {30.0, 36.0, 42.0};
+        double[] expectedResult = {30.0, 36.0, 42.0};
 
-        double[] resultadoObtido = calculateWeights(phi, eigenfaces);
+        double[] obtainedResult = calculateWeights(phi, eigenfaces);
 
-        if (checkIgualdadeVetores(resultadoObtido, resultadoEsperado)) {
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
             System.out.println("Cálculo dos pesos: Teste bem sucedido!");
         } else {
             System.out.println("Cálculo dos pesos: Falha - Resultado incorreto.");
@@ -1171,14 +1171,14 @@ public class Alexandre {
 
         int eigenfaces = 2;
 
-        double[][] valuesAndIndexArrayEsperado = {
+        double[][] expectedResult = {
                 {5.0, 1},
                 {3.0, 2}
         };
 
-        double[][] valuesAndIndexArrayObtido = getValuesAndIndexArray(eigenValuesArray, eigenfaces);
+        double[][] obtainedResult = getValuesAndIndexArray(eigenValuesArray, eigenfaces);
 
-        if (checkIgualdadeMatrizes(valuesAndIndexArrayObtido, valuesAndIndexArrayEsperado)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("getValuesAndIndexArray: Teste bem sucedido!");
         } else {
             System.out.println("getValuesAndIndexArray: Falha - Resultado incorreto.");
@@ -1201,11 +1201,11 @@ public class Alexandre {
 
         int quantityEigenfaces = 2;
 
-        double[] resultadoEsperado = {1.11, 2.27, 3.43};
+        double[] expectedResult = {1.11, 2.27, 3.43};
 
-        double[] resultadoObtido = reconstructImage(averageVector, eigenfaces, columnWeights, quantityEigenfaces);
+        double[] obtainedResult = reconstructImage(averageVector, eigenfaces, columnWeights, quantityEigenfaces);
 
-        if (checkIgualdadeVetores(resultadoObtido, resultadoEsperado)) {
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
             System.out.println("reconstructImage: Teste bem sucedido!");
         } else {
             System.out.println("reconstructImage: Falha - Resultado incorreto.");
@@ -1216,23 +1216,23 @@ public class Alexandre {
     public static void checkConstructDiagonalMatrix() {
         System.out.println("Teste: Construção de Matriz Diagonal");
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {5,0},
                 {3,0},
                 {8,0}
         };
 
-        double[][] matrizEsperada = {
+        double[][] expectedResult = {
                 {5, 0, 0},
                 {0, 3, 0},
                 {0, 0, 8}
         };
 
 
-        double[][] matrizResultado = constructDiagonalMatrix(matrizEntrada);
+        double[][] obtainedResult = constructDiagonalMatrix(inputMatrix);
 
 
-        if (checkIgualdadeMatrizes(matrizResultado, matrizEsperada)) {
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("Matriz Diagonal: Teste bem sucedido!");
         } else {
             System.out.println("Matriz Diagonal: Falha - Resultado incorreto.");
@@ -1243,17 +1243,17 @@ public class Alexandre {
     public static void checkMatrixToArray1D() {
         System.out.println("Teste: Conversão de Matriz para Array 1D");
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {1, 2, 3},
                 {4, 5, 6},
                 {7, 8, 9}
         };
 
-        double[] arrayEsperado = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+        double[] expectedResult = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-        double[] arrayResultado = matrixToArray1D(matrizEntrada);
+        double[] obtainedResult = matrixToArray1D(inputMatrix);
 
-        if (checkIgualdadeVetores(arrayResultado, arrayEsperado)) {
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
             System.out.println("Conversão de Matriz para Array 1D: Teste bem sucedido!");
         } else {
             System.out.println("Conversão de Matriz para Array 1D: Falha - Resultado incorreto.");
@@ -1264,19 +1264,19 @@ public class Alexandre {
     public static void checkGetColumn() {
         System.out.println("Teste: Obter Coluna de Matriz");
 
-        double[][] matrizEntrada = {
+        double[][] inputMatrix = {
                 {1, 2, 3},
                 {4, 5, 6},
                 {7, 8, 9}
         };
 
-        int indice = 1;
+        int index = 1;
 
-        double[] colunaEsperada = {2, 5, 8};
+        double[] expectedResult = {2, 5, 8};
 
-        double[] colunaResultado = getColumn(matrizEntrada, indice);
+        double[] obtainedResult = getColumn(inputMatrix, index);
 
-        if(checkIgualdadeVetores(colunaResultado, colunaEsperada)) {
+        if(checkIgualdadeVetores(obtainedResult, expectedResult)) {
             System.out.println("Obter Coluna de Matriz: Teste bem sucedido!");
         } else {
             System.out.println("Obter Coluna de Matriz: Falha - Resultado incorreto.");

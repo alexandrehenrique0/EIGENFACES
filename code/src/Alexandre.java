@@ -111,7 +111,7 @@ public class Alexandre {
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
         double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+        double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
 
@@ -151,7 +151,7 @@ public class Alexandre {
         }
 
         double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorNumbers);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, valuesAndIndexArray);
+        double[][] newEigenVectorsK = createSubMatrix(eigenVectors, valuesAndIndexArray);
         double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
         double[][] newEigenVectorsTransposeK = transposeMatrix(newEigenVectorsK);
         double[][] matrixEigenFaces = multiplyMatrices(multiplyMatrices(newEigenVectorsK, newEigenValuesK), newEigenVectorsTransposeK);
@@ -884,6 +884,8 @@ public class Alexandre {
             System.out.println("calcularVetorMedio: Teste bem sucedido!");
         } else {
             System.out.println("calcularVetorMedio: Falha - Resultado incorreto.");
+            printVector(expectedResult,"Esperado");
+            printVector(obtainedResult,"Obtido");
         }
         System.out.println();
     }
@@ -910,6 +912,8 @@ public class Alexandre {
             System.out.println("centralizarMatriz: Teste bem sucedido!");
         } else {
             System.out.println("centralizarMatriz: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -934,6 +938,8 @@ public class Alexandre {
             System.out.println("Multiplicação: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -961,6 +967,8 @@ public class Alexandre {
             System.out.println("Normalização: Teste bem sucedido!");
         } else {
             System.out.println("Normalização: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -987,6 +995,8 @@ public class Alexandre {
             System.out.println("Transposta: Teste bem sucedido!");
         } else {
             System.out.println("Transposta: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1015,6 +1025,8 @@ public class Alexandre {
             System.out.println("Multiplicação por escalar: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação por escalar: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1034,11 +1046,13 @@ public class Alexandre {
             System.out.println("Subtração de colunas: Teste bem sucedido!");
         } else {
             System.out.println("Subtração de colunas: Falha - Resultado incorreto.");
+            printVector(expectedResult,"Esperado");
+            printVector(obtainedResult, "Obtido");
         }
         System.out.println();
     }
 
-    public static void checkSubmatrix(){
+    public static void checkSubMatrix(){
         System.out.println("Teste : Submatriz");
 
         double[][] inputMatrix = {
@@ -1047,23 +1061,28 @@ public class Alexandre {
                 {7, 8, 9}
         };
 
-        double[][] expectedResult = {
-                {1, 2},
-                {4, 5}
-        };
-
         double[][] valuesAndIndexArray = {
-                {0, 0},  // Primeira coluna
-                {0, 1}   // Segunda coluna
+                {5, 1},  // Segunda coluna
+                {9, 2}   // Terceira coluna
         };
 
-        double[][] obtainedResult = createSubmatrix(inputMatrix,valuesAndIndexArray);
+        double[][] expectedResult = {
+                {2, 3},
+                {5, 6},
+                {8, 9}
+
+        };
+
+
+        double[][] obtainedResult = createSubMatrix(inputMatrix,valuesAndIndexArray);
         checkIgualdadeMatrizes(obtainedResult,expectedResult);
 
         if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
             System.out.println("Submatriz: Teste bem sucedido!");
         } else {
             System.out.println("Submatriz: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1087,6 +1106,8 @@ public class Alexandre {
             System.out.println("Distância Euclidiana: Teste bem sucedido!");
         } else {
             System.out.println("Distância Euclidiana: Falha - Resultado incorreto.");
+            printVector(expectedResult,"Esperado");
+            printVector(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1104,6 +1125,8 @@ public class Alexandre {
             System.out.println("Verificação do vetor mais próximo: Teste bem sucedido!");
         } else {
             System.out.println("Verificação do vetor mais próximo: Falha - Resultado incorreto.");
+            System.out.println("Esperado: " + expectedResult);
+            System.out.println("Obtido: " + obtainedResult);
         }
         System.out.println();
     }
@@ -1132,6 +1155,8 @@ public class Alexandre {
             System.out.println("Cálculo do MAE: Teste bem sucedido!");
         } else {
             System.out.println("Cálculo do MAE: Falha - Resultado incorreto.");
+            System.out.println("Esperado: " + expectedResult);
+            System.out.printf("Obtido: %.3f\n",obtainedResult);
         }
         System.out.println();
     }
@@ -1156,6 +1181,8 @@ public class Alexandre {
             System.out.println("Cálculo dos pesos: Teste bem sucedido!");
         } else {
             System.out.println("Cálculo dos pesos: Falha - Resultado incorreto.");
+            printVector(expectedResult,"Esperado");
+            printVector(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1182,6 +1209,8 @@ public class Alexandre {
             System.out.println("getValuesAndIndexArray: Teste bem sucedido!");
         } else {
             System.out.println("getValuesAndIndexArray: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1209,6 +1238,8 @@ public class Alexandre {
             System.out.println("reconstructImage: Teste bem sucedido!");
         } else {
             System.out.println("reconstructImage: Falha - Resultado incorreto.");
+            printVector(expectedResult,"Esperado");
+            printVector(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1236,6 +1267,8 @@ public class Alexandre {
             System.out.println("Matriz Diagonal: Teste bem sucedido!");
         } else {
             System.out.println("Matriz Diagonal: Falha - Resultado incorreto.");
+            printMatrix(expectedResult,"Esperado");
+            printMatrix(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1257,6 +1290,8 @@ public class Alexandre {
             System.out.println("Conversão de Matriz para Array 1D: Teste bem sucedido!");
         } else {
             System.out.println("Conversão de Matriz para Array 1D: Falha - Resultado incorreto.");
+            printVector(expectedResult,"Esperado");
+            printVector(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1280,6 +1315,8 @@ public class Alexandre {
             System.out.println("Obter Coluna de Matriz: Teste bem sucedido!");
         } else {
             System.out.println("Obter Coluna de Matriz: Falha - Resultado incorreto.");
+            printVector(expectedResult,"Esperado");
+            printVector(obtainedResult, "Obtido");
         }
         System.out.println();
 
@@ -1421,7 +1458,7 @@ public class Alexandre {
         return matrixResult;
     }
 
-    public static double[][] createSubmatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {
+    public static double[][] createSubMatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {
         boolean[] keepColumnsBoolean = new boolean[eigenVectors[0].length];
 
         for (double[] columns : valuesAndIndexArray) {
@@ -1449,7 +1486,7 @@ public class Alexandre {
     //* -------------------- Printar Matrizes -----------------------
     public static void printMatrix(double[][] matrixToPrint, String matrixName) {
         System.out.println("Matriz: " + matrixName + " ↓");
-        printLine(matrixToPrint[0].length, "____________");
+        printLine(matrixToPrint[0].length, " ___________");
 
         for (double[] row : matrixToPrint) {
             System.out.print("|");
@@ -1461,7 +1498,17 @@ public class Alexandre {
             }
             System.out.println();
         }
-        printLine(matrixToPrint[0].length, "============");
+        printLine(matrixToPrint[0].length, " ===========");
+        System.out.println();
+    }
+
+    public static void printVector(double[] vetorToPrint, String vetorName) {
+        System.out.println("Vetor: " + vetorName + " ↓");
+        System.out.println(" ___________ ");
+        for (int i = 0; i < vetorToPrint.length; i++) {
+            System.out.printf("|%8.3f\t|\n", vetorToPrint[i]);
+        }
+        System.out.println(" =========== ");
         System.out.println();
     }
 
@@ -1482,7 +1529,7 @@ public class Alexandre {
         checkNormalization();
         checkTranspose();
         checkSubtractionColumns();
-        checkSubmatrix();
+        checkSubMatrix();
         checkEuclidianDistance();
         checkCloserVetorTest();
         checkMAETest();

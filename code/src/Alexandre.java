@@ -171,6 +171,9 @@ public class Alexandre {
             double[] columnWeights = getColumn(weightsMatrix, img);
             double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights, vectorNumbers);
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[img]);
+            double[] vetorImagem = getColumn(linearizedImages, img);
+            double maximumAbsolutError = calculateMAE2(vetorImagem, reconstructedImageMatrix);
+            System.out.println("Erro absoluto médio: " + maximumAbsolutError);
             System.out.println("Para a imagem: " + csvFiles[img] + ", foi utilizado este vetor peso : " + Arrays.toString(columnWeights));
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", 0);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
@@ -476,7 +479,28 @@ public class Alexandre {
             }
         }
         return reconstructed;
+
     }
+
+    public static double calculateMAE2(double[] originalVector, double[][] matrixEigenFaces) {
+        int rows = matrixEigenFaces.length;       // Número de linhas da matriz
+        int columns = matrixEigenFaces[0].length; // Número de colunas da matriz
+        if (originalVector.length != rows * columns) {
+            throw new IllegalArgumentException("O tamanho do vetor original não corresponde às dimensões da matriz.");
+        }
+
+        double errorAbsMed = 0;
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                int vectorIndex = i * columns + j; // Mapear índice da matriz para índice do vetor
+                errorAbsMed += Math.abs(originalVector[vectorIndex] - matrixEigenFaces[i][j]);
+            }
+        }
+
+        return errorAbsMed / (rows * columns);
+    }
+
     //* ----------------- Fim das funcionalidades 2 ------------------
 
 

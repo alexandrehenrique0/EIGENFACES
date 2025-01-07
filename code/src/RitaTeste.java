@@ -51,23 +51,46 @@ public class RitaTeste {
             quitApplication();
         }
 
-        vectorNumbers = verifyVectorNumbers();
-        csvLocation = verifyCsvLocation();
-        imageFolderLocation = verifyImageFolderLocation(function);
+        if(function == 1){
+            vectorNumbers = verifyVectorNumbers();
+            csvLocation = verifyCsvLocationFunction1();
+            imageFolderLocation = verifyImageFolderLocation(function);
 
-        //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
-        //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
+            //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
+            //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
 
-        //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
-        String[] csvFiles = getCSVFileNames(imageFolderLocation);
+            //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
+            String[] csvFiles = getCSVFileNames(imageFolderLocation);
 
-        //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
-        double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
+            //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
+            double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
 
-        //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
-        double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
+            //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
+            double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
 
-        switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+            switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+        }else{
+            vectorNumbers = verifyVectorNumbers();
+            csvLocation = verifyCsvLocation();
+            imageFolderLocation = verifyImageFolderLocation(function);
+
+            //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
+            //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
+
+            //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
+            String[] csvFiles = getCSVFileNames(imageFolderLocation);
+
+            //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
+            double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
+
+            //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
+            double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
+
+            switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+        }
+
+
+
     }
 
     public static void runNonInteractive(String[] args) {
@@ -651,8 +674,32 @@ public class RitaTeste {
             return imageFolderLocationArgs;
         }
     }
-
     public static String receiveCsvLocation(String[] args) {
+        String csvLocationArgs;
+        if (args == null) {
+            String csvLocation = scanner.next();
+            if (!checkCsvLocation(csvLocation)) {
+                System.out.println("Erro: Localização inválida csv");
+                System.out.println("Tentar novamente ? (S/N)");
+                String answer = scanner.next().toUpperCase();
+                if (answer.equals("S")) {
+                    csvLocation = verifyCsvLocation();
+                } else {
+                    System.out.println("Saindo da aplicação, ainda pode desistir mas retornará ao menu inicial.");
+                    quitApplication();
+                }
+            }
+            return csvLocation;
+        } else {
+            csvLocationArgs = args[5];
+            if (!checkCsvLocation(csvLocationArgs)) {
+                errorGeneral("Erro: Localização inválida csv");
+            }
+            return csvLocationArgs;
+        }
+    }
+
+    public static String receiveCsvLocationFunction1(String[] args) {
         String csvLocationArgs;
         if (args == null) {
             String csvLocation = scanner.next();
@@ -667,7 +714,6 @@ public class RitaTeste {
                     quitApplication();
                 }
             }
-
             csvLocation = verifySymmetricMatrix(csvLocation);
 
             return csvLocation;
@@ -676,8 +722,8 @@ public class RitaTeste {
             if (!checkCsvLocation(csvLocationArgs)) {
                 errorGeneral("Erro: Localização inválida csv");
             }
-
             csvLocationArgs = verifySymmetricMatrix(csvLocationArgs);
+
 
             return csvLocationArgs;
         }
@@ -847,6 +893,12 @@ public class RitaTeste {
         String csvLocation;
         uiCsvLocationParameterMenu();
         csvLocation = receiveCsvLocation(null);
+        return csvLocation;
+    }
+    public static String verifyCsvLocationFunction1() {
+        String csvLocation;
+        uiCsvLocationParameterMenu();
+        csvLocation = receiveCsvLocationFunction1(null);
         return csvLocation;
     }
     public static String verifyImageFolderLocation(int function) {

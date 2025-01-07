@@ -53,9 +53,6 @@ public class menu {
         csvLocation = verifyCsvLocation();
         imageFolderLocation = verifyImageFolderLocation(function);
 
-        //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
-        //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
-
         String[] csvFiles = getCSVFileNames(imageFolderLocation);
         double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
@@ -214,17 +211,6 @@ public class menu {
         receiveExitConfirmation(null);
     }
 
-    public static void populateRow(double[][] matrix, int row, String line) {
-        String[] values = line.split(",");
-        for (int col = 0; col < values.length; col++) {
-            try {
-                matrix[row][col] = Double.parseDouble(values[col].trim());
-            } catch (NumberFormatException e) {
-                matrix[row][col] = 0; // or any default value you prefer
-            }
-        }
-    }
-
     public static void populateWeightsMatrix(double[][] weightsMatrix, double[][] phi, double[][] eigenfaces) {
         for (int img = 0; img < phi[0].length; img++) {
             double[] actualPhiColumn = getColumn(phi, img);
@@ -250,24 +236,6 @@ public class menu {
             vectorNumbers = matrix[0].length;
         }
         return vectorNumbers;
-    }
-
-    public static int[] getDimensions() {
-        int rows = 0;
-        int cols = 0;
-        while (scannerCsv.hasNextLine()) {
-            String line = scannerCsv.nextLine().trim();
-            if (!line.isEmpty()) {
-                if (rows == 0) {
-                    cols = line.split(",").length;
-                }
-                rows++;
-            }
-        }
-        if (checkSizeBoundaries(rows, cols)) {
-            errorGeneral("Erro: Dimensões da matriz fora dos limites: " + rows + "x" + cols);
-        }
-        return new int[]{rows, cols};
     }
 
     public static double[] getColumn(double[][] matrix, int column) {
@@ -349,13 +317,6 @@ public class menu {
         EigenDecomposition eigenDecomposition = decomposeMatrix(matrix);
         RealMatrix eigenValues = eigenDecomposition.getD();
         return eigenValues.getData();
-    }
-
-    public static double[][] covariances(double[][] matrixA) {
-        int quantityOfImages = matrixA[0].length;
-        double[][] matrixATransposed = transposeMatrix(matrixA);
-        double[][] matrixATmultiplyByA = multiplyMatrices(matrixATransposed, matrixA);
-        return multiplyMatrixEscalar(matrixATmultiplyByA, 1.0 / quantityOfImages);
     }
 
     public static double[][] constructDiagonalMatrix(double[][] matrixvaluesK) {
@@ -441,23 +402,6 @@ public class menu {
             }
         }
         return eigenVectorsATxA;
-    }
-
-    public static void populateMatrix(double[][] matrix, String csvLocation) {
-        try {
-            scannerCsv = new Scanner(new File(csvLocation));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Erro ao reabrir o arquivo CSV: " + e.getMessage());
-        }
-        int row = 0;
-        while (scannerCsv.hasNextLine()) {
-            String line = scannerCsv.nextLine().trim();
-            if (!line.isEmpty()) {
-                populateRow(matrix, row, line);
-                row++;
-            }
-        }
-        scannerCsv.close();
     }
 
     public static double[] reconstructImage(double[] averageVector, double[][] eigenfaces, double[] columnWeights, int quantityEigenfaces) {
@@ -685,7 +629,6 @@ public class menu {
 
     public static double[][] readCSVToMatrix(String path) {
         try {
-            // Conta o número de linhas no arquivo
             Scanner lineCounter = new Scanner(new File(path));
             int rowCount = 0;
             int columnCount = 0;
@@ -701,10 +644,8 @@ public class menu {
             }
             lineCounter.close();
 
-            // Inicializa a matriz
             double[][] matrix = new double[rowCount][columnCount];
 
-            // Lê o arquivo novamente para preencher a matriz
             Scanner fileScanner = new Scanner(new File(path));
             int row = 0;
             while (fileScanner.hasNextLine()) {
@@ -722,17 +663,6 @@ public class menu {
         } catch (Exception e) {
             throw new RuntimeException("Erro ao ler o arquivo CSV: " + e.getMessage(), e);
         }
-    }
-
-    public static double[][] getMatrixFromCsv(String csvLocation) {
-        int[] dimensions = getDimensions();
-        int rows = dimensions[0];
-        int cols = dimensions[1];
-
-        double[][] matrix = new double[rows][cols];
-        populateMatrix(matrix, csvLocation);
-
-        return matrix;
     }
 
     public static double[][][] getMatricesFromCsvFolder(String folderLocation) {
@@ -762,7 +692,6 @@ public class menu {
         return matrices;
     }
     //* ------------------ Fim dos metodos de entrada e saída ------------------
-
 
     //* ------------------ Verificações ------------------
     public static boolean checkCorrectParametersStructure(String[] parameters) {
@@ -940,16 +869,6 @@ public class menu {
                 for (int k = 0; k < matrizRight.length; k++) {
                     matrizResultante[i][j] += matrizLeft[i][k] * matrizRight[k][j];
                 }
-            }
-        }
-        return matrizResultante;
-    }
-
-    public static double[][] multiplyMatrixEscalar(double[][] matriz, double escalar) {
-        double[][] matrizResultante = new double[matriz.length][matriz[0].length];
-        for (int i = 0; i < matriz.length; i++) {
-            for (int j = 0; j < matriz[0].length; j++) {
-                matrizResultante[i][j] = matriz[i][j] * escalar;
             }
         }
         return matrizResultante;

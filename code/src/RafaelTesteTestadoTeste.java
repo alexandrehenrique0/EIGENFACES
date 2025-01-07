@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class Rafael{
+public class RafaelTesteTestadoTeste {
     // constantes para limites de tamanho.
     public static final int MAX_SIZE_ROWS = 256;
     public static final int MAX_SIZE_COLS = 256;
@@ -51,23 +51,46 @@ public class Rafael{
             quitApplication();
         }
 
-        vectorNumbers = verifyVectorNumbers();
-        csvLocation = verifyCsvLocation();
-        imageFolderLocation = verifyImageFolderLocation(function);
+        if(function == 1){
+            vectorNumbers = verifyVectorNumbers();
+            csvLocation = verifyCsvLocationFunction1();
+            imageFolderLocation = verifyImageFolderLocation(function);
 
-        //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
-        //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
+            //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
+            //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
 
-        //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
-        String[] csvFiles = getCSVFileNames(imageFolderLocation);
+            //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
+            String[] csvFiles = getCSVFileNames(imageFolderLocation);
 
-        //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
-        double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
+            //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
+            double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
 
-        //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
-        double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
+            //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
+            double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
 
-        switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+            switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+        }else{
+            vectorNumbers = verifyVectorNumbers();
+            csvLocation = verifyCsvLocation();
+            imageFolderLocation = verifyImageFolderLocation(function);
+
+            //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
+            //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
+
+            //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
+            String[] csvFiles = getCSVFileNames(imageFolderLocation);
+
+            //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
+            double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
+
+            //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
+            double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
+
+            switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+        }
+
+
+
     }
 
     public static void runNonInteractive(String[] args) {
@@ -209,8 +232,7 @@ public class Rafael{
 
             saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[images]], "Output/Func3/Identificacao", 1);
         }
-        }
-
+    }
     //* ------------------ fim dos metodos principais ------------------
 
 
@@ -669,8 +691,32 @@ public class Rafael{
             return imageFolderLocationArgs;
         }
     }
-
     public static String receiveCsvLocation(String[] args) {
+        String csvLocationArgs;
+        if (args == null) {
+            String csvLocation = scanner.next();
+            if (!checkCsvLocation(csvLocation)) {
+                System.out.println("Erro: Localização inválida csv");
+                System.out.println("Tentar novamente ? (S/N)");
+                String answer = scanner.next().toUpperCase();
+                if (answer.equals("S")) {
+                    csvLocation = verifyCsvLocation();
+                } else {
+                    System.out.println("Saindo da aplicação, ainda pode desistir mas retornará ao menu inicial.");
+                    quitApplication();
+                }
+            }
+            return csvLocation;
+        } else {
+            csvLocationArgs = args[5];
+            if (!checkCsvLocation(csvLocationArgs)) {
+                errorGeneral("Erro: Localização inválida csv");
+            }
+            return csvLocationArgs;
+        }
+    }
+
+    public static String receiveCsvLocationFunction1(String[] args) {
         String csvLocationArgs;
         if (args == null) {
             String csvLocation = scanner.next();
@@ -685,7 +731,6 @@ public class Rafael{
                     quitApplication();
                 }
             }
-
             csvLocation = verifySymmetricMatrix(csvLocation);
 
             return csvLocation;
@@ -694,8 +739,8 @@ public class Rafael{
             if (!checkCsvLocation(csvLocationArgs)) {
                 errorGeneral("Erro: Localização inválida csv");
             }
-
             csvLocationArgs = verifySymmetricMatrix(csvLocationArgs);
+
 
             return csvLocationArgs;
         }
@@ -865,6 +910,12 @@ public class Rafael{
         String csvLocation;
         uiCsvLocationParameterMenu();
         csvLocation = receiveCsvLocation(null);
+        return csvLocation;
+    }
+    public static String verifyCsvLocationFunction1() {
+        String csvLocation;
+        uiCsvLocationParameterMenu();
+        csvLocation = receiveCsvLocationFunction1(null);
         return csvLocation;
     }
     public static String verifyImageFolderLocation(int function) {
@@ -1171,40 +1222,41 @@ public class Rafael{
         System.out.println();
     }
 
-public static void checkCloserVetorTest() {
-    System.out.println("Teste: Verificação do vetor mais próximo");
+    public static void checkCloserVetorTest() {
+        System.out.println("Teste: Verificação do vetor mais próximo");
 
-    double[] distances = {5.3, 3.2, 7.8, 1.4, 6.9, 1.4};
+        double[] distances = {5.3, 3.2, 7.8, 1.4, 6.9, 1.4};
 
-    int expectedResult1 = 3;
-    int expectedResult2 = 5;
+        int expectedResult1 = 3;
+        int expectedResult2 = 5;
 
-    int[] obtainedResult = checkCloserVetor(distances);
-    boolean testPassed1 = false;
-    boolean testPassed2 = false;
+        int[] obtainedResult = checkCloserVetor(distances);
+        boolean testPassed1 = false;
+        boolean testPassed2 = false;
 
-    for (int i = 0; obtainedResult[i] != Integer.MAX_VALUE; i++) {
-        if (obtainedResult[i] == expectedResult1) {
-            testPassed1 = true;
-            System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult1 + "!");
-        } else if (obtainedResult[i] == expectedResult2) {
-            testPassed2 = true;
-            System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult2 + "!");
-        } else {
-            System.out.println("Verificação do vetor mais próximo: Falha - Resultado incorreto.");
-            System.out.println("Esperado: " + expectedResult1 + " ou " + expectedResult2);
-            System.out.println("Obtido: " + obtainedResult[i]);
+        for (int i = 0; obtainedResult[i] != Integer.MAX_VALUE; i++) {
+            if (obtainedResult[i] == expectedResult1) {
+                testPassed1 = true;
+                System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult1 + "!");
+            } else if (obtainedResult[i] == expectedResult2) {
+                testPassed2 = true;
+                System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult2 + "!");
+            } else {
+                System.out.println("Verificação do vetor mais próximo: Falha - Resultado incorreto.");
+                System.out.println("Esperado: " + expectedResult1 + " ou " + expectedResult2);
+                System.out.println("Obtido: " + obtainedResult[i]);
+            }
+            System.out.println();
         }
-        System.out.println();
+
+        if (!testPassed1) {
+            System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult1 + " não encontrado.");
+        }
+        if (!testPassed2) {
+            System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult2 + " não encontrado.");
+        }
     }
 
-    if (!testPassed1) {
-        System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult1 + " não encontrado.");
-    }
-    if (!testPassed2) {
-        System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult2 + " não encontrado.");
-    }
-}
 
     public static void checkMAETest() {
         System.out.println("Teste: Cálculo do MAE");

@@ -23,6 +23,7 @@ public class Alexandre {
     public static Scanner scannerCsv = new Scanner(System.in);
 
     public static void main(String[] args) {
+        // Verificação de parâmetros para decidir entre interativo e não interativo.
         if (checkCorrectParametersStructure(args)) {
             runTests();
             runNonInteractive(args);
@@ -33,7 +34,6 @@ public class Alexandre {
         scanner.close();
         scannerCsv.close();
     }
-
 
     //* ------------------ Modos de execução ------------------
     public static void runInterative() {
@@ -51,18 +51,46 @@ public class Alexandre {
             quitApplication();
         }
 
-        vectorNumbers = verifyVectorNumbers();
-        csvLocation = verifyCsvLocation();
-        imageFolderLocation = verifyImageFolderLocation(function);
+        if(function == 1){
+            vectorNumbers = verifyVectorNumbers();
+            csvLocation = verifyCsvLocationFunction1();
+            imageFolderLocation = verifyImageFolderLocation(function);
 
-        //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
-        //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
+            //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
+            //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
 
-        String[] csvFiles = getCSVFileNames(imageFolderLocation);
-        double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
-        double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
+            //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
+            String[] csvFiles = getCSVFileNames(imageFolderLocation);
 
-        switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+            //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
+            double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
+
+            //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
+            double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
+
+            switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+        }else{
+            vectorNumbers = verifyVectorNumbers();
+            csvLocation = verifyCsvLocation();
+            imageFolderLocation = verifyImageFolderLocation(function);
+
+            //? esse metodo checkExistanceFileDirectory(csvLocation, imageFolderLocation) já
+            //? não é testado em verifyCsvLocation() e verifyImageFolderLocation() ?
+
+            //Obtém os nomes dos arquivos CSV em um diretório de imagens e retorna uma lista de aqrquivos CSV localizados no diretório especifico
+            String[] csvFiles = getCSVFileNames(imageFolderLocation);
+
+            //Lê um arquivo CSV no caminho fornecido e converte seu conteúdo em uma matriz 2D (double[][])
+            double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
+
+            //retorna várias matrizes 2D de diferentes arquivos CSV dentro do diretório.
+            double[][][] allMatricesCsv = getMatricesFromCsvFolder(imageFolderLocation);
+
+            switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+        }
+
+
+
     }
 
     public static void runNonInteractive(String[] args) {
@@ -92,8 +120,6 @@ public class Alexandre {
         // Função que contém as funções principais
         switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
     }
-
-
     //* ------------------ Fim modos de execução ------------------
 
 
@@ -110,8 +136,10 @@ public class Alexandre {
         double[][] phiT = transposeMatrix(phi);
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
+        double[][] eigenValues = getEigenValues(phiTxPhi);
+        double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
+        double[][] newEigenValuesK = constructDiagonalMatrix(selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
 
@@ -139,10 +167,16 @@ public class Alexandre {
                 System.out.println("Funcionalidade 3 finalizada.");
                 runInterative();
                 break;
+            case 4:
+                printHeaderFunction("Construção da nova imagem");
+                generateNewImage(averageVectors, eigenfaces, vectorK,eigenValues);
+                System.out.println();
+                System.out.println("Funcionalidade 4 finalizada.");
         }
     }
 
     public static void decomposeSymmetricMatrix(double[][] oneMatrixCsv, int vectorNumbers, String csvLocation) {
+
         double[][] eigenVectors = getEigenVectors(oneMatrixCsv);
         double[][] eigenValues = getEigenValues(oneMatrixCsv);
 
@@ -171,9 +205,6 @@ public class Alexandre {
             double[] columnWeights = getColumn(weightsMatrix, img);
             double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights, vectorNumbers);
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[img]);
-            double[] vetorImagem = getColumn(linearizedImages, img);
-            double maximumAbsolutError = calculateMAE2(vetorImagem, reconstructedImageMatrix);
-            System.out.println("Erro absoluto médio: " + maximumAbsolutError);
             System.out.println("Para a imagem: " + csvFiles[img] + ", foi utilizado este vetor peso : " + Arrays.toString(columnWeights));
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", 0);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
@@ -187,25 +218,34 @@ public class Alexandre {
         double[] principalWeightsVector = calculateWeights(phiPrincipalImage, eigenfaces);
 
         double[] distances = calculateEuclidianDistance(principalWeightsVector, weightsMatrix);
-        int closestImageIndex = checkCloserVetor(distances);
+        int[] closestImageIndex = checkCloserVetor(distances);
 
-        double[] closestImageWeights = getColumn(weightsMatrix,closestImageIndex);
-        double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeights, vectorNumbers);
+        for (int images = 0; closestImageIndex[images] != Integer.MAX_VALUE; images++) {
+            double[] closestImageWeights = getColumn(weightsMatrix,closestImageIndex[images]);
+            double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeights, vectorNumbers);
 
-        System.out.println("O número de vetores próprios utilizados: " + vectorNumbers);
-        System.out.printf("A imagem mais próxima foi: %s e foi salva em Identificação!\n\n", csvFiles[closestImageIndex]);
+            System.out.println("O número de vetores próprios utilizados: " + vectorNumbers);
+            System.out.printf("A imagem mais próxima foi: %s e foi salva em Identificação!\n\n", csvFiles[closestImageIndex[images]]);
 
-        double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
+            double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
 
-        for (int i = 0; i < csvFiles.length; i++) {
-            if (i == closestImageIndex) {
-                System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
-            } else {
-                System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
+            for (int i = 0; i < csvFiles.length; i++) {
+                if (i == closestImageIndex[images]) {
+                    System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
+                } else {
+                    System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
+                }
             }
-        }
 
-        saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex], "Output/Func3/Identificacao", 1);
+            saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[images]], "Output/Func3/Identificacao", 1);
+        }
+    }
+
+    public static void generateNewImage(double[] meanVector, double[][] eigenfaces, int k,double[][] eigenValues) {
+        int dimension = meanVector.length; // Número de pixels na imagem
+        double[] newImage = creationImage(dimension, meanVector, k, eigenValues, eigenfaces);
+        saveImage(array1DToMatrix(newImage, new double[1][dimension]), "Input/Funcao2-3/csv", "Output/Func3", 1);
+
     }
     //* ------------------ fim dos metodos principais ------------------
 
@@ -274,6 +314,7 @@ public class Alexandre {
         if (checkSizeBoundaries(rows, cols)) {
             errorGeneral("Erro: Dimensões da matriz fora dos limites: " + rows + "x" + cols);
         }
+
         return new int[]{rows, cols};
     }
 
@@ -365,10 +406,10 @@ public class Alexandre {
         return multiplyMatrixEscalar(matrixATmultiplyByA, 1.0 / quantityOfImages);
     }
 
-    public static double[][] constructDiagonalMatrix(double[][] matrixValuesK) {
-        double[][] matrixvaluesKPrint = new double[matrixValuesK.length][matrixValuesK.length];
-        for (int i = 0; i < matrixValuesK.length; i++) {
-            matrixvaluesKPrint[i][i] = matrixValuesK[i][0];
+    public static double[][] constructDiagonalMatrix(double[][] matrixvaluesK) {
+        double[][] matrixvaluesKPrint = new double[matrixvaluesK.length][matrixvaluesK.length];
+        for (int i = 0; i < matrixvaluesK.length; i++) {
+            matrixvaluesKPrint[i][i] = matrixvaluesK[i][0];
         }
         return matrixvaluesKPrint;
     }
@@ -479,28 +520,7 @@ public class Alexandre {
             }
         }
         return reconstructed;
-
     }
-
-    public static double calculateMAE2(double[] originalVector, double[][] matrixEigenFaces) {
-        int rows = matrixEigenFaces.length;       // Número de linhas da matriz
-        int columns = matrixEigenFaces[0].length; // Número de colunas da matriz
-        if (originalVector.length != rows * columns) {
-            throw new IllegalArgumentException("O tamanho do vetor original não corresponde às dimensões da matriz.");
-        }
-
-        double errorAbsMed = 0;
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                int vectorIndex = i * columns + j; // Mapear índice da matriz para índice do vetor
-                errorAbsMed += Math.abs(originalVector[vectorIndex] - matrixEigenFaces[i][j]);
-            }
-        }
-
-        return errorAbsMed / (rows * columns);
-    }
-
     //* ----------------- Fim das funcionalidades 2 ------------------
 
 
@@ -521,19 +541,51 @@ public class Alexandre {
         return result;
     }
 
-    public static int checkCloserVetor(double[] distances) {
+    public static int[] checkCloserVetor(double[] distances) {
         double minDistance = Double.MAX_VALUE;
-        int closestImageIndex = -1;
+        int[] closestImageIndex = new int[distances.length];
+        fillArrayMax(closestImageIndex);
 
+        int j = 0;
         for (int i = 0; i < distances.length; i++) {
             if (distances[i] < minDistance) {
                 minDistance = distances[i];
-                closestImageIndex = i;
+                j = 1;
+                closestImageIndex = new int[distances.length];
+                fillArrayMax(closestImageIndex);
+                closestImageIndex[0] = i;
+            } else if (distances[i] == minDistance) {
+                closestImageIndex[j] = i;
+                j++;
             }
         }
         return closestImageIndex;
     }
+
+    public static int[] fillArrayMax(int[] arrayToFill){
+        for (int i = 0; i < arrayToFill.length; i++) {
+            arrayToFill[i] = Integer.MAX_VALUE;
+        }
+        return arrayToFill;
+    }
     //* ----------------- Fim funcionalidade 3 ------------------
+
+    //* ----------------- Exclusivo Funcionalidade 4 ------------------
+    public static double[] creationImage(int dimension, double[] meanVector,int k, double[][] lambdas, double[][] eigenfaces) {
+        double[] newImage = new double[dimension];
+        for (int i = 0; i < dimension; i++) {
+            newImage[i] = meanVector[i];
+        }
+        for (int i = 0; i < k; i++) {
+            double w_i = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
+            for (int j = 0; j < dimension; j++) {
+                newImage[j] += w_i * eigenfaces[i][j];
+            }
+        }
+
+        return newImage;
+    }
+    //* ----------------- Fim funcionalidade 4 ------------------
 
 
     //* ------------------ Metodos de entrada e saída ------------------
@@ -670,7 +722,6 @@ public class Alexandre {
             return imageFolderLocationArgs;
         }
     }
-
     public static String receiveCsvLocation(String[] args) {
         String csvLocationArgs;
         if (args == null) {
@@ -692,6 +743,36 @@ public class Alexandre {
             if (!checkCsvLocation(csvLocationArgs)) {
                 errorGeneral("Erro: Localização inválida csv");
             }
+            return csvLocationArgs;
+        }
+    }
+
+    public static String receiveCsvLocationFunction1(String[] args) {
+        String csvLocationArgs;
+        if (args == null) {
+            String csvLocation = scanner.next();
+            if (!checkCsvLocation(csvLocation)) {
+                System.out.println("Erro: Localização inválida CSV");
+                System.out.println("Tentar novamente? (S/N)");
+                String answer = scanner.next().toUpperCase();
+                if (answer.equals("S")) {
+                    csvLocation = verifyCsvLocation();
+                } else {
+                    System.out.println("Saindo da aplicação, ainda pode desistir mas retornará ao menu inicial.");
+                    quitApplication();
+                }
+            }
+            csvLocation = verifySymmetricMatrix(csvLocation);
+
+            return csvLocation;
+        } else {
+            csvLocationArgs = args[5];
+            if (!checkCsvLocation(csvLocationArgs)) {
+                errorGeneral("Erro: Localização inválida csv");
+            }
+            csvLocationArgs = verifySymmetricMatrix(csvLocationArgs);
+
+
             return csvLocationArgs;
         }
     }
@@ -793,6 +874,17 @@ public class Alexandre {
 
 
     //* ------------------ Verificações ------------------
+    public static boolean checkIfIsSymmetric(double[][] matrix) {
+        int a = matrix.length;
+        for (int i = 0; i < a; i++) {
+            for (int j = i + 1; j < a; j++) {
+                if (matrix[i][j] != matrix[j][i]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     public static boolean checkCorrectParametersStructure(String[] parameters) {
         if (parameters.length == 8) {
             return parameters[0].equals("-f") && parameters[2].equals("-k") && parameters[4].equals("-i") && parameters[6].equals("-j");
@@ -824,6 +916,26 @@ public class Alexandre {
         }
         return imageDirectory.exists();
     }
+    public static String verifySymmetricMatrix(String csvLocation) {
+
+        double[][] matrix = readCSVToMatrix(csvLocation);
+
+        while (!checkIfIsSymmetric(matrix)) {
+            System.out.println("A matriz não é simétrica.");
+            System.out.println("Tentar novamente? (S/N)");
+            String answer = scanner.next().toUpperCase();
+            if (answer.equals("S")) {
+                csvLocation = verifyCsvLocation();
+                matrix = readCSVToMatrix(csvLocation);
+            } else {
+                System.out.println("Saindo da aplicação, ainda pode desistir mas retornará ao menu inicial.");
+                quitApplication();
+            }
+        }
+
+
+        return csvLocation;
+    }
 
     public static String verifyCsvLocation() {
         String csvLocation;
@@ -831,7 +943,12 @@ public class Alexandre {
         csvLocation = receiveCsvLocation(null);
         return csvLocation;
     }
-
+    public static String verifyCsvLocationFunction1() {
+        String csvLocation;
+        uiCsvLocationParameterMenu();
+        csvLocation = receiveCsvLocationFunction1(null);
+        return csvLocation;
+    }
     public static String verifyImageFolderLocation(int function) {
         String imageFolderLocation;
         do {
@@ -1139,21 +1256,38 @@ public class Alexandre {
     public static void checkCloserVetorTest() {
         System.out.println("Teste: Verificação do vetor mais próximo");
 
-        double[] distances = {5.3, 3.2, 7.8, 1.4, 6.9};
+        double[] distances = {5.3, 3.2, 7.8, 1.4, 6.9, 1.4};
 
-        int expectedResult = 3;
+        int expectedResult1 = 3;
+        int expectedResult2 = 5;
 
-        int obtainedResult = checkCloserVetor(distances);
+        int[] obtainedResult = checkCloserVetor(distances);
+        boolean testPassed1 = false;
+        boolean testPassed2 = false;
 
-        if (obtainedResult == expectedResult) {
-            System.out.println("Verificação do vetor mais próximo: Teste bem sucedido!");
-        } else {
-            System.out.println("Verificação do vetor mais próximo: Falha - Resultado incorreto.");
-            System.out.println("Esperado: " + expectedResult);
-            System.out.println("Obtido: " + obtainedResult);
+        for (int i = 0; obtainedResult[i] != Integer.MAX_VALUE; i++) {
+            if (obtainedResult[i] == expectedResult1) {
+                testPassed1 = true;
+                System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult1 + "!");
+            } else if (obtainedResult[i] == expectedResult2) {
+                testPassed2 = true;
+                System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult2 + "!");
+            } else {
+                System.out.println("Verificação do vetor mais próximo: Falha - Resultado incorreto.");
+                System.out.println("Esperado: " + expectedResult1 + " ou " + expectedResult2);
+                System.out.println("Obtido: " + obtainedResult[i]);
+            }
+            System.out.println();
         }
-        System.out.println();
+
+        if (!testPassed1) {
+            System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult1 + " não encontrado.");
+        }
+        if (!testPassed2) {
+            System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult2 + " não encontrado.");
+        }
     }
+
 
     public static void checkMAETest() {
         System.out.println("Teste: Cálculo do MAE");
@@ -1345,7 +1479,6 @@ public class Alexandre {
         System.out.println();
 
     }
-
     //* ------------------ Fim verificações ------------------
 
 
@@ -1506,6 +1639,27 @@ public class Alexandre {
     }
     //* ----------------- Fim operaçoes básicas com matrizes ------------------
 
+    //* ----------------- Correr Testes -----------------------
+    public static void runTests() {
+        checkAverageVector();
+        checkCentralizeImage();
+        checkMultiplication();
+        checkMultiplicationEscalar();
+        checkNormalization();
+        checkTranspose();
+        checkSubtractionColumns();
+        checkSubMatrix();
+        checkEuclidianDistance();
+        checkCloserVetorTest();
+        checkMAETest();
+        checkCalculateWeights();
+        checkGetValuesAndIndexArray();
+        checkReconstructImage();
+        checkConstructDiagonalMatrix();
+        checkMatrixToArray1D();
+        checkGetColumn();
+    }
+    //* ----------------- Fim Correr Testescode/src/Alexandre.java -----------------------
 
     //* -------------------- Printar Matrizes -----------------------
     public static void printMatrix(double[][] matrixToPrint, String matrixName) {
@@ -1543,28 +1697,6 @@ public class Alexandre {
         System.out.println();
     }
     //* ----------------- Fim printar matrizes -----------------------
-
-    //* ----------------- Correr Testes -----------------------
-    public static void runTests() {
-        checkAverageVector();
-        checkCentralizeImage();
-        checkMultiplication();
-        checkMultiplicationEscalar();
-        checkNormalization();
-        checkTranspose();
-        checkSubtractionColumns();
-        checkSubMatrix();
-        checkEuclidianDistance();
-        checkCloserVetorTest();
-        checkMAETest();
-        checkCalculateWeights();
-        checkGetValuesAndIndexArray();
-        checkReconstructImage();
-        checkConstructDiagonalMatrix();
-        checkMatrixToArray1D();
-        checkGetColumn();
-    }
-    //* ----------------- Fim Correr Testescode/src/Alexandre.java -----------------------
 
 
     //* ----------------- Printar Funcionalidades -----------------

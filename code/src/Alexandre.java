@@ -169,7 +169,7 @@ public class Alexandre {
                 break;
             case 4:
                 printHeaderFunction("Construção da nova imagem");
-                generateNewImage(averageVectors, eigenfaces, vectorK,eigenValues);
+                generateNewImage(averageVectors, eigenfaces, vectorK, eigenValues);
                 System.out.println();
                 System.out.println("Funcionalidade 4 finalizada.");
         }

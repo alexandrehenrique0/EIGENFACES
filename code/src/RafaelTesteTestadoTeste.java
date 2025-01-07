@@ -1628,7 +1628,7 @@ public class RafaelTesteTestadoTeste {
         checkMatrixToArray1D();
         checkGetColumn();
     }
-    //* ----------------- Fim Correr Testescode/src/Alexandre.java -----------------------
+    //* ----------------- Fim Correr Testes code/src/Alexandre.java -----------------------
 
     //* -------------------- Printar Matrizes -----------------------
     public static void printMatrix(double[][] matrixToPrint, String matrixName) {

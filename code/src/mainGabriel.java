@@ -88,8 +88,6 @@ public class mainGabriel {
 
             System.setOut(new PrintStream(new FileOutputStream(file)));
 
-            System.setErr(new PrintStream(new FileOutputStream(file)));
-
         } catch (FileNotFoundException e) {
             errorGeneral("Erro ao criar o arquivo de saída: " + e.getMessage());
         }

@@ -1,3 +1,5 @@
+ATENÇÃO:
+As imagens não são sobrescritas, mas os txt e csv sim!
 
 +----------------------------------------------------+
 |            Qual função deseja realizar?            |

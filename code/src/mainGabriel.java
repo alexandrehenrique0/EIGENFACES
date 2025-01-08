@@ -18,6 +18,7 @@ public class mainGabriel {
     public static final int MIN_QUANTITY_VECTORS = 1;
     private static final int MIN_BIT_VALUE = 0;
     private static final int MAX_BIT_VALUE = 255;
+    private static final double MIN_LAMBDA_VALUE = 1e-8;
 
     //* Scanner global para ser utilizado em todos os métodos necessários.
     public static Scanner scanner = new Scanner(System.in);
@@ -42,13 +43,13 @@ public class mainGabriel {
 
         switch (function) {
             case 1:
-                function1();
+                function1(function);
                 break;
             case 2:
                 function2();
                 break;
             case 3:
-                function3();
+                function3(function);
                 break;
             case 4:
                 function4();
@@ -72,7 +73,7 @@ public class mainGabriel {
         // Receber os parâmetros
         function = receiveFunction(args);
         vectorNumbers = receiveNumberVectors(args);
-        csvLocation = receiveCsvLocation(args);
+        csvLocation = receiveCsvLocation(args, function);
         dataBaseLocation = receiveDataBaseLocation(args);
 
         // Verificar se os arquivo e diretório existem
@@ -125,7 +126,7 @@ public class mainGabriel {
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
         double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+        double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
 
@@ -153,9 +154,9 @@ public class mainGabriel {
         }
     }
 
-    public static void function1() {
+    public static void function1(int function) {
         int vectorNumbers = verifyVectorNumbers();
-        String csvLocation = verifyCsvLocation();
+        String csvLocation = verifyCsvLocation(function);
 
         printHeaderFunction("Decomposição Própria de uma Matriz Simétrica:");
 
@@ -181,9 +182,9 @@ public class mainGabriel {
         runInterative();
     }
 
-    public static void function3() {
+    public static void function3(int function) {
         int vectorNumbers = verifyVectorNumbers();
-        String csvLocation = verifyCsvLocation();
+        String csvLocation = verifyCsvLocation(function);
         String dataBase = verifyDataBaseLocation();
 
         printHeaderFunction("Identificação da imagem mais próxima utilizando Eigenfaces");
@@ -233,7 +234,7 @@ public class mainGabriel {
         int vectorK = validateEigenVectors(oneMatrixCsv, vectorNumbers);
 
         double[][] valuesAndIndexArray = getValuesAndIndexArray(eigenValues, vectorK);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, valuesAndIndexArray);
+        double[][] newEigenVectorsK = createSubMatrix(eigenVectors, valuesAndIndexArray);
         double[][] newEigenValuesK = constructDiagonalMatrix(valuesAndIndexArray);
         double[][] newEigenVectorsTransposeK = transposeMatrix(newEigenVectorsK);
         double[][] matrixEigenFaces = multiplyMatrices(multiplyMatrices(newEigenVectorsK, newEigenValuesK), newEigenVectorsTransposeK);
@@ -259,7 +260,7 @@ public class mainGabriel {
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
         double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+        double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
 
@@ -302,7 +303,7 @@ public class mainGabriel {
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
         double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+        double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
 
@@ -343,7 +344,7 @@ public class mainGabriel {
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
         double[][] eigenValues = getEigenValues(phiTxPhi);
         double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
-        double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+        double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] newEigenValuesK = constructDiagonalMatrix(selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
@@ -352,7 +353,8 @@ public class mainGabriel {
         int dimension = meanVector.length;
         double[] newImage = creationImage(dimension, meanVector, vectorK, newEigenValuesK, eigenfaces);
         double[][] newImageMatrix = array1DToMatrix(newImage, allMatricesCsv[0]);
-        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 0);
+        System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + vectorK);
+        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 1);
     }
     //* ------------------ Fim dos métodos de distribuição de tarefas ------------------
 
@@ -389,7 +391,7 @@ public class mainGabriel {
     }
 
     public static int validateEigenVectors(double[][] matrix, int vectorNumbers) {
-        if (vectorNumbers <= MIN_QUANTITY_VECTORS || vectorNumbers > matrix[0].length) {
+        if (vectorNumbers < MIN_QUANTITY_VECTORS || vectorNumbers > matrix[0].length) {
             vectorNumbers = matrix[0].length;
         }
         return vectorNumbers;
@@ -604,9 +606,12 @@ public class mainGabriel {
             newImage[i] = meanVector[i];
         }
         for (int i = 0; i < k; i++) {
-            double weightImage = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
+            if (lambdas[i][i] < MIN_LAMBDA_VALUE) {
+                lambdas[i][i] = MIN_LAMBDA_VALUE;
+            }
+            double weightsImage = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
             for (int j = 0; j < dimension; j++) {
-                newImage[j] += weightImage * eigenfaces[i][j];
+                newImage[j] += weightsImage * eigenfaces[j][i];
             }
         }
 
@@ -644,8 +649,10 @@ public class mainGabriel {
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
 
-        for (double[] row : imageArray) {
-            for (double val : row) {
+        for (int i = 0; i < imageArray.length; i++) {
+            double[] row = imageArray[i];
+            for (int j = 0; j < row.length; j++) {
+                double val = row[j];
                 if (val < min) min = val;
                 if (val > max) max = val;
             }
@@ -741,7 +748,7 @@ public class mainGabriel {
         }
     }
 
-    public static String receiveCsvLocation(String[] args) {
+    public static String receiveCsvLocation(String[] args, int function) {
         String csvLocationArgs;
         if (args == null) {
             String csvLocation = scanner.next();
@@ -752,7 +759,7 @@ public class mainGabriel {
                 do {
                     answer = scanner.next().toUpperCase();
                     if (answer.equals("S")) {
-                        csvLocation = verifyCsvLocation();
+                        csvLocation = verifyCsvLocation(function);
                     } else if (answer.equals("N")) {
                         System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
                         quitApplication();
@@ -760,12 +767,18 @@ public class mainGabriel {
                         System.out.println("Opção inválida, responda com S/N.");
                     }
                 } while (!answer.equals("S") && !answer.equals("N"));
+            } else if (function == 1) {
+                csvLocation = verifySymmetricMatrix(csvLocation, function);
             }
+
             return csvLocation;
         } else {
             csvLocationArgs = args[5];
             if (!checkCsvLocation(csvLocationArgs)) {
                 errorGeneral("Erro: Localização do csv inválida");
+            }
+            else if (function == 1) {
+                csvLocationArgs = verifySymmetricMatrix(csvLocationArgs, function);
             }
             return csvLocationArgs;
         }
@@ -886,10 +899,10 @@ public class mainGabriel {
         return imageDirectory.exists();
     }
 
-    public static String verifyCsvLocation() {
+    public static String verifyCsvLocation(int function) {
         String csvLocation;
         uiCsvLocation();
-        csvLocation = receiveCsvLocation(null);
+        csvLocation = receiveCsvLocation(null, function);
         return csvLocation;
     }
 
@@ -926,6 +939,39 @@ public class mainGabriel {
         } catch (FileNotFoundException e) {
             errorGeneral("Erro ao abrir os arquivos: " + e.getMessage());
         }
+    }
+
+    public static boolean checkIfIsSymmetric(double[][] matrix) {
+        int a = matrix.length;
+        for (int i = 0; i < a; i++) {
+            for (int j = i + 1; j < a; j++) {
+                if (matrix[i][j] != matrix[j][i]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static String verifySymmetricMatrix(String csvLocation, int function) {
+
+        double[][] matrix = readCSVToMatrix(csvLocation);
+
+        while (!checkIfIsSymmetric(matrix)) {
+            System.out.println("A matriz não é simétrica.");
+            System.out.println("Tentar novamente? (S/N)");
+            String answer = scanner.next().toUpperCase();
+            if (answer.equals("S")) {
+                csvLocation = verifyCsvLocation(function);
+                matrix = readCSVToMatrix(csvLocation);
+            } else {
+                System.out.println("Saindo da aplicação, ainda pode desistir mas retornará ao menu inicial.");
+                quitApplication();
+            }
+        }
+
+
+        return csvLocation;
     }
     //* ------------------ Fim verificações ------------------
 
@@ -1074,7 +1120,7 @@ public class mainGabriel {
         return matrixResult;
     }
 
-    public static double[][] createSubmatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {
+    public static double[][] createSubMatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {
         boolean[] keepColumnsBoolean = new boolean[eigenVectors[0].length];
 
         for (double[] columns : valuesAndIndexArray) {

@@ -348,7 +348,7 @@ public class Alexandre {
         int dimension = meanVector.length;
         double[] newImage = creationImage(dimension, meanVector, vectorK, newEigenValuesK, eigenfaces);
         double[][] newImageMatrix = array1DToMatrix(newImage, allMatricesCsv[0]);
-        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 0);
+        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 1);
     }
     //* ------------------ Fim dos métodos de distribuição de tarefas ------------------
 

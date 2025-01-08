@@ -100,7 +100,6 @@ public class mainGabriel {
     //* ------------------ Métodos principais ------------------
     public static void runNonInterativeOutputs(int function, int vectorNumbers, String csvLocation, String[] csvFiles, double[][] oneMatrixCsv, double[][][] allMatricesCsv, String dataBaseLocation) {
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
-        double[][] weightsMatrix = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
         double[] averageVectors = calculateMeanVector(linearizedImages);
         double[][] phi = centralizeImages(linearizedImages, averageVectors);
@@ -113,6 +112,8 @@ public class mainGabriel {
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
+        double[][] weightsMatrix = new double[eigenfaces[0].length][allMatricesCsv.length];
+
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
@@ -241,7 +242,6 @@ public class mainGabriel {
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(dataBase);
 
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
-        double[][] weightsMatrix = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
         double[] averageVectors = calculateMeanVector(linearizedImages);
         double[][] phi = centralizeImages(linearizedImages, averageVectors);
@@ -254,6 +254,8 @@ public class mainGabriel {
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
+        double[][] weightsMatrix = new double[eigenfaces[0].length][allMatricesCsv.length];
+
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
@@ -284,7 +286,6 @@ public class mainGabriel {
 
 
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
-        double[][] weightsMatrix = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
         double[] averageVectors = calculateMeanVector(linearizedImages);
         double[][] phi = centralizeImages(linearizedImages, averageVectors);
@@ -297,6 +298,8 @@ public class mainGabriel {
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
+        double[][] weightsMatrix = new double[eigenfaces[0].length][allMatricesCsv.length];
+
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
@@ -336,7 +339,6 @@ public class mainGabriel {
     public static void generateNewImage(int vectorNumbers, String dataBase) {
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(dataBase);
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
-        double[][] weightsMatrix = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
         double[] meanVector = calculateMeanVector(linearizedImages);
         double[][] phi = centralizeImages(linearizedImages, meanVector);
@@ -351,6 +353,8 @@ public class mainGabriel {
         double[][] newEigenValuesK = constructDiagonalMatrix(selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
+        double[][] weightsMatrix = new double[eigenfaces[0].length][allMatricesCsv.length];
+
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
         int dimension = meanVector.length;
@@ -437,7 +441,7 @@ public class mainGabriel {
             errorGeneral("Para calcular os pesos o comprimento de 'phi' deve ser igual a quantidade de linhas da matriz 'eigenfaces'.");
         }
 
-        double[] weights = new double[phi.length];
+        double[] weights = new double[eigenfaces[0].length];
 
         for (int j = 0; j < eigenfaces[0].length; j++) {
             weights[j] = 0;

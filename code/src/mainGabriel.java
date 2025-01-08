@@ -6,16 +6,20 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
+//* NOTE: The code has been divided into several parts to facilitate reading and understanding.
+//* Collapse all for a better view.
+//* Use the keyboard shortcut Ctrl + F and search for "//*" to navigate between parts of the code.
+
 
 public class mainGabriel {
-    // Constantes para limites de tamanho.
+    //* Constantes para limites de tamanho.
     public static final int MAX_SIZE_ROWS_AND_COLS = 256;
     public static final int MIN_SIZE_ROWS_AND_COLS = 1;
     public static final int MIN_QUANTITY_VECTORS = 1;
     private static final int MIN_BIT_VALUE = 0;
     private static final int MAX_BIT_VALUE = 255;
 
-    // Scanner global para ser utilizado em todos os métodos necessários.
+    //* Scanner global para ser utilizado em todos os métodos necessários.
     public static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -340,12 +344,13 @@ public class mainGabriel {
         double[][] eigenValues = getEigenValues(phiTxPhi);
         double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
         double[][] newEigenVectorsK = createSubmatrix(eigenVectors, selectedColumnsK);
+        double[][] newEigenValuesK = constructDiagonalMatrix(selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
         int dimension = meanVector.length;
-        double[] newImage = creationImage(dimension, meanVector, vectorK, eigenValues, eigenfaces);
+        double[] newImage = creationImage(dimension, meanVector, vectorK, newEigenValuesK, eigenfaces);
         double[][] newImageMatrix = array1DToMatrix(newImage, allMatricesCsv[0]);
         saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 0);
     }
@@ -599,9 +604,9 @@ public class mainGabriel {
             newImage[i] = meanVector[i];
         }
         for (int i = 0; i < k; i++) {
-            double w_i = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
+            double weightImage = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
             for (int j = 0; j < dimension; j++) {
-                newImage[j] += w_i * eigenfaces[i][j];
+                newImage[j] += weightImage * eigenfaces[i][j];
             }
         }
 
@@ -653,9 +658,17 @@ public class mainGabriel {
             }
         }
 
-        String csvFileName = new File(inputCsvPath).getName();
-        String jpgFileName = csvFileName.replace(".csv", ".jpg");
+        String jpgFileName = new File(inputCsvPath).getName();
+        if (inputCsvPath.endsWith(".csv")) {
+            // Substituir extensão .csv por .jpg
+            jpgFileName = jpgFileName.replace(".csv", ".jpg");
+        } else {
+            // Se for uma pasta, usar o nome da pasta + "_output.jpg"
+            String folderName = inputCsvPath.substring(inputCsvPath.lastIndexOf("/") + 1);
+            jpgFileName = folderName + "_output.jpg";
+        }
         String outputPath = outputFolderPath + "/" + jpgFileName;
+
 
         File outputFolder = new File(outputFolderPath);
         if (!outputFolder.exists()) {
@@ -927,7 +940,7 @@ public class mainGabriel {
         System.out.println("| 2 - Reconstrução de imagens usando Eigenfaces.     |");
         System.out.println("| 3 - Identificação de imagem mais próximas.         |");
         System.out.println("| 4 - Gerar uma imagem aleatória com Eigenfaces.     |");
-        System.out.println("| 5 - Conheça o time de desenvolvimento!             |");
+        System.out.println("| 5 - Conheça a equipa de desenvolvimento!           |");
         System.out.println("| 0 - Deseja sair da aplicação ?                     |");
         System.out.println("+----------------------------------------------------+");
         System.out.print("Opção: ");
@@ -980,7 +993,7 @@ public class mainGabriel {
         } else {
             functionArgs = Integer.parseInt(args[1]);
             if (!checkFunctionOptions(functionArgs)) {
-                errorGeneral("Erro: Opção inválida, as opções são: 1 a 4.");
+                errorGeneral("Erro: Opção inválida, as opções são: 1 a 4, opções como 5 e 0 estão disponíveis apenas para o modo interativo!.");
             }
             return functionArgs;
         }
@@ -1088,8 +1101,9 @@ public class mainGabriel {
 
     //* -------------------- Printar Matrizes -----------------------
     public static void printMatrix(double[][] matrixToPrint, String matrixName) {
-        System.out.println("Matriz: " + matrixName + " ↓");
+        System.out.println("\nMatriz: " + matrixName + " ↓");
         printLine(matrixToPrint[0].length, "____________");
+        System.out.println();
 
         for (double[] row : matrixToPrint) {
             System.out.print("|");
@@ -1152,6 +1166,7 @@ public class mainGabriel {
 
     //! ------------------ Error Messages para não interativo ------------------
     public static void errorGeneral(String error) {
+        //! Esse tipo de mensagem de erro deve ser usado apenas para o modo não interativo!
         System.out.println(error);
         System.exit(1);
     }

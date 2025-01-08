@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 
+
 public class Alexandre {
     //* Constantes para limites de tamanho.
     public static final int MAX_SIZE_ROWS_AND_COLS = 256;
@@ -246,7 +247,6 @@ public class Alexandre {
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(dataBase);
 
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
-        double[][] weightsMatrix = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
         double[] averageVectors = calculateMeanVector(linearizedImages);
         double[][] phi = centralizeImages(linearizedImages, averageVectors);
@@ -259,6 +259,7 @@ public class Alexandre {
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
+        double[][] weightsMatrix = new double[allMatricesCsv.length][eigenfaces.length];
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
@@ -442,7 +443,7 @@ public class Alexandre {
             errorGeneral("Para calcular os pesos o comprimento de 'phi' deve ser igual a quantidade de linhas da matriz 'eigenfaces'.");
         }
 
-        double[] weights = new double[phi.length];
+        double[] weights = new double[eigenfaces[0].length];
 
         for (int j = 0; j < eigenfaces[0].length; j++) {
             weights[j] = 0;
@@ -1236,7 +1237,7 @@ public class Alexandre {
         else if (counter > 1 && imageIndex == 0){
             System.out.println("Foram identificadas mais de uma imagem com a mesma distância.");
             for (int i = 0; i < csvFiles.length; i++) {
-                if (i == closestImageIndex || distances[i] == distances[closestImageIndex]) {
+                if (i == closestImageIndex) {
                     System.out.printf("Essa foi uma das imagens mais próximas da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
                 } else {
                     System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);

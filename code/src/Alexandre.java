@@ -654,9 +654,17 @@ public class Alexandre {
             }
         }
 
-        String csvFileName = new File(inputCsvPath).getName();
-        String jpgFileName = csvFileName.replace(".csv", ".jpg");
+        String jpgFileName = new File(inputCsvPath).getName();
+        if (inputCsvPath.endsWith(".csv")) {
+            // Substituir extensão .csv por .jpg
+            jpgFileName = jpgFileName.replace(".csv", ".jpg");
+        } else {
+            // Se for uma pasta, usar o nome da pasta + "_output.jpg"
+            String folderName = inputCsvPath.substring(inputCsvPath.lastIndexOf("/") + 1);
+            jpgFileName = folderName + "_output.jpg";
+        }
         String outputPath = outputFolderPath + "/" + jpgFileName;
+
 
         File outputFolder = new File(outputFolderPath);
         if (!outputFolder.exists()) {

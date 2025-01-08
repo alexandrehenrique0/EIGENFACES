@@ -35,7 +35,6 @@ public class mainGabriel {
 
     //* ------------------ Modos de execução ------------------
     public static void runInterative() {
-        // Parâmetro de entrada
         int function;
 
         // Roda enquanto a função for inválida
@@ -64,57 +63,44 @@ public class mainGabriel {
     }
 
     public static void runNonInteractive(String[] args) {
-        // Parametros de entrada
         int function;
         int vectorNumbers;
         String csvLocation;
         String dataBaseLocation;
 
-        // Receber os parâmetros
         function = receiveFunction(args);
         vectorNumbers = receiveNumberVectors(args);
         csvLocation = receiveCsvLocation(args, function);
         dataBaseLocation = receiveDataBaseLocation(args);
 
-        // Verificar se os arquivo e diretório existem
         checkExistanceFileDirectory(csvLocation);
 
         String[] csvFiles = getCSVFileNames(dataBaseLocation);
 
-        // Obter a matriz do CSV
         double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
 
-        // Obter a matriz do CSV para a função 2
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(dataBaseLocation);
 
         try {
-            // Defina o caminho do arquivo com base na função escolhida
             String filePath = "Output/NaoInterativo/Func" + function;
 
-            // Crie ou obtenha o arquivo para onde redirecionar a saída
             File file = new File(filePath, "/outputFunc" + function + ".txt");
 
-            // Crie um PrintWriter para o arquivo
-            PrintWriter fileOut = new PrintWriter(file);
-
-            // Redirecione System.out para o arquivo
             System.setOut(new PrintStream(new FileOutputStream(file)));
 
-            // Opcional: redirecione System.err também, se necessário
             System.setErr(new PrintStream(new FileOutputStream(file)));
 
         } catch (FileNotFoundException e) {
-            e.printStackTrace(); // Se o arquivo não puder ser criado, imprime erro
+            errorGeneral("Erro ao criar o arquivo de saída: " + e.getMessage());
         }
 
-        // Função que contém as funções principais
-        runNonInterativeOutputs(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
+        runNonInterativeOutputs(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv, dataBaseLocation);
     }
     //* ------------------ Fim modos de execução ------------------
 
 
     //* ------------------ Métodos principais ------------------
-    public static void runNonInterativeOutputs(int function, int vectorNumbers, String csvLocation, String[] csvFiles, double[][] oneMatrixCsv, double[][][] allMatricesCsv) {
+    public static void runNonInterativeOutputs(int function, int vectorNumbers, String csvLocation, String[] csvFiles, double[][] oneMatrixCsv, double[][][] allMatricesCsv, String dataBaseLocation) {
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         double[][] weightsMatrix = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
@@ -151,6 +137,13 @@ public class mainGabriel {
                 System.out.println();
                 System.out.println("Funcionalidade 3 finalizada.");
                 break;
+            case 4:
+                printHeaderFunction("Gerar uma imagem aleatória com Eigenfaces");
+                generateNewImage(vectorNumbers, dataBaseLocation);
+                System.out.println();
+                System.out.println("Funcionalidade 4 finalizada.");
+                break;
+
         }
     }
 
@@ -241,8 +234,8 @@ public class mainGabriel {
 
         double maximumAbsolutError = calculateMAE(oneMatrixCsv, matrixEigenFaces);
 
-        saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1", 1);
         printFunction1(vectorK, newEigenValuesK, newEigenVectorsK, maximumAbsolutError);
+        saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1", 1);
     }
 
     public static void calculateFunction2(int vectorNumbers, String dataBase) {
@@ -272,15 +265,15 @@ public class mainGabriel {
     public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv) {
 
         System.out.println("Valores do vetor médio: " + Arrays.toString(averageVectors));
-        System.out.println("Quantidade de Eigenfaces utilizadas:  " + vectorNumbers);
+        System.out.println("\nQuantidade de Eigenfaces utilizadas:  " + vectorNumbers);
 
         for (int img = 0; img < linearizedImages[0].length; img++) {
             double[] columnWeights = getColumn(weightsMatrix, img);
             double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights, vectorNumbers);
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[img]);
             double maximumAbsolutError = calculateMAE(allMatricesCsv[img], reconstructedImageMatrix);
-            System.out.println("Para a imagem: " + csvFiles[img] + ", foi utilizado este vetor peso : " + Arrays.toString(columnWeights));
-            System.out.printf("\nO erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
+            System.out.println("\nPara a imagem: " + csvFiles[img] + ", foi utilizado este vetor peso : " + Arrays.toString(columnWeights));
+            System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", 0);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
         }
@@ -327,18 +320,18 @@ public class mainGabriel {
             counter++;
         }
 
-            System.out.println("O número de vetores próprios utilizados: " + vectorNumbers);
-            for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
+        System.out.println("O número de vetores próprios utilizados: " + vectorNumbers);
+        for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
 
-                double[] closestImageWeights = getColumn(weightsMatrix, closestImageIndex[i]);
-                double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeights, vectorNumbers);
+            double[] closestImageWeights = getColumn(weightsMatrix, closestImageIndex[i]);
+            double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeights, vectorNumbers);
 
-                double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
+            double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
 
-                printFunction3Images(csvFiles, closestImageIndex[i], distances, counter, i);
-                saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[i]], "Output/Func3/Identificacao", 1);
+            printFunction3(csvFiles, closestImageIndex[i], distances, counter, i);
+            saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[i]], "Output/Func3/Identificacao", 1);
 
-            }
+        }
 
     }
 
@@ -365,7 +358,7 @@ public class mainGabriel {
         int dimension = meanVector.length;
         double[] newImage = creationImage(dimension, meanVector, vectorK, newEigenValuesK, eigenfaces);
         double[][] newImageMatrix = array1DToMatrix(newImage, allMatricesCsv[0]);
-        System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + vectorK);
+        System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + vectorK + "\n");
         saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 1);
     }
     //* ------------------ Fim dos métodos de distribuição de tarefas ------------------
@@ -557,8 +550,8 @@ public class mainGabriel {
         for (int i = 0; i < eigenVectorsATxA[0].length; i++) {
             double norm = 0;
 
-            for (int j = 0; j < eigenVectorsATxA.length; j++) {
-                norm += eigenVectorsATxA[j][i] * eigenVectorsATxA[j][i];
+            for (double[] doubles : eigenVectorsATxA) {
+                norm += doubles[i] * doubles[i];
             }
             norm = Math.sqrt(norm);
 
@@ -585,7 +578,7 @@ public class mainGabriel {
 
     public static double[] calculateEuclidianDistance(double[] principalVector, double[][] weightsMatrix) {
         if (principalVector.length != weightsMatrix.length) {
-            throw new IllegalArgumentException("O comprimento do vetor principal não corresponde ao número de linhas da matriz de pesos.");
+            errorGeneral("O comprimento do vetor principal não corresponde ao número de linhas da matriz de pesos.");
         }
 
         double[] result = new double[weightsMatrix[0].length];
@@ -662,45 +655,63 @@ public class mainGabriel {
         ImageIO.write(image, "jpg", outputFile);
     }
 
-    public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath, int printOrNot) {
-        int height = imageArray.length;
-        int width = imageArray[0].length;
-
+    public static double[] findMinMaxValues(double[][] imageArray) {
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
 
-        for (int i = 0; i < imageArray.length; i++) {
-            double[] row = imageArray[i];
-            for (int j = 0; j < row.length; j++) {
-                double val = row[j];
+        for (double[] row : imageArray) {
+            for (double val : row) {
                 if (val < min) min = val;
                 if (val > max) max = val;
             }
         }
 
+        return new double[]{min, max};
+    }
+
+    public static int[][] normalizeImage(double[][] imageArray, double min, double max) {
+        int height = imageArray.length;
+        int width = imageArray[0].length;
         int[][] normalizedImage = new int[height][width];
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 normalizedImage[y][x] = (int) ((imageArray[y][x] - min) / (max - min) * 255);
             }
         }
 
+        return normalizedImage;
+    }
+
+    public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath, int printOrNot) {
+        double[] minMaxValues = findMinMaxValues(imageArray);
+        double min = minMaxValues[0];
+        double max = minMaxValues[1];
+
+        int[][] normalizedImage = normalizeImage(imageArray, min, max);
+
         String jpgFileName = new File(inputCsvPath).getName();
         if (inputCsvPath.endsWith(".csv")) {
-            // Substituir extensão .csv por .jpg
             jpgFileName = jpgFileName.replace(".csv", ".jpg");
         } else {
-            // Se for uma pasta, usar o nome da pasta + "_output.jpg"
-            String folderName = inputCsvPath.substring(inputCsvPath.lastIndexOf("/") + 1);
-            jpgFileName = folderName + "_output.jpg";
+            jpgFileName = "RandomImage.jpg";
         }
+
+        int counter = 1;
         String outputPath = outputFolderPath + "/" + jpgFileName;
+        File file = new File(outputPath);
+        while (file.exists()) {
+            String baseName = jpgFileName.replace(".jpg", "");
+            outputPath = outputFolderPath + "/" + baseName + "(" + counter + ").jpg";
+            file = new File(outputPath);
+            counter++;
+        }
 
 
         File outputFolder = new File(outputFolderPath);
         if (!outputFolder.exists()) {
             if (!outputFolder.mkdirs()) {
-                System.err.println("Falha ao criar o diretório: " + outputFolderPath);
+                errorGeneral("Falha ao criar o diretório: " + outputFolderPath);
                 return;
             }
         }
@@ -711,7 +722,7 @@ public class mainGabriel {
                 System.out.println("A imagem foi gerada com sucesso: " + outputPath);
             }
         } catch (IOException e) {
-            System.err.println("Erro ao salvar a imagem: " + e.getMessage());
+            errorGeneral("Erro ao salvar a imagem: " + e.getMessage());
         }
     }
 
@@ -730,11 +741,10 @@ public class mainGabriel {
                 writer.println(rowString);
             }
             if (printOrNot == 1) {
-                System.out.println("Arquivo CSV criado com sucesso: " + file.getName());
+                System.out.println("\nArquivo CSV criado com sucesso: " + file.getName());
             }
         } catch (IOException e) {
-            System.err.println("Erro ao salvar a matriz no arquivo: " + e.getMessage());
-            e.printStackTrace();
+            errorGeneral("Erro ao salvar a matriz no arquivo: " + e.getMessage());
         }
     }
 
@@ -742,7 +752,7 @@ public class mainGabriel {
         File folder = new File(folderLocation);
         File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
         if (csvFiles == null || csvFiles.length == 0) {
-            throw new RuntimeException("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
+            errorGeneral("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
         }
 
         String[] fileNames = new String[csvFiles.length];
@@ -755,47 +765,62 @@ public class mainGabriel {
 
     public static double[][] readCSVToMatrix(String path) {
         try {
-            Scanner lineCounter = new Scanner(new File(path));
-            int rowCount = 0;
-            int columnCount = 0;
+            int[] dimensions = getCsvDimensions(path);
+            int rowCount = dimensions[0];
+            int columnCount = dimensions[1];
 
-            while (lineCounter.hasNextLine()) {
-                String line = lineCounter.nextLine();
-                if (!line.trim().isEmpty()) {
-                    rowCount++;
-                    if (columnCount == 0) {
-                        columnCount = line.split(",").length;
-                    }
-                }
+            if (checkSizeBoundaries(rowCount, columnCount)) {
+                errorGeneral("O tamanho da matriz não está dentro dos limites permitidos.");
             }
-            lineCounter.close();
 
             double[][] matrix = new double[rowCount][columnCount];
-
-            Scanner fileScanner = new Scanner(new File(path));
-            int row = 0;
-            while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine();
-                if (!line.trim().isEmpty()) {
-                    String[] values = line.split(",");
-                    for (int col = 0; col < values.length; col++) {
-                        matrix[row][col] = Double.parseDouble(values[col].trim());
-                    }
-                    row++;
-                }
-            }
-            fileScanner.close();
+            fillMatrixFromCsv(path, matrix);
             return matrix;
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao ler o arquivo CSV: " + e.getMessage(), e);
+            errorGeneral("Erro ao ler o arquivo CSV: " + e.getMessage());
+            return new double[0][]; // Nunca será alcançado
         }
+    }
+
+    private static int[] getCsvDimensions(String path) throws FileNotFoundException {
+        Scanner lineCounter = new Scanner(new File(path));
+        int rowCount = 0;
+        int columnCount = 0;
+
+        while (lineCounter.hasNextLine()) {
+            String line = lineCounter.nextLine();
+            if (!line.trim().isEmpty()) {
+                rowCount++;
+                if (columnCount == 0) {
+                    columnCount = line.split(",").length;
+                }
+            }
+        }
+        lineCounter.close();
+        return new int[]{rowCount, columnCount};
+    }
+
+    private static void fillMatrixFromCsv(String path, double[][] matrix) throws FileNotFoundException {
+        Scanner fileScanner = new Scanner(new File(path));
+        int row = 0;
+        while (fileScanner.hasNextLine()) {
+            String line = fileScanner.nextLine();
+            if (!line.trim().isEmpty()) {
+                String[] values = line.split(",");
+                for (int col = 0; col < values.length; col++) {
+                    matrix[row][col] = Double.parseDouble(values[col].trim());
+                }
+                row++;
+            }
+        }
+        fileScanner.close();
     }
 
     public static double[][][] getMatricesFromCsvFolder(String folderLocation) {
         File folder = new File(folderLocation);
         File[] csvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
         if (csvFiles == null || csvFiles.length == 0) {
-            throw new RuntimeException("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
+            errorGeneral("Nenhum arquivo CSV encontrado na pasta: " + folderLocation);
         }
 
         for (int i = 0; i < csvFiles.length - 1; i++) {
@@ -1023,68 +1048,76 @@ public class mainGabriel {
     }
 
     public static String receiveDataBaseLocation(String[] args) {
-        String dataBaseLocationArgs;
         if (args == null) {
-            String dataBaseLocation = scanner.next();
-            if (!checkDataBaseLocation(dataBaseLocation)) {
-                System.out.println("Erro: Localização da base de imagens inválida.");
-                System.out.println("Tentar novamente ? (S/N)");
-                String answer;
-                do {
-                    answer = scanner.next().toUpperCase();
-                    if (answer.equals("S")) {
-                        dataBaseLocation = verifyDataBaseLocation();
-                    } else if (answer.equals("N")) {
-                        System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
-                        quitApplication();
-                    } else {
-                        System.out.println("Opção inválida, responda com S/N.");
-                    }
-                } while (!answer.equals("S") && !answer.equals("N"));
-            }
-            return dataBaseLocation;
+            return getDataBaseLocationFromUser();
         } else {
-            dataBaseLocationArgs = args[7];
-            if (!checkDataBaseLocation(dataBaseLocationArgs)) {
-                errorGeneral("Erro: Localização da base de dados inválida.");
-            }
-            return dataBaseLocationArgs;
+            return getDataBaseLocationFromArgs(args);
         }
     }
 
-    public static String receiveCsvLocation(String[] args, int function) {
-        String csvLocationArgs;
-        if (args == null) {
-            String csvLocation = scanner.next();
-            if (!checkCsvLocation(csvLocation)) {
-                System.out.println("Erro: Localização do csv inválida");
-                System.out.println("Tentar novamente ? (S/N)");
-                String answer;
-                do {
-                    answer = scanner.next().toUpperCase();
-                    if (answer.equals("S")) {
-                        csvLocation = verifyCsvLocation(function);
-                    } else if (answer.equals("N")) {
-                        System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
-                        quitApplication();
-                    } else {
-                        System.out.println("Opção inválida, responda com S/N.");
-                    }
-                } while (!answer.equals("S") && !answer.equals("N"));
-            } else if (function == 1) {
-                csvLocation = verifySymmetricMatrix(csvLocation, function);
+    private static String getDataBaseLocationFromUser() {
+        String dataBaseLocation = scanner.next();
+        while (!checkDataBaseLocation(dataBaseLocation)) {
+            System.out.println("Erro: Localização da base de imagens inválida.");
+            System.out.println("Tentar novamente ? (S/N)");
+            String answer = scanner.next().toUpperCase();
+            if (answer.equals("S")) {
+                dataBaseLocation = verifyDataBaseLocation();
+            } else if (answer.equals("N")) {
+                System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
+                quitApplication();
+            } else {
+                System.out.println("Opção inválida, responda com S/N.");
             }
-
-            return csvLocation;
-        } else {
-            csvLocationArgs = args[5];
-            if (!checkCsvLocation(csvLocationArgs)) {
-                errorGeneral("Erro: Localização do csv inválida");
-            } else if (function == 1) {
-                csvLocationArgs = verifySymmetricMatrix(csvLocationArgs, function);
-            }
-            return csvLocationArgs;
         }
+        return dataBaseLocation;
+    }
+
+    private static String getDataBaseLocationFromArgs(String[] args) {
+        String dataBaseLocationArgs = args[7];
+        if (!checkDataBaseLocation(dataBaseLocationArgs)) {
+            errorGeneral("Erro: Localização da base de dados inválida.");
+        }
+        return dataBaseLocationArgs;
+    }
+
+    public static String receiveCsvLocation(String[] args, int function) {
+        if (args == null) {
+            return getCsvLocationFromUser(function);
+        } else {
+            return getCsvLocationFromArgs(args, function);
+        }
+    }
+
+    private static String getCsvLocationFromUser(int function) {
+        String csvLocation = scanner.next();
+        while (!checkCsvLocation(csvLocation)) {
+            System.out.println("Erro: Localização do csv inválida");
+            System.out.println("Tentar novamente ? (S/N)");
+            String answer = scanner.next().toUpperCase();
+            if (answer.equals("S")) {
+                csvLocation = verifyCsvLocation(function);
+            } else if (answer.equals("N")) {
+                System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
+                quitApplication();
+            } else {
+                System.out.println("Opção inválida, responda com S/N.");
+            }
+        }
+        if (function == 1) {
+            csvLocation = verifySymmetricMatrix(csvLocation, function);
+        }
+        return csvLocation;
+    }
+
+    private static String getCsvLocationFromArgs(String[] args, int function) {
+        String csvLocationArgs = args[5];
+        if (!checkCsvLocation(csvLocationArgs)) {
+            errorGeneral("Erro: Localização do csv inválida");
+        } else if (function == 1) {
+            csvLocationArgs = verifySymmetricMatrix(csvLocationArgs, function);
+        }
+        return csvLocationArgs;
     }
 
     public static void receiveExitConfirmation(String[] args) {
@@ -1130,11 +1163,10 @@ public class mainGabriel {
         return transposedMatrix;
     }
 
-    public static int[] fillArrayMax(int[] arrayToFill) {
+    public static void fillArrayMax(int[] arrayToFill) {
         for (int i = 0; i < arrayToFill.length; i++) {
             arrayToFill[i] = Integer.MAX_VALUE;
         }
-        return arrayToFill;
     }
 
     public static double[][] multiplyMatrixEscalar(double[][] matriz, double escalar) {
@@ -1156,6 +1188,7 @@ public class mainGabriel {
         return matrixResult;
     }
 
+    @SuppressWarnings("JavaExistingMethodCanBeUsed")
     public static double[][] createSubMatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {
         boolean[] keepColumnsBoolean = new boolean[eigenVectors[0].length];
 
@@ -1181,7 +1214,21 @@ public class mainGabriel {
     //* ----------------- Fim operações básicas com matrizes ------------------
 
 
-    //* -------------------- Printar Matrizes -----------------------
+    //* ----------------- Métodos para printar -----------------
+    public static void printHeaderFunction(String functionName) {
+        int length = functionName.length();
+        int totalWidth = length + 4; // 2 espaços de cada lado do texto
+        int padding = (totalWidth - length) / 2;
+
+        System.out.print("\n+");
+        printLine(totalWidth, "-");
+        System.out.print("+\n");
+        System.out.printf("|%" + padding + "s%s%" + padding + "s|\n+", "", functionName, "");
+        printLine(totalWidth, "-");
+        System.out.print("+\n");
+        System.out.println();
+    }
+
     public static void printMatrix(double[][] matrixToPrint, String matrixName) {
         System.out.println("\nMatriz: " + matrixName + " ↓");
         printLine(matrixToPrint[0].length, "____________");
@@ -1204,8 +1251,8 @@ public class mainGabriel {
     public static void printVector(double[] vetorToPrint, String vetorName) {
         System.out.println("Vetor: " + vetorName + " ↓");
         System.out.println(" ___________ ");
-        for (int i = 0; i < vetorToPrint.length; i++) {
-            System.out.printf("|%8.3f\t|\n", vetorToPrint[i]);
+        for (double v : vetorToPrint) {
+            System.out.printf("|%8.3f\t|\n", v);
         }
         System.out.println(" =========== ");
         System.out.println();
@@ -1216,52 +1263,39 @@ public class mainGabriel {
             System.out.print(pattern);
         }
     }
-    //* ----------------- Fim Printar matrizes -----------------------
 
-
-    //* ----------------- Printar Funcionalidades -----------------
     public static void printFunction1(int numbersEigenfaces, double[][] newEigenValuesK, double[][] newEigenVectorsK, double maximumAbsolutError) {
         System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + numbersEigenfaces);
         printMatrix(newEigenValuesK, "Valores Próprios da matriz K");
         printMatrix(newEigenVectorsK, "Vetores Próprios matriz K:");
-        System.out.printf("Erro Absoluto Médio: %.3f\n", maximumAbsolutError);
+        System.out.printf("\nErro Absoluto Médio: %.3f\n", maximumAbsolutError);
     }
 
-    public static void printFunction3Images(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex) {
-        if (counter == 1){
-        System.out.printf("A imagem mais próxima foi: %s e foi salva em Identificação!\n\n", csvFiles[closestImageIndex]);
+    public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex) {
+        if (counter == 1) {
+            System.out.printf("\nA imagem mais próxima foi: %s e foi salva em Identificação!\n", csvFiles[closestImageIndex]);
+            printDistances(csvFiles, distances, closestImageIndex, counter);
+        } else if (counter > 1 && imageIndex == 0) {
+            System.out.println("\nForam identificadas " + counter + " imagens com a mesma distância!\n");
+            printDistances(csvFiles, distances, closestImageIndex, counter);
+        }
+    }
+
+    private static void printDistances(String[] csvFiles, double[] distances, int closestImageIndex, int counter) {
         for (int i = 0; i < csvFiles.length; i++) {
-            if (i == closestImageIndex) {
-                System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
+            if (i == closestImageIndex || distances[i] == distances[closestImageIndex]) {
+                if (counter == 1) {
+                    System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
+                } else {
+                    System.out.printf("Essa foi uma das " + counter + " imagens mais próximas da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
+                }
             } else {
                 System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
             }
-        }}
-        else if (counter > 1 && imageIndex == 0){
-            System.out.println("Foram identificadas mais de uma imagem com a mesma distância.");
-            for (int i = 0; i < csvFiles.length; i++) {
-            if (i == closestImageIndex) {
-                System.out.printf("Essa foi uma das imagens mais próximas da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
-            } else {
-                System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
-            }
-        }}
-    }
-
-    public static void printHeaderFunction(String functionName) {
-        int length = functionName.length();
-        int totalWidth = length + 4; // 2 espaços de cada lado do texto
-        int padding = (totalWidth - length) / 2;
-
-        System.out.print("\n+");
-        printLine(totalWidth, "-");
-        System.out.print("+\n");
-        System.out.printf("|%" + padding + "s%s%" + padding + "s|\n+", "", functionName, "");
-        printLine(totalWidth, "-");
-        System.out.print("+\n");
+        }
         System.out.println();
     }
-    //* ----------------- Fim printar funcionalidades -----------------------
+    //* ----------------- Fim métodos para printar -----------------------
 
 
     //! ------------------ Error Messages para não interativo ------------------
@@ -1320,7 +1354,7 @@ public class mainGabriel {
     }
 
     public static void checkCentralizeImage() {
-        System.out.println("Teste : Centralicação de Imagens");
+        System.out.println("Teste : Centralização de Imagens");
         double[] meanVector = {2.0, 5.0, 8.0};
 
         double[][] inputMatrix = {
@@ -1520,7 +1554,7 @@ public class mainGabriel {
         System.out.println("Teste : Distância Euclidiana");
 
         double[] principalVector = {1, 2, 3};
-        double[][] weigthMatrix = {
+        double[][] weightMatrix = {
                 {4, 5},
                 {6, 7},
                 {8, 9}
@@ -1528,7 +1562,7 @@ public class mainGabriel {
 
         double[] expectedResult = {7.071, 8.775};
 
-        double[] obtainedResult = calculateEuclidianDistance(principalVector, weigthMatrix);
+        double[] obtainedResult = calculateEuclidianDistance(principalVector, weightMatrix);
         checkIgualdadeVetores(obtainedResult, expectedResult);
 
         if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
@@ -1766,7 +1800,7 @@ public class mainGabriel {
         System.out.println();
 
     }
-    //* ------------------ Fim verificações ------------------
+    //* ------------------ Fim verificações -------------------
 
 
     //* ----------------- Correr Testes -----------------------
@@ -1789,6 +1823,6 @@ public class mainGabriel {
         checkMatrixToArray1D();
         checkGetColumn();
     }
-    //* ----------------- Fim Correr Testes -----------------------
+    //* ----------------- Fim Correr Testes -------------------
 
 }

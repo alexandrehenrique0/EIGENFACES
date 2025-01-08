@@ -259,7 +259,7 @@ public class Alexandre {
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
-        double[][] weightsMatrix = new double[allMatricesCsv.length][eigenfaces.length];
+        double[][] weightsMatrix = new double[eigenfaces[0].length][allMatricesCsv.length];
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 

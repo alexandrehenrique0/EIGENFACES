@@ -95,14 +95,14 @@ public class RafaelTesteTestadoGaribel {
             // Crie ou obtenha o arquivo para onde redirecionar a saída
             File file = new File(filePath, "/outputFunc" + function + ".txt");
 
-            // Crie um PrintStream para o arquivo
-            PrintStream fileOut = new PrintStream(file);
+            // Crie um PrintWriter para o arquivo
+            PrintWriter fileOut = new PrintWriter(file);
 
             // Redirecione System.out para o arquivo
-            System.setOut(fileOut);
+            System.setOut(new PrintStream(new FileOutputStream(file)));
 
             // Opcional: redirecione System.err também, se necessário
-            System.setErr(fileOut);
+            System.setErr(new PrintStream(new FileOutputStream(file)));
 
         } catch (FileNotFoundException e) {
             e.printStackTrace(); // Se o arquivo não puder ser criado, imprime erro
@@ -753,7 +753,7 @@ public class RafaelTesteTestadoGaribel {
             }
             return dataBaseLocation;
         } else {
-            dataBaseLocationArgs = args[5];
+            dataBaseLocationArgs = args[7];
             if (!checkDataBaseLocation(dataBaseLocationArgs)) {
                 errorGeneral("Erro: Localização da base de dados inválida.");
             }

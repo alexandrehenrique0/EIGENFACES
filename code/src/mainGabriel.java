@@ -18,6 +18,7 @@ public class mainGabriel {
     public static final int MIN_QUANTITY_VECTORS = 1;
     private static final int MIN_BIT_VALUE = 0;
     private static final int MAX_BIT_VALUE = 255;
+    private static final double MIN_LAMBDA_VALUE = 1e-8;
 
     //* Scanner global para ser utilizado em todos os métodos necessários.
     public static Scanner scanner = new Scanner(System.in);
@@ -352,7 +353,8 @@ public class mainGabriel {
         int dimension = meanVector.length;
         double[] newImage = creationImage(dimension, meanVector, vectorK, newEigenValuesK, eigenfaces);
         double[][] newImageMatrix = array1DToMatrix(newImage, allMatricesCsv[0]);
-        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 0);
+        System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + vectorK);
+        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 1);
     }
     //* ------------------ Fim dos métodos de distribuição de tarefas ------------------
 
@@ -389,7 +391,7 @@ public class mainGabriel {
     }
 
     public static int validateEigenVectors(double[][] matrix, int vectorNumbers) {
-        if (vectorNumbers <= MIN_QUANTITY_VECTORS || vectorNumbers > matrix[0].length) {
+        if (vectorNumbers < MIN_QUANTITY_VECTORS || vectorNumbers > matrix[0].length) {
             vectorNumbers = matrix[0].length;
         }
         return vectorNumbers;
@@ -604,9 +606,12 @@ public class mainGabriel {
             newImage[i] = meanVector[i];
         }
         for (int i = 0; i < k; i++) {
-            double weightImage = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
+            if (lambdas[i][i] < MIN_LAMBDA_VALUE) {
+                lambdas[i][i] = MIN_LAMBDA_VALUE;
+            }
+            double weightsImage = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
             for (int j = 0; j < dimension; j++) {
-                newImage[j] += weightImage * eigenfaces[i][j];
+                newImage[j] += weightsImage * eigenfaces[j][i];
             }
         }
 
@@ -644,8 +649,10 @@ public class mainGabriel {
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
 
-        for (double[] row : imageArray) {
-            for (double val : row) {
+        for (int i = 0; i < imageArray.length; i++) {
+            double[] row = imageArray[i];
+            for (int j = 0; j < row.length; j++) {
+                double val = row[j];
                 if (val < min) min = val;
                 if (val > max) max = val;
             }

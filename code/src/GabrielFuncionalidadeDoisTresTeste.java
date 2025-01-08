@@ -8,11 +8,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.util.*;
 
 //! classe para testar func 2 e 3
-public class GabrielTeste {
+public class GabrielFuncionalidadeDoisTresTeste {
     public static void main(String[] args) {
         String csvPath = "Input/Funcao2-3/csv";
 

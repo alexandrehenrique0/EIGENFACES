@@ -1507,7 +1507,6 @@ public class RafaelTesteTestadoGaribel {
         }
     }
 
-
     public static void checkMAETest() {
         System.out.println("Teste: Cálculo do MAE");
 
@@ -1730,6 +1729,6 @@ public class RafaelTesteTestadoGaribel {
         checkMatrixToArray1D();
         checkGetColumn();
     }
-    //* ----------------- Fim Correr Testes code/src/Alexandre.java -----------------------
+    //* ----------------- Fim Correr Testes -----------------------
 
 }

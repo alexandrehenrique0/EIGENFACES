@@ -94,14 +94,14 @@ public class mainGabriel {
             // Crie ou obtenha o arquivo para onde redirecionar a saída
             File file = new File(filePath, "/outputFunc" + function + ".txt");
 
-            // Crie um PrintStream para o arquivo
-            PrintStream fileOut = new PrintStream(file);
+            // Crie um PrintWriter para o arquivo
+            PrintWriter fileOut = new PrintWriter(file);
 
             // Redirecione System.out para o arquivo
-            System.setOut(fileOut);
+            System.setOut(new PrintStream(new FileOutputStream(file)));
 
             // Opcional: redirecione System.err também, se necessário
-            System.setErr(fileOut);
+            System.setErr(new PrintStream(new FileOutputStream(file)));
 
         } catch (FileNotFoundException e) {
             e.printStackTrace(); // Se o arquivo não puder ser criado, imprime erro
@@ -211,7 +211,7 @@ public class mainGabriel {
         runInterative();
     }
 
-    public static void devTeam(){
+    public static void devTeam() {
         printHeaderFunction("Desenvolvido por: TechTitans!");
 
         uiDevTeam();
@@ -280,7 +280,7 @@ public class mainGabriel {
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[img]);
             double maximumAbsolutError = calculateMAE(allMatricesCsv[img], reconstructedImageMatrix);
             System.out.println("Para a imagem: " + csvFiles[img] + ", foi utilizado este vetor peso : " + Arrays.toString(columnWeights));
-            System.out.println("O erro absoluto médio dessa imagem com sua original foi: %.3f" + maximumAbsolutError);
+            System.out.printf("\nO erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", 0);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
         }
@@ -313,21 +313,33 @@ public class mainGabriel {
     }
 
     public static void identifyClosestImage(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] oneMatrixCsv, double[][] weightsMatrix, double[][][] allMatricesCsv) {
+        int counter = 0;
+
         double[] linearizedPrincipalImage = matrixToArray1D(oneMatrixCsv);
         double[] phiPrincipalImage = subtractionColumns(linearizedPrincipalImage, averageVectors);
 
         double[] principalWeightsVector = calculateWeights(phiPrincipalImage, eigenfaces);
 
         double[] distances = calculateEuclidianDistance(principalWeightsVector, weightsMatrix);
-        int closestImageIndex = checkCloserVetor(distances);
+        int[] closestImageIndex = checkCloserVetor(distances);
 
-        double[] closestImageWeights = getColumn(weightsMatrix, closestImageIndex);
-        double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeights, vectorNumbers);
+        for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
+            counter++;
+        }
 
-        double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
+            System.out.println("O número de vetores próprios utilizados: " + vectorNumbers);
+            for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
 
-        printFunction3(vectorNumbers, csvFiles, closestImageIndex, distances);
-        saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex], "Output/Func3/Identificacao", 1);
+                double[] closestImageWeights = getColumn(weightsMatrix, closestImageIndex[i]);
+                double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeights, vectorNumbers);
+
+                double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
+
+                printFunction3Images(csvFiles, closestImageIndex[i], distances, counter, i);
+                saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[i]], "Output/Func3/Identificacao", 1);
+
+            }
+
     }
 
     public static void generateNewImage(int vectorNumbers, String dataBase) {
@@ -587,20 +599,28 @@ public class mainGabriel {
         return result;
     }
 
-    public static int checkCloserVetor(double[] distances) {
+    public static int[] checkCloserVetor(double[] distances) {
         double minDistance = Double.MAX_VALUE;
-        int closestImageIndex = -1;
+        int[] closestImageIndex = new int[distances.length];
+        fillArrayMax(closestImageIndex);
 
+        int j = 0;
         for (int i = 0; i < distances.length; i++) {
             if (distances[i] < minDistance) {
                 minDistance = distances[i];
-                closestImageIndex = i;
+                j = 1;
+                closestImageIndex = new int[distances.length];
+                fillArrayMax(closestImageIndex);
+                closestImageIndex[0] = i;
+            } else if (distances[i] == minDistance) {
+                closestImageIndex[j] = i;
+                j++;
             }
         }
         return closestImageIndex;
     }
 
-    public static double[] creationImage(int dimension, double[] meanVector,int k, double[][] lambdas, double[][] eigenfaces) {
+    public static double[] creationImage(int dimension, double[] meanVector, int k, double[][] lambdas, double[][] eigenfaces) {
         double[] newImage = new double[dimension];
         for (int i = 0; i < dimension; i++) {
             newImage[i] = meanVector[i];
@@ -715,72 +735,6 @@ public class mainGabriel {
         } catch (IOException e) {
             System.err.println("Erro ao salvar a matriz no arquivo: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-
-    public static String receiveDataBaseLocation(String[] args) {
-        String dataBaseLocationArgs;
-        if (args == null) {
-            String dataBaseLocation = scanner.next();
-            if (!checkDataBaseLocation(dataBaseLocation)) {
-                System.out.println("Erro: Localização da base de imagens inválida.");
-                System.out.println("Tentar novamente ? (S/N)");
-                String answer;
-                do {
-                    answer = scanner.next().toUpperCase();
-                    if (answer.equals("S")) {
-                        dataBaseLocation = verifyDataBaseLocation();
-                    } else if (answer.equals("N")) {
-                        System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
-                        quitApplication();
-                    } else {
-                        System.out.println("Opção inválida, responda com S/N.");
-                    }
-                } while (!answer.equals("S") && !answer.equals("N"));
-            }
-            return dataBaseLocation;
-        } else {
-            dataBaseLocationArgs = args[5];
-            if (!checkDataBaseLocation(dataBaseLocationArgs)) {
-                errorGeneral("Erro: Localização da base de dados inválida.");
-            }
-            return dataBaseLocationArgs;
-        }
-    }
-
-    public static String receiveCsvLocation(String[] args, int function) {
-        String csvLocationArgs;
-        if (args == null) {
-            String csvLocation = scanner.next();
-            if (!checkCsvLocation(csvLocation)) {
-                System.out.println("Erro: Localização do csv inválida");
-                System.out.println("Tentar novamente ? (S/N)");
-                String answer;
-                do {
-                    answer = scanner.next().toUpperCase();
-                    if (answer.equals("S")) {
-                        csvLocation = verifyCsvLocation(function);
-                    } else if (answer.equals("N")) {
-                        System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
-                        quitApplication();
-                    } else {
-                        System.out.println("Opção inválida, responda com S/N.");
-                    }
-                } while (!answer.equals("S") && !answer.equals("N"));
-            } else if (function == 1) {
-                csvLocation = verifySymmetricMatrix(csvLocation, function);
-            }
-
-            return csvLocation;
-        } else {
-            csvLocationArgs = args[5];
-            if (!checkCsvLocation(csvLocationArgs)) {
-                errorGeneral("Erro: Localização do csv inválida");
-            }
-            else if (function == 1) {
-                csvLocationArgs = verifySymmetricMatrix(csvLocationArgs, function);
-            }
-            return csvLocationArgs;
         }
     }
 
@@ -1068,6 +1022,71 @@ public class mainGabriel {
         return vectorNumbersArgs;
     }
 
+    public static String receiveDataBaseLocation(String[] args) {
+        String dataBaseLocationArgs;
+        if (args == null) {
+            String dataBaseLocation = scanner.next();
+            if (!checkDataBaseLocation(dataBaseLocation)) {
+                System.out.println("Erro: Localização da base de imagens inválida.");
+                System.out.println("Tentar novamente ? (S/N)");
+                String answer;
+                do {
+                    answer = scanner.next().toUpperCase();
+                    if (answer.equals("S")) {
+                        dataBaseLocation = verifyDataBaseLocation();
+                    } else if (answer.equals("N")) {
+                        System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
+                        quitApplication();
+                    } else {
+                        System.out.println("Opção inválida, responda com S/N.");
+                    }
+                } while (!answer.equals("S") && !answer.equals("N"));
+            }
+            return dataBaseLocation;
+        } else {
+            dataBaseLocationArgs = args[7];
+            if (!checkDataBaseLocation(dataBaseLocationArgs)) {
+                errorGeneral("Erro: Localização da base de dados inválida.");
+            }
+            return dataBaseLocationArgs;
+        }
+    }
+
+    public static String receiveCsvLocation(String[] args, int function) {
+        String csvLocationArgs;
+        if (args == null) {
+            String csvLocation = scanner.next();
+            if (!checkCsvLocation(csvLocation)) {
+                System.out.println("Erro: Localização do csv inválida");
+                System.out.println("Tentar novamente ? (S/N)");
+                String answer;
+                do {
+                    answer = scanner.next().toUpperCase();
+                    if (answer.equals("S")) {
+                        csvLocation = verifyCsvLocation(function);
+                    } else if (answer.equals("N")) {
+                        System.out.println("Saindo da aplicação, ainda poderá retornar ao menu inicial.");
+                        quitApplication();
+                    } else {
+                        System.out.println("Opção inválida, responda com S/N.");
+                    }
+                } while (!answer.equals("S") && !answer.equals("N"));
+            } else if (function == 1) {
+                csvLocation = verifySymmetricMatrix(csvLocation, function);
+            }
+
+            return csvLocation;
+        } else {
+            csvLocationArgs = args[5];
+            if (!checkCsvLocation(csvLocationArgs)) {
+                errorGeneral("Erro: Localização do csv inválida");
+            } else if (function == 1) {
+                csvLocationArgs = verifySymmetricMatrix(csvLocationArgs, function);
+            }
+            return csvLocationArgs;
+        }
+    }
+
     public static void receiveExitConfirmation(String[] args) {
         if (args == null) {
             String confirmeExit;
@@ -1109,6 +1128,23 @@ public class mainGabriel {
             }
         }
         return transposedMatrix;
+    }
+
+    public static int[] fillArrayMax(int[] arrayToFill) {
+        for (int i = 0; i < arrayToFill.length; i++) {
+            arrayToFill[i] = Integer.MAX_VALUE;
+        }
+        return arrayToFill;
+    }
+
+    public static double[][] multiplyMatrixEscalar(double[][] matriz, double escalar) {
+        double[][] matrizResultante = new double[matriz.length][matriz[0].length];
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[0].length; j++) {
+                matrizResultante[i][j] = matriz[i][j] * escalar;
+            }
+        }
+        return matrizResultante;
     }
 
     public static double[] subtractionColumns(double[] columnLeft, double[] columnRight) {
@@ -1165,6 +1201,16 @@ public class mainGabriel {
         System.out.println();
     }
 
+    public static void printVector(double[] vetorToPrint, String vetorName) {
+        System.out.println("Vetor: " + vetorName + " ↓");
+        System.out.println(" ___________ ");
+        for (int i = 0; i < vetorToPrint.length; i++) {
+            System.out.printf("|%8.3f\t|\n", vetorToPrint[i]);
+        }
+        System.out.println(" =========== ");
+        System.out.println();
+    }
+
     public static void printLine(int length, String pattern) {
         for (int i = 0; i < length; i++) {
             System.out.print(pattern);
@@ -1181,17 +1227,25 @@ public class mainGabriel {
         System.out.printf("Erro Absoluto Médio: %.3f\n", maximumAbsolutError);
     }
 
-    public static void printFunction3(int vectorNumbers, String[] csvFiles, int closestImageIndex, double[] distances) {
-        System.out.println("O número de vetores próprios utilizados: " + vectorNumbers);
+    public static void printFunction3Images(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex) {
+        if (counter == 1){
         System.out.printf("A imagem mais próxima foi: %s e foi salva em Identificação!\n\n", csvFiles[closestImageIndex]);
-
         for (int i = 0; i < csvFiles.length; i++) {
             if (i == closestImageIndex) {
                 System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
             } else {
                 System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
             }
-        }
+        }}
+        else if (counter > 1 && imageIndex == 0){
+            System.out.println("Foram identificadas mais de uma imagem com a mesma distância.");
+            for (int i = 0; i < csvFiles.length; i++) {
+            if (i == closestImageIndex) {
+                System.out.printf("Essa foi uma das imagens mais próximas da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
+            } else {
+                System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
+            }
+        }}
     }
 
     public static void printHeaderFunction(String functionName) {
@@ -1217,4 +1271,524 @@ public class mainGabriel {
         System.exit(1);
     }
     //! ------------------ Fim error messages --------------
+
+    //* ------------------ Testes Unitários ------------------
+
+    private static boolean checkIgualdadeMatrizes(double[][] obtido, double[][] esperado) {
+        for (int i = 0; i < esperado.length; i++) {
+            for (int j = 0; j < esperado[0].length; j++) {
+                if (Math.abs(esperado[i][j] - obtido[i][j]) > 1e-3) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean checkIgualdadeVetores(double[] vetor1, double[] vetor2) {
+        if (vetor1.length != vetor2.length) {
+            return false;
+        }
+
+        for (int i = 0; i < vetor1.length; i++) {
+            if (Math.abs(vetor1[i] - vetor2[i]) > 1e-3) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void checkAverageVector() {
+        System.out.println("Teste : Vetor Médio");
+        double[] expectedResult = {2.0, 5.0, 8.0};
+
+        double[][] inputMatrix = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9}
+        };
+        double[] obtainedResult = calculateMeanVector(inputMatrix);
+
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
+            System.out.println("calcularVetorMedio: Teste bem sucedido!");
+        } else {
+            System.out.println("calcularVetorMedio: Falha - Resultado incorreto.");
+            printVector(expectedResult, "Esperado");
+            printVector(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkCentralizeImage() {
+        System.out.println("Teste : Centralicação de Imagens");
+        double[] meanVector = {2.0, 5.0, 8.0};
+
+        double[][] inputMatrix = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9}
+        };
+
+        double[][] expectedResult = {
+                {-1, 0, 1},
+                {-1, 0, 1},
+                {-1, 0, 1}
+        };
+
+        double[][] obtainedResult = centralizeImages(inputMatrix, meanVector);
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("centralizarMatriz: Teste bem sucedido!");
+        } else {
+            System.out.println("centralizarMatriz: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkMultiplication() {
+        double[][] leftMatrix = {
+                {1, 2},
+                {3, 4}
+        };
+        double[][] rightMatrix = {
+                {5, 6},
+                {7, 8}
+        };
+        double[][] expectedResult = {
+                {19, 22},
+                {43, 50}
+        };
+        double[][] obtainedResult = multiplyMatrices(leftMatrix, rightMatrix);
+        checkIgualdadeMatrizes(obtainedResult, expectedResult);
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("Multiplicação: Teste bem sucedido!");
+        } else {
+            System.out.println("Multiplicação: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkNormalization() {
+        System.out.println("Teste 2: Normalização de matrizes");
+        double[][] inputMatrix = {
+                {3, 4},
+                {2, 6},
+                {4, 2}
+        };
+
+
+        double[][] expectedResult = {
+                {0.557, 0.535},
+                {0.371, 0.802},
+                {0.743, 0.267}
+        };
+
+
+        double[][] obtainedResult = normalize(inputMatrix);
+        checkIgualdadeMatrizes(obtainedResult, expectedResult);
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("Normalização: Teste bem sucedido!");
+        } else {
+            System.out.println("Normalização: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkTranspose() {
+        System.out.println("Teste : Transposta");
+
+        double[][] inputMatrix = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9}
+        };
+
+        double[][] expectedResult = {
+                {1, 4, 7},
+                {2, 5, 8},
+                {3, 6, 9}
+        };
+
+        double[][] obtainedResult = transposeMatrix(inputMatrix);
+        checkIgualdadeMatrizes(obtainedResult, expectedResult);
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("Transposta: Teste bem sucedido!");
+        } else {
+            System.out.println("Transposta: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkMultiplicationEscalar() {
+        System.out.println("Teste : Multiplicação por escalar");
+
+        double[][] inputMatrix = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9}
+        };
+
+        int x = 2;
+
+        double[][] expectedResult = {
+                {2, 4, 6},
+                {8, 10, 12},
+                {14, 16, 18}
+        };
+
+        double[][] obtainedResult = multiplyMatrixEscalar(inputMatrix, x);
+        checkIgualdadeMatrizes(obtainedResult, expectedResult);
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("Multiplicação por escalar: Teste bem sucedido!");
+        } else {
+            System.out.println("Multiplicação por escalar: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkSubtractionColumns() {
+        System.out.println("Teste : Subtração de colunas");
+
+        double[] leftColumn = {1, 2, 3};
+        double[] rightColumn = {4, 5, 6};
+
+        double[] expectedResult = {-3, -3, -3};
+
+        double[] obtainedResult = subtractionColumns(leftColumn, rightColumn);
+        checkIgualdadeVetores(obtainedResult, expectedResult);
+
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
+            System.out.println("Subtração de colunas: Teste bem sucedido!");
+        } else {
+            System.out.println("Subtração de colunas: Falha - Resultado incorreto.");
+            printVector(expectedResult, "Esperado");
+            printVector(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkSubMatrix() {
+        System.out.println("Teste : Submatriz");
+
+        double[][] inputMatrix = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9}
+        };
+
+        double[][] valuesAndIndexArray = {
+                {5, 1},  // Segunda coluna
+                {9, 2}   // Terceira coluna
+        };
+
+        double[][] expectedResult = {
+                {2, 3},
+                {5, 6},
+                {8, 9}
+
+        };
+
+
+        double[][] obtainedResult = createSubMatrix(inputMatrix, valuesAndIndexArray);
+        checkIgualdadeMatrizes(obtainedResult, expectedResult);
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("Submatriz: Teste bem sucedido!");
+        } else {
+            System.out.println("Submatriz: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkEuclidianDistance() {
+        System.out.println("Teste : Distância Euclidiana");
+
+        double[] principalVector = {1, 2, 3};
+        double[][] weigthMatrix = {
+                {4, 5},
+                {6, 7},
+                {8, 9}
+        };
+
+        double[] expectedResult = {7.071, 8.775};
+
+        double[] obtainedResult = calculateEuclidianDistance(principalVector, weigthMatrix);
+        checkIgualdadeVetores(obtainedResult, expectedResult);
+
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
+            System.out.println("Distância Euclidiana: Teste bem sucedido!");
+        } else {
+            System.out.println("Distância Euclidiana: Falha - Resultado incorreto.");
+            printVector(expectedResult, "Esperado");
+            printVector(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkCloserVetorTest() {
+        System.out.println("Teste: Verificação do vetor mais próximo");
+
+        double[] distances = {5.3, 3.2, 7.8, 1.4, 6.9, 1.4};
+
+        int expectedResult1 = 3;
+        int expectedResult2 = 5;
+
+        int[] obtainedResult = checkCloserVetor(distances);
+        boolean testPassed1 = false;
+        boolean testPassed2 = false;
+
+        for (int i = 0; obtainedResult[i] != Integer.MAX_VALUE; i++) {
+            if (obtainedResult[i] == expectedResult1) {
+                testPassed1 = true;
+                System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult1 + "!");
+            } else if (obtainedResult[i] == expectedResult2) {
+                testPassed2 = true;
+                System.out.println("Verificação do vetor mais próximo: Teste bem sucedido para o índice " + expectedResult2 + "!");
+            } else {
+                System.out.println("Verificação do vetor mais próximo: Falha - Resultado incorreto.");
+                System.out.println("Esperado: " + expectedResult1 + " ou " + expectedResult2);
+                System.out.println("Obtido: " + obtainedResult[i]);
+            }
+            System.out.println();
+        }
+
+        if (!testPassed1) {
+            System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult1 + " não encontrado.");
+        }
+        if (!testPassed2) {
+            System.out.println("Verificação do vetor mais próximo: Falha - Índice " + expectedResult2 + " não encontrado.");
+        }
+    }
+
+    public static void checkMAETest() {
+        System.out.println("Teste: Cálculo do MAE");
+
+        // Matrizes de exemplo
+        double[][] originalMatrix = {
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
+        };
+
+        double[][] matrizEigenFaces = {
+                {1.1, 2.1, 3.1},
+                {4.1, 5.1, 6.1},
+                {7.1, 8.1, 9.1}
+        };
+
+        double expectedResult = 0.1;
+
+        double obtainedResult = calculateMAE(originalMatrix, matrizEigenFaces);
+
+        if (Math.abs(obtainedResult - expectedResult) < 1e-3) {
+            System.out.println("Cálculo do MAE: Teste bem sucedido!");
+        } else {
+            System.out.println("Cálculo do MAE: Falha - Resultado incorreto.");
+            System.out.println("Esperado: " + expectedResult);
+            System.out.printf("Obtido: %.3f\n", obtainedResult);
+        }
+        System.out.println();
+    }
+
+    public static void checkCalculateWeights() {
+        System.out.println("Teste: Cálculo dos pesos");
+
+
+        double[] phi = {1.0, 2.0, 3.0};
+
+        double[][] eigenfaces = {
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
+        };
+
+        double[] expectedResult = {30.0, 36.0, 42.0};
+
+        double[] obtainedResult = calculateWeights(phi, eigenfaces);
+
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
+            System.out.println("Cálculo dos pesos: Teste bem sucedido!");
+        } else {
+            System.out.println("Cálculo dos pesos: Falha - Resultado incorreto.");
+            printVector(expectedResult, "Esperado");
+            printVector(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkGetValuesAndIndexArray() {
+        System.out.println("Teste: getValuesAndIndexArray");
+
+        double[][] eigenValuesArray = {
+                {1.0, 0, 0},
+                {0, 5.0, 0},
+                {0, 0, 3.0}
+        };
+
+        int eigenfaces = 2;
+
+        double[][] expectedResult = {
+                {5.0, 1},
+                {3.0, 2}
+        };
+
+        double[][] obtainedResult = getValuesAndIndexArray(eigenValuesArray, eigenfaces);
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("getValuesAndIndexArray: Teste bem sucedido!");
+        } else {
+            System.out.println("getValuesAndIndexArray: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkReconstructImage() {
+        System.out.println("Teste: reconstructImage");
+
+        double[] averageVector = {1.0, 2.0, 3.0};
+
+        double[][] eigenfaces = {
+                {0.1, 0.2},
+                {0.3, 0.4},
+                {0.5, 0.6}
+        };
+
+        double[] columnWeights = {0.5, 0.3};
+
+        int quantityEigenfaces = 2;
+
+        double[] expectedResult = {1.11, 2.27, 3.43};
+
+        double[] obtainedResult = reconstructImage(averageVector, eigenfaces, columnWeights, quantityEigenfaces);
+
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
+            System.out.println("reconstructImage: Teste bem sucedido!");
+        } else {
+            System.out.println("reconstructImage: Falha - Resultado incorreto.");
+            printVector(expectedResult, "Esperado");
+            printVector(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkConstructDiagonalMatrix() {
+        System.out.println("Teste: Construção de Matriz Diagonal");
+
+        double[][] inputMatrix = {
+                {5, 0},
+                {3, 0},
+                {8, 0}
+        };
+
+        double[][] expectedResult = {
+                {5, 0, 0},
+                {0, 3, 0},
+                {0, 0, 8}
+        };
+
+
+        double[][] obtainedResult = constructDiagonalMatrix(inputMatrix);
+
+
+        if (checkIgualdadeMatrizes(obtainedResult, expectedResult)) {
+            System.out.println("Matriz Diagonal: Teste bem sucedido!");
+        } else {
+            System.out.println("Matriz Diagonal: Falha - Resultado incorreto.");
+            printMatrix(expectedResult, "Esperado");
+            printMatrix(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkMatrixToArray1D() {
+        System.out.println("Teste: Conversão de Matriz para Array 1D");
+
+        double[][] inputMatrix = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9}
+        };
+
+        double[] expectedResult = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+        double[] obtainedResult = matrixToArray1D(inputMatrix);
+
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
+            System.out.println("Conversão de Matriz para Array 1D: Teste bem sucedido!");
+        } else {
+            System.out.println("Conversão de Matriz para Array 1D: Falha - Resultado incorreto.");
+            printVector(expectedResult, "Esperado");
+            printVector(obtainedResult, "Obtido");
+        }
+        System.out.println();
+    }
+
+    public static void checkGetColumn() {
+        System.out.println("Teste: Obter Coluna de Matriz");
+
+        double[][] inputMatrix = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9}
+        };
+
+        int index = 1;
+
+        double[] expectedResult = {2, 5, 8};
+
+        double[] obtainedResult = getColumn(inputMatrix, index);
+
+        if (checkIgualdadeVetores(obtainedResult, expectedResult)) {
+            System.out.println("Obter Coluna de Matriz: Teste bem sucedido!");
+        } else {
+            System.out.println("Obter Coluna de Matriz: Falha - Resultado incorreto.");
+            printVector(expectedResult, "Esperado");
+            printVector(obtainedResult, "Obtido");
+        }
+        System.out.println();
+
+    }
+    //* ------------------ Fim verificações ------------------
+
+
+    //* ----------------- Correr Testes -----------------------
+    public static void runTests() {
+        checkAverageVector();
+        checkCentralizeImage();
+        checkMultiplication();
+        checkMultiplicationEscalar();
+        checkNormalization();
+        checkTranspose();
+        checkSubtractionColumns();
+        checkSubMatrix();
+        checkEuclidianDistance();
+        checkCloserVetorTest();
+        checkMAETest();
+        checkCalculateWeights();
+        checkGetValuesAndIndexArray();
+        checkReconstructImage();
+        checkConstructDiagonalMatrix();
+        checkMatrixToArray1D();
+        checkGetColumn();
+    }
+    //* ----------------- Fim Correr Testes -----------------------
+
 }

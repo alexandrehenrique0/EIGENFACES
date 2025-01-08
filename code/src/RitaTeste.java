@@ -89,8 +89,6 @@ public class RitaTeste {
             switchPrimaryFunctions(function, vectorNumbers, csvLocation, csvFiles, oneMatrixCsv, allMatricesCsv);
         }
 
-
-
     }
 
     public static void runNonInteractive(String[] args) {

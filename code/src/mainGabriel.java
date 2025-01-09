@@ -16,10 +16,10 @@ public class mainGabriel {
     public static final int MAX_SIZE_ROWS_AND_COLS = 256;
     public static final int MIN_SIZE_ROWS_AND_COLS = 1;
     public static final int MIN_QUANTITY_VECTORS = 1;
-    private static final int MIN_BIT_VALUE = 0;
-    private static final int MAX_BIT_VALUE = 255;
-    private static final double MIN_LAMBDA_VALUE = 1e-8;
-    private static final double MIN_DECIMAL_VALUE = 1e-3;
+    public static final int MIN_BIT_VALUE = 0;
+    public static final int MAX_BIT_VALUE = 255;
+    public static final double MIN_LAMBDA_VALUE = 1e-8;
+    public static final double MIN_DECIMAL_VALUE = 1e-3;
 
     //* Scanner global para ser utilizado em todos os métodos necessários.
     public static Scanner scanner = new Scanner(System.in);
@@ -789,7 +789,7 @@ public class mainGabriel {
         }
     }
 
-    private static int[] getCsvDimensions(String path) throws FileNotFoundException {
+    public static int[] getCsvDimensions(String path) throws FileNotFoundException {
         Scanner lineCounter = new Scanner(new File(path));
         int rowCount = 0;
         int columnCount = 0;
@@ -807,7 +807,7 @@ public class mainGabriel {
         return new int[]{rowCount, columnCount};
     }
 
-    private static void fillMatrixFromCsv(String path, double[][] matrix) throws FileNotFoundException {
+    public static void fillMatrixFromCsv(String path, double[][] matrix) throws FileNotFoundException {
         Scanner fileScanner = new Scanner(new File(path));
         int row = 0;
         while (fileScanner.hasNextLine()) {
@@ -860,7 +860,7 @@ public class mainGabriel {
         return false;
     }
 
-    private static void adjustPrecision(double[][] matrix) {
+    public static void adjustPrecision(double[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
                 if (Math.abs(matrix[i][j]) < MIN_LAMBDA_VALUE) {
@@ -1078,7 +1078,7 @@ public class mainGabriel {
         }
     }
 
-    private static String getDataBaseLocationFromUser() {
+    public static String getDataBaseLocationFromUser() {
         String dataBaseLocation = scanner.next();
         while (!checkDataBaseLocation(dataBaseLocation)) {
             System.out.println("Erro: Localização da base de imagens inválida.");
@@ -1096,7 +1096,7 @@ public class mainGabriel {
         return dataBaseLocation;
     }
 
-    private static String getDataBaseLocationFromArgs(String[] args) {
+    public static String getDataBaseLocationFromArgs(String[] args) {
         String dataBaseLocationArgs = args[7];
         if (!checkDataBaseLocation(dataBaseLocationArgs)) {
             errorGeneral("Erro: Localização da base de dados inválida.");
@@ -1112,7 +1112,7 @@ public class mainGabriel {
         }
     }
 
-    private static String getCsvLocationFromUser(int function) {
+    public static String getCsvLocationFromUser(int function) {
         String csvLocation = scanner.next();
         while (!checkCsvLocation(csvLocation)) {
             System.out.println("Erro: Localização do csv inválida");
@@ -1133,7 +1133,7 @@ public class mainGabriel {
         return csvLocation;
     }
 
-    private static String getCsvLocationFromArgs(String[] args, int function) {
+    public static String getCsvLocationFromArgs(String[] args, int function) {
         String csvLocationArgs = args[5];
         if (!checkCsvLocation(csvLocationArgs)) {
             errorGeneral("Erro: Localização do csv inválida");
@@ -1324,7 +1324,7 @@ public class mainGabriel {
         }
     }
 
-    private static void printDistances(String[] csvFiles, double[] distances, int closestImageIndex, int counter) {
+    public static void printDistances(String[] csvFiles, double[] distances, int closestImageIndex, int counter) {
         for (int i = 0; i < csvFiles.length; i++) {
             if (i == closestImageIndex || distances[i] == distances[closestImageIndex]) {
                 if (counter == 1) {
@@ -1350,7 +1350,7 @@ public class mainGabriel {
     //! ------------------ Fim error messages --------------
 
     //* ------------------ Testes Unitários ------------------
-    private static boolean checkIgualdadeMatrizes(double[][] obtido, double[][] esperado) {
+    public static boolean checkIgualdadeMatrizes(double[][] obtido, double[][] esperado) {
         for (int i = 0; i < esperado.length; i++) {
             for (int j = 0; j < esperado[0].length; j++) {
                 if (Math.abs(esperado[i][j] - obtido[i][j]) > 1e-3) {
@@ -1361,7 +1361,7 @@ public class mainGabriel {
         return true;
     }
 
-    private static boolean checkIgualdadeVetores(double[] vetor1, double[] vetor2) {
+    public static boolean checkIgualdadeVetores(double[] vetor1, double[] vetor2) {
         if (vetor1.length != vetor2.length) {
             return false;
         }

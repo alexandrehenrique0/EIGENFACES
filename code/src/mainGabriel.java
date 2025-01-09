@@ -19,6 +19,7 @@ public class mainGabriel {
     private static final int MIN_BIT_VALUE = 0;
     private static final int MAX_BIT_VALUE = 255;
     private static final double MIN_LAMBDA_VALUE = 1e-8;
+    private static final double MIN_DECIMAL_VALUE = 1e-3;
 
     //* Scanner global para ser utilizado em todos os métodos necessários.
     public static Scanner scanner = new Scanner(System.in);
@@ -232,6 +233,7 @@ public class mainGabriel {
         double[][] matrixEigenFaces = multiplyMatrices(multiplyMatrices(newEigenVectorsK, newEigenValuesK), newEigenVectorsTransposeK);
 
         double maximumAbsolutError = calculateMAE(oneMatrixCsv, matrixEigenFaces);
+        adjustValue(maximumAbsolutError);
 
         printFunction1(vectorK, newEigenValuesK, newEigenVectorsK, maximumAbsolutError);
         saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1", 1);
@@ -264,7 +266,7 @@ public class mainGabriel {
 
     public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv, int function) {
 
-        System.out.println("Valores do vetor médio: " + Arrays.toString(averageVectors));
+        printVector("Valores do vetor médio ", averageVectors);
         System.out.println("\nQuantidade de Eigenfaces utilizadas:  " + vectorNumbers);
 
         for (int img = 0; img < linearizedImages[0].length; img++) {
@@ -272,7 +274,9 @@ public class mainGabriel {
             double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights, vectorNumbers);
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[img]);
             double maximumAbsolutError = calculateMAE(allMatricesCsv[img], reconstructedImageMatrix);
-            System.out.println("\nPara a imagem: " + csvFiles[img] + ", foi utilizado este vetor peso : " + Arrays.toString(columnWeights));
+            adjustValue(maximumAbsolutError);
+            System.out.print("\nPara a imagem: " + csvFiles[img]);
+            printVector(", foi utilizado este vetor peso ", columnWeights);
             System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", function);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
@@ -386,6 +390,7 @@ public class mainGabriel {
                 weightsMatrix[i][img] = weights[i];
             }
         }
+        adjustPrecision(weightsMatrix);
     }
 
     public static void populateLinearizedImages(double[][] linearizedImages, double[][][] imageMatrices) {
@@ -545,6 +550,7 @@ public class mainGabriel {
                 reconstructedMatrix[i][j] = reconstructedImage[i * columns + j];
             }
         }
+        adjustPrecision(reconstructedMatrix);
         return reconstructedMatrix;
     }
 
@@ -621,9 +627,7 @@ public class mainGabriel {
             newImage[i] = meanVector[i];
         }
         for (int i = 0; i < k; i++) {
-            if (lambdas[i][i] < MIN_LAMBDA_VALUE) {
-                lambdas[i][i] = MIN_LAMBDA_VALUE;
-            }
+            adjustPrecision(lambdas);
             double weightsImage = Math.random() * (2 * Math.sqrt(lambdas[i][i])) - Math.sqrt(lambdas[i][i]);
             for (int j = 0; j < dimension; j++) {
                 newImage[j] += weightsImage * eigenfaces[j][i];
@@ -723,7 +727,7 @@ public class mainGabriel {
 
         try {
             writeArrayAsImage(normalizedImage, outputPath);
-                System.out.println("A imagem foi gerada com sucesso: " + outputPath);
+            System.out.println("A imagem foi gerada com sucesso: " + outputPath);
         } catch (IOException e) {
             errorGeneral("Erro ao salvar a imagem: " + e.getMessage());
         }
@@ -854,6 +858,22 @@ public class mainGabriel {
             return parameters[0].equals("-f") && parameters[2].equals("-k") && parameters[4].equals("-i") && parameters[6].equals("-j");
         }
         return false;
+    }
+
+    private static void adjustPrecision(double[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                if (Math.abs(matrix[i][j]) < MIN_LAMBDA_VALUE) {
+                    matrix[i][j] = MIN_LAMBDA_VALUE;
+                }
+            }
+        }
+    }
+
+    public static void adjustValue(double value) {
+        if (value < MIN_DECIMAL_VALUE) {
+            value = MIN_DECIMAL_VALUE;
+        }
     }
 
     public static boolean checkFunctionOptions(int function) {
@@ -1153,6 +1173,7 @@ public class mainGabriel {
                 }
             }
         }
+        adjustPrecision(matrizResultante);
         return matrizResultante;
     }
 
@@ -1163,6 +1184,7 @@ public class mainGabriel {
                 transposedMatrix[j][i] = matrix[i][j];
             }
         }
+        adjustPrecision(transposedMatrix);
         return transposedMatrix;
     }
 
@@ -1179,6 +1201,7 @@ public class mainGabriel {
                 matrizResultante[i][j] = matriz[i][j] * escalar;
             }
         }
+        adjustPrecision(matrizResultante);
         return matrizResultante;
     }
 
@@ -1212,6 +1235,7 @@ public class mainGabriel {
             }
             subMatrixRows++;
         }
+        adjustPrecision(submatrix);
         return submatrix;
     }
     //* ----------------- Fim operações básicas com matrizes ------------------
@@ -1240,6 +1264,7 @@ public class mainGabriel {
         for (double[] row : matrixToPrint) {
             System.out.print("|");
             for (int i = 0; i < row.length; i++) {
+                adjustValue(row[i]);
                 System.out.printf("%8.3f\t", row[i]);
                 if (i == row.length - 1) {
                     System.out.print("|");
@@ -1251,10 +1276,25 @@ public class mainGabriel {
         System.out.println();
     }
 
-    public static void printVector(double[] vetorToPrint, String vetorName) {
+    public static void printVector(String vectorName, double[] array) {
+        System.out.print(vectorName + ": ");
+        for (int i = 0; i < array.length; i++) {
+            adjustValue(array[i]);
+            if (i == 0) {
+                System.out.printf("[%.3f; ", array[i]);
+            } else if (i == array.length - 1) {
+                System.out.printf("%.3f]\n", array[i]);
+            } else {
+                System.out.printf("%.3f; ", array[i]);
+            }
+        }
+    }
+
+    public static void printVectorTests(double[] vetorToPrint, String vetorName) {
         System.out.println("Vetor: " + vetorName + " ↓");
         System.out.println(" ___________ ");
         for (double v : vetorToPrint) {
+            adjustValue(v);
             System.out.printf("|%8.3f\t|\n", v);
         }
         System.out.println(" =========== ");
@@ -1310,7 +1350,6 @@ public class mainGabriel {
     //! ------------------ Fim error messages --------------
 
     //* ------------------ Testes Unitários ------------------
-
     private static boolean checkIgualdadeMatrizes(double[][] obtido, double[][] esperado) {
         for (int i = 0; i < esperado.length; i++) {
             for (int j = 0; j < esperado[0].length; j++) {
@@ -1350,8 +1389,8 @@ public class mainGabriel {
             System.out.println("calcularVetorMedio: Teste bem sucedido!");
         } else {
             System.out.println("calcularVetorMedio: Falha - Resultado incorreto.");
-            printVector(expectedResult, "Esperado");
-            printVector(obtainedResult, "Obtido");
+            printVectorTests(expectedResult, "Esperado");
+            printVectorTests(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1512,8 +1551,8 @@ public class mainGabriel {
             System.out.println("Subtração de colunas: Teste bem sucedido!");
         } else {
             System.out.println("Subtração de colunas: Falha - Resultado incorreto.");
-            printVector(expectedResult, "Esperado");
-            printVector(obtainedResult, "Obtido");
+            printVectorTests(expectedResult, "Esperado");
+            printVectorTests(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1572,8 +1611,8 @@ public class mainGabriel {
             System.out.println("Distância Euclidiana: Teste bem sucedido!");
         } else {
             System.out.println("Distância Euclidiana: Falha - Resultado incorreto.");
-            printVector(expectedResult, "Esperado");
-            printVector(obtainedResult, "Obtido");
+            printVectorTests(expectedResult, "Esperado");
+            printVectorTests(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1663,8 +1702,8 @@ public class mainGabriel {
             System.out.println("Cálculo dos pesos: Teste bem sucedido!");
         } else {
             System.out.println("Cálculo dos pesos: Falha - Resultado incorreto.");
-            printVector(expectedResult, "Esperado");
-            printVector(obtainedResult, "Obtido");
+            printVectorTests(expectedResult, "Esperado");
+            printVectorTests(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1720,8 +1759,8 @@ public class mainGabriel {
             System.out.println("reconstructImage: Teste bem sucedido!");
         } else {
             System.out.println("reconstructImage: Falha - Resultado incorreto.");
-            printVector(expectedResult, "Esperado");
-            printVector(obtainedResult, "Obtido");
+            printVectorTests(expectedResult, "Esperado");
+            printVectorTests(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1772,8 +1811,8 @@ public class mainGabriel {
             System.out.println("Conversão de Matriz para Array 1D: Teste bem sucedido!");
         } else {
             System.out.println("Conversão de Matriz para Array 1D: Falha - Resultado incorreto.");
-            printVector(expectedResult, "Esperado");
-            printVector(obtainedResult, "Obtido");
+            printVectorTests(expectedResult, "Esperado");
+            printVectorTests(obtainedResult, "Obtido");
         }
         System.out.println();
     }
@@ -1797,8 +1836,8 @@ public class mainGabriel {
             System.out.println("Obter Coluna de Matriz: Teste bem sucedido!");
         } else {
             System.out.println("Obter Coluna de Matriz: Falha - Resultado incorreto.");
-            printVector(expectedResult, "Esperado");
-            printVector(obtainedResult, "Obtido");
+            printVectorTests(expectedResult, "Esperado");
+            printVectorTests(obtainedResult, "Obtido");
         }
         System.out.println();
 

@@ -19,7 +19,7 @@ public class LAPR1_24_25_DAB_02 {
     private static final int MIN_BIT_VALUE = 0;
     private static final int MAX_BIT_VALUE = 255;
     private static final double MIN_LAMBDA_VALUE = 1e-8;
-    private static final double MIN_DECIMAL_VALUE = 0.001;
+    private static final double MIN_DECIMAL_VALUE = 1e-3;
 
     //* Scanner global para ser utilizado em todos os métodos necessários.
     public static Scanner scanner = new Scanner(System.in);

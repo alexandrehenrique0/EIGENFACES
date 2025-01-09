@@ -390,7 +390,6 @@ public class LAPR1_24_25_DAB_02 {
                 weightsMatrix[i][img] = weights[i];
             }
         }
-        adjustPrecision(weightsMatrix);
     }
 
     public static void populateLinearizedImages(double[][] linearizedImages, double[][][] imageMatrices) {
@@ -550,7 +549,6 @@ public class LAPR1_24_25_DAB_02 {
                 reconstructedMatrix[i][j] = reconstructedImage[i * columns + j];
             }
         }
-        adjustPrecision(reconstructedMatrix);
         return reconstructedMatrix;
     }
 
@@ -868,7 +866,7 @@ public class LAPR1_24_25_DAB_02 {
     public static void adjustPrecision(double[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
-                if (Math.abs(matrix[i][j]) < MIN_LAMBDA_VALUE) {
+                if (matrix[i][j] < MIN_LAMBDA_VALUE) {
                     matrix[i][j] = MIN_LAMBDA_VALUE;
                 }
             }
@@ -1186,7 +1184,6 @@ public class LAPR1_24_25_DAB_02 {
                 }
             }
         }
-        adjustPrecision(matrizResultante);
         return matrizResultante;
     }
 
@@ -1197,7 +1194,6 @@ public class LAPR1_24_25_DAB_02 {
                 transposedMatrix[j][i] = matrix[i][j];
             }
         }
-        adjustPrecision(transposedMatrix);
         return transposedMatrix;
     }
 
@@ -1214,7 +1210,6 @@ public class LAPR1_24_25_DAB_02 {
                 matrizResultante[i][j] = matriz[i][j] * escalar;
             }
         }
-        adjustPrecision(matrizResultante);
         return matrizResultante;
     }
 
@@ -1248,7 +1243,6 @@ public class LAPR1_24_25_DAB_02 {
             }
             subMatrixRows++;
         }
-        adjustPrecision(submatrix);
         return submatrix;
     }
     //* ----------------- Fim operações básicas com matrizes ------------------

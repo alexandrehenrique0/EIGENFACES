@@ -127,7 +127,7 @@ public class LAPR1_24_25_DAB_02 {
                 break;
             case 2:
                 printHeaderFunction("Reconstrução de Imagens usando Eigenfaces");
-                reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv, function);
+                reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv, function, phiTxPhi);
                 System.out.println();
                 System.out.println("Funcionalidade 2 finalizada.");
                 break;
@@ -235,7 +235,7 @@ public class LAPR1_24_25_DAB_02 {
         double maximumAbsolutError = calculateMAE(oneMatrixCsv, matrixEigenFaces);
         adjustValue(maximumAbsolutError);
 
-        printFunction1(vectorK, newEigenValuesK, newEigenVectorsK, maximumAbsolutError);
+        printFunction1(vectorK, newEigenValuesK, newEigenVectorsK, maximumAbsolutError, matrixEigenFaces);
         saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1", 1);
     }
 
@@ -261,12 +261,13 @@ public class LAPR1_24_25_DAB_02 {
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
-        reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv, function);
+        reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv, function, phiTxPhi);
     }
 
-    public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv, int function) {
+    public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv, int function, double[][] AtxA) {
 
-        printVector("Valores do vetor médio ", averageVectors);
+        printVector("Valores do vetor médio :", averageVectors);
+        printMatrix(AtxA,"AtxA ");
         System.out.println("\nQuantidade de Eigenfaces utilizadas:  " + vectorNumbers);
 
         for (int img = 0; img < linearizedImages[0].length; img++) {
@@ -276,7 +277,7 @@ public class LAPR1_24_25_DAB_02 {
             double maximumAbsolutError = calculateMAE(allMatricesCsv[img], reconstructedImageMatrix);
             adjustValue(maximumAbsolutError);
             System.out.print("\nPara a imagem: " + csvFiles[img]);
-            printVector(", foi utilizado este vetor peso ", columnWeights);
+            printVector(", foi utilizado este vetor peso :", columnWeights);
             System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", function);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
@@ -321,11 +322,13 @@ public class LAPR1_24_25_DAB_02 {
         double[] distances = calculateEuclidianDistance(principalWeightsVector, weightsMatrix);
         int[] closestImageIndex = checkCloserVetor(distances);
 
+        System.out.println("O número de vetores próprios utilizados: " + vectorNumbers + "\n");
+        printVector("Novo vetor Omega (Ω nova) :", principalWeightsVector);
+
         for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
             counter++;
         }
 
-        System.out.println("O número de vetores próprios utilizados: " + vectorNumbers);
         for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
 
             double[] closestImageWeights = getColumn(weightsMatrix, closestImageIndex[i]);
@@ -333,7 +336,7 @@ public class LAPR1_24_25_DAB_02 {
 
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
 
-            printFunction3(csvFiles, closestImageIndex[i], distances, counter, i);
+            printFunction3(csvFiles, closestImageIndex[i], distances, counter, i, closestImageWeights);
             saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[i]], "Output/Func3/Identificacao", function);
 
         }
@@ -1265,30 +1268,30 @@ public class LAPR1_24_25_DAB_02 {
 
     public static void printMatrix(double[][] matrixToPrint, String matrixName) {
         System.out.println("\nMatriz: " + matrixName + " ↓");
-        printLine(matrixToPrint[0].length, "____________");
+        printLine(matrixToPrint[0].length, "________________");
         System.out.println();
 
         for (double[] row : matrixToPrint) {
             System.out.print("|");
             for (int i = 0; i < row.length; i++) {
                 adjustValue(row[i]);
-                System.out.printf("%8.3f\t", row[i]);
+                System.out.printf("%12.3f\t", row[i]);
                 if (i == row.length - 1) {
                     System.out.print("|");
                 }
             }
             System.out.println();
         }
-        printLine(matrixToPrint[0].length, "============");
+        printLine(matrixToPrint[0].length, "================");
         System.out.println();
     }
 
     public static void printVector(String vectorName, double[] array) {
-        System.out.print(vectorName + ": ");
+        System.out.print(vectorName);
         for (int i = 0; i < array.length; i++) {
             adjustValue(array[i]);
             if (i == 0) {
-                System.out.printf("[%.3f; ", array[i]);
+                System.out.printf(" [%.3f; ", array[i]);
             } else if (i == array.length - 1) {
                 System.out.printf("%.3f]\n", array[i]);
             } else {
@@ -1314,24 +1317,25 @@ public class LAPR1_24_25_DAB_02 {
         }
     }
 
-    public static void printFunction1(int numbersEigenfaces, double[][] newEigenValuesK, double[][] newEigenVectorsK, double maximumAbsolutError) {
+    public static void printFunction1(int numbersEigenfaces, double[][] newEigenValuesK, double[][] newEigenVectorsK, double maximumAbsolutError, double[][] reconstructedMatrix) {
         System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + numbersEigenfaces);
         printMatrix(newEigenValuesK, "Valores Próprios da matriz K");
         printMatrix(newEigenVectorsK, "Vetores Próprios matriz K:");
+        printMatrix(reconstructedMatrix, "Reconstruída");
         System.out.printf("\nErro Absoluto Médio: %.3f\n", maximumAbsolutError);
     }
 
-    public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex) {
+    public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex, double[] actualVectorOmegaI) {
         if (counter == 1) {
             System.out.printf("\nA imagem mais próxima foi: %s e foi salva em Identificação!\n", csvFiles[closestImageIndex]);
-            printDistances(csvFiles, distances, closestImageIndex, counter);
+            printDistances(csvFiles, distances, closestImageIndex, counter, actualVectorOmegaI);
         } else if (counter > 1 && imageIndex == 0) {
             System.out.println("\nForam identificadas " + counter + " imagens com a mesma distância!\n");
-            printDistances(csvFiles, distances, closestImageIndex, counter);
+            printDistances(csvFiles, distances, closestImageIndex, counter, actualVectorOmegaI);
         }
     }
 
-    public static void printDistances(String[] csvFiles, double[] distances, int closestImageIndex, int counter) {
+    public static void printDistances(String[] csvFiles, double[] distances, int closestImageIndex, int counter, double[] actualVectorOmegaI) {
         for (int i = 0; i < csvFiles.length; i++) {
             if (i == closestImageIndex || distances[i] == distances[closestImageIndex]) {
                 if (counter == 1) {
@@ -1341,6 +1345,7 @@ public class LAPR1_24_25_DAB_02 {
                 }
             } else {
                 System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
+                printVector("E o vetor Ômega (Ωi) da imagem " + csvFiles[i] + " foi:", actualVectorOmegaI);
             }
         }
         System.out.println();

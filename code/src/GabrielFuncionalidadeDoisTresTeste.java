@@ -62,20 +62,12 @@ public class GabrielFuncionalidadeDoisTresTeste {
             saveImage(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/ImagensReconstruidas");
             saveMatrixToFile(reconstructedImageMatrix, CSVFileNames[img], "Output/Func2/Eigenfaces");
         }
-
-//        double[] phiVector = centralizeVector(matrixToArray1D(matrixCSVDouble), meanVector);
-//        double[] weightsVetorPrincipal = calculateWeights(phiVector, transposeMatrix(normalizedEigenfaces));
-//
-//        double[] matrizEuclidiana = calculate_Euclidian_Distance(weightsVetorPrincipal, weightsMatrix);
-//        int posicaoMaisProxima = check_Closer_Vetor(matrizEuclidiana);
-
-//        System.out.println("A imagem mais próxima é: " + CSVFileNames[posicaoMaisProxima]);
     }
 
     private static void adjustPrecision(double[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
-                if (Math.abs(matrix[i][j]) < 1e-10) { // Limite para evitar valores muito pequenos
+                if (Math.abs(matrix[i][j]) < 1e-10) {
                     matrix[i][j] = 0.0;
                 }
             }
@@ -101,7 +93,6 @@ public class GabrielFuncionalidadeDoisTresTeste {
         System.out.println();
     }
 
-    // Metodo para printar linhas de caracteres no console.
     private static void printLine(int length, String pattern) {
         for (int i = 0; i < length; i++) {
             System.out.print(pattern);
@@ -129,50 +120,11 @@ public class GabrielFuncionalidadeDoisTresTeste {
             throw new RuntimeException("Erro: Valores inválidos encontrados no arquivo CSV.", e);
         }
 
-        // Converte a lista de linhas em uma matriz
         double[][] matrix = new double[rows.size()][];
         for (int i = 0; i < rows.size(); i++) {
             matrix[i] = rows.get(i);
         }
         return matrix;
-    }
-
-    public static double[] centralizeVector(double[] vector, double[] meanVector) {
-        if (vector.length != meanVector.length) {
-            throw new IllegalArgumentException("O comprimento do vetor deve ser igual ao tamanho do vetor médio.");
-        }
-
-        double[] phi = new double[vector.length]; // Vetor para armazenar o vetor centralizado
-
-        for (int i = 0; i < vector.length; i++) {
-            phi[i] = vector[i] - meanVector[i]; // Centraliza o valor
-        }
-
-        return phi; // Retorna o vetor centralizado
-    }
-
-    public static double[] calculate_Euclidian_Distance(double[] vetorPrincipal, double[][] matrizVetores) {
-        double[] resultado = new double[matrizVetores[0].length];
-        for (int i = 0; i < matrizVetores[0].length; i++) {
-            double soma = 0;
-            for (int j = 0; j < matrizVetores.length; j++) {
-                soma += Math.pow(vetorPrincipal[j] - matrizVetores[j][i], 2);
-            }
-            resultado[i] = Math.sqrt(soma);
-        }
-        return resultado;
-    }
-
-    public static int check_Closer_Vetor(double[] resultado) {
-        double min = resultado[0];
-        int min_Pos = 0;
-        for (int j = 1; j < resultado.length; j++) {
-            if (resultado[j] < min) {
-                min = resultado[j];
-                min_Pos = j;
-            }
-        }
-        return min_Pos;
     }
 
     public static double[] getColumn(double[][] matrix, int column) {
@@ -224,7 +176,6 @@ public class GabrielFuncionalidadeDoisTresTeste {
 
         return matrices;
     }
-
 
     private static void saveMatrixToFile(double[][] matrix, String inputCsvPath, String outputFolderPath) {
         File outputFolder = new File(outputFolderPath);
@@ -339,22 +290,22 @@ public class GabrielFuncionalidadeDoisTresTeste {
     }
 
     public static double[][] centralizeImages(double[][] images, double[] meanVector) {
-        int numPixels = meanVector.length;      // Número de pixels por imagem
-        int numImages = images[0].length;      // Número de imagens
+        int numPixels = meanVector.length;
+        int numImages = images[0].length;
 
         if (images.length != numPixels) {
             throw new IllegalArgumentException("O número de linhas em 'images' deve ser igual ao tamanho do 'meanVector'.");
         }
 
-        double[][] phi = new double[numPixels][numImages]; // Matriz para armazenar as imagens centralizadas
+        double[][] phi = new double[numPixels][numImages];
 
-        for (int i = 0; i < numPixels; i++) { // Para cada pixel
-            for (int j = 0; j < numImages; j++) { // Para cada imagem
-                phi[i][j] = images[i][j] - meanVector[i]; // Centraliza o valor
+        for (int i = 0; i < numPixels; i++) {
+            for (int j = 0; j < numImages; j++) {
+                phi[i][j] = images[i][j] - meanVector[i];
             }
         }
 
-        return phi; // Retorna a matriz centralizada
+        return phi;
     }
 
     public static double[] calculateWeightsOne(double[] phi, double[][] matrixU) {
@@ -432,10 +383,8 @@ public class GabrielFuncionalidadeDoisTresTeste {
         int height = array.length;
         int width = array[0].length;
 
-        // Create a BufferedImage
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 
-        // Set the pixel intensities
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int intensity = array[y][x];
@@ -445,19 +394,17 @@ public class GabrielFuncionalidadeDoisTresTeste {
                 if (intensity > 255){
                     intensity = 255;
                 }
-                int rgb = (intensity << 16) | (intensity << 8) | intensity; // Set the same value for R, G, B
+                int rgb = (intensity << 16) | (intensity << 8) | intensity;
                 image.setRGB(x, y, rgb);
             }
         }
 
-        // Write the image to the file
         File outputFile = new File(outputFilePath);
         ImageIO.write(image, "png", outputFile);
     }
 
     private static double[][] readCSVToMatrix(String path) {
         try {
-            // Conta o número de linhas no arquivo
             Scanner lineCounter = new Scanner(new File(path));
             int rowCount = 0;
             int columnCount = 0;
@@ -473,10 +420,8 @@ public class GabrielFuncionalidadeDoisTresTeste {
             }
             lineCounter.close();
 
-            // Inicializa a matriz
             double[][] matrix = new double[rowCount][columnCount];
 
-            // Lê o arquivo novamente para preencher a matriz
             Scanner fileScanner = new Scanner(new File(path));
             int row = 0;
             while (fileScanner.hasNextLine()) {
@@ -494,13 +439,6 @@ public class GabrielFuncionalidadeDoisTresTeste {
         } catch (Exception e) {
             throw new RuntimeException("Erro ao ler o arquivo CSV: " + e.getMessage(), e);
         }
-    }
-
-    public static double[][] covariances(double[][] matrixA) {
-        int quantityOfImages = matrixA[0].length;
-        double[][] matrixATransposed = transposeMatrix(matrixA);
-        double[][] matrixATmultiplyByA = multiplyMatrix(matrixATransposed, matrixA);
-        return multiplyMatrixByScalar(matrixATmultiplyByA, 1.0 / quantityOfImages);
     }
 
     public static double[][] eigenVectors(double[][] matrix) {
@@ -571,16 +509,6 @@ public class GabrielFuncionalidadeDoisTresTeste {
                     }
                     resultMatrix[i][j] += matrixLeft[i][k] * matrixRight[k][j];
                 }
-            }
-        }
-        return resultMatrix;
-    }
-
-    public static double[][] multiplyMatrixByScalar(double[][] matrix, double scalar) {
-        double[][] resultMatrix = new double[matrix.length][matrix[0].length];
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[0].length; j++) {
-                resultMatrix[i][j] = matrix[i][j] * scalar;
             }
         }
         return resultMatrix;

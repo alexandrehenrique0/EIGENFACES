@@ -45,13 +45,13 @@ public class mainGabriel {
                 function1(function);
                 break;
             case 2:
-                function2();
+                function2(function);
                 break;
             case 3:
                 function3(function);
                 break;
             case 4:
-                function4();
+                function4(function);
                 break;
             case 5:
                 devTeam();
@@ -126,19 +126,19 @@ public class mainGabriel {
                 break;
             case 2:
                 printHeaderFunction("Reconstrução de Imagens usando Eigenfaces");
-                reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv);
+                reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv, function);
                 System.out.println();
                 System.out.println("Funcionalidade 2 finalizada.");
                 break;
             case 3:
                 printHeaderFunction("Identificação de imagem mais próxima");
-                identifyClosestImage(vectorK, csvFiles, averageVectors, eigenfaces, oneMatrixCsv, weightsMatrix, allMatricesCsv);
+                identifyClosestImage(vectorK, csvFiles, averageVectors, eigenfaces, oneMatrixCsv, weightsMatrix, allMatricesCsv, function);
                 System.out.println();
                 System.out.println("Funcionalidade 3 finalizada.");
                 break;
             case 4:
                 printHeaderFunction("Gerar uma imagem aleatória com Eigenfaces");
-                generateNewImage(vectorNumbers, dataBaseLocation);
+                generateNewImage(vectorNumbers, dataBaseLocation, function);
                 System.out.println();
                 System.out.println("Funcionalidade 4 finalizada.");
                 break;
@@ -160,13 +160,13 @@ public class mainGabriel {
         runInterative();
     }
 
-    public static void function2() {
+    public static void function2(int function) {
         int vectorNumbers = verifyVectorNumbers();
         String dataBase = verifyDataBaseLocation();
 
         printHeaderFunction("Reconstrução de Imagens utilizando Eigenfaces");
 
-        calculateFunction2(vectorNumbers, dataBase);
+        calculateFunction2(vectorNumbers, dataBase, function);
 
         System.out.println();
         System.out.println("Funcionalidade 2 finalizada, a retornar ao menu inicial.");
@@ -181,7 +181,7 @@ public class mainGabriel {
 
         printHeaderFunction("Identificação da imagem mais próxima utilizando Eigenfaces");
 
-        calculateFunction3(vectorNumbers, csvLocation, dataBase);
+        calculateFunction3(vectorNumbers, csvLocation, dataBase, function);
 
         System.out.println();
         System.out.println("Funcionalidade 3 finalizada, a retornar ao menu inicial.");
@@ -189,13 +189,13 @@ public class mainGabriel {
         runInterative();
     }
 
-    public static void function4() {
+    public static void function4(int function) {
         int vectorNumbers = verifyVectorNumbers();
         String dataBase = verifyDataBaseLocation();
 
         printHeaderFunction("Gerar uma imagem aleatória com Eigenfaces");
 
-        generateNewImage(vectorNumbers, dataBase);
+        generateNewImage(vectorNumbers, dataBase, function);
 
         System.out.println();
         System.out.println("Funcionalidade 4 finalizada, a retornar ao menu inicial.");
@@ -237,7 +237,7 @@ public class mainGabriel {
         saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1", 1);
     }
 
-    public static void calculateFunction2(int vectorNumbers, String dataBase) {
+    public static void calculateFunction2(int vectorNumbers, String dataBase, int function) {
         String[] csvFiles = getCSVFileNames(dataBase);
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(dataBase);
 
@@ -259,10 +259,10 @@ public class mainGabriel {
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
-        reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv);
+        reconstructImagesWithEigenfaces(vectorK, csvFiles, averageVectors, eigenfaces, linearizedImages, weightsMatrix, allMatricesCsv, function);
     }
 
-    public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv) {
+    public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv, int function) {
 
         System.out.println("Valores do vetor médio: " + Arrays.toString(averageVectors));
         System.out.println("\nQuantidade de Eigenfaces utilizadas:  " + vectorNumbers);
@@ -274,12 +274,12 @@ public class mainGabriel {
             double maximumAbsolutError = calculateMAE(allMatricesCsv[img], reconstructedImageMatrix);
             System.out.println("\nPara a imagem: " + csvFiles[img] + ", foi utilizado este vetor peso : " + Arrays.toString(columnWeights));
             System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
-            saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", 0);
+            saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", function);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
         }
     }
 
-    public static void calculateFunction3(int vectorNumbers, String csvLocation, String dataBase) {
+    public static void calculateFunction3(int vectorNumbers, String csvLocation, String dataBase, int function) {
         String[] csvFiles = getCSVFileNames(dataBase);
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(dataBase);
         double[][] oneMatrixCsv = readCSVToMatrix(csvLocation);
@@ -303,10 +303,10 @@ public class mainGabriel {
 
         populateWeightsMatrix(weightsMatrix, phi, eigenfaces);
 
-        identifyClosestImage(vectorK, csvFiles, averageVectors, eigenfaces, oneMatrixCsv, weightsMatrix, allMatricesCsv);
+        identifyClosestImage(vectorK, csvFiles, averageVectors, eigenfaces, oneMatrixCsv, weightsMatrix, allMatricesCsv, function);
     }
 
-    public static void identifyClosestImage(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] oneMatrixCsv, double[][] weightsMatrix, double[][][] allMatricesCsv) {
+    public static void identifyClosestImage(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] oneMatrixCsv, double[][] weightsMatrix, double[][][] allMatricesCsv, int function) {
         int counter = 0;
 
         double[] linearizedPrincipalImage = matrixToArray1D(oneMatrixCsv);
@@ -330,13 +330,13 @@ public class mainGabriel {
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
 
             printFunction3(csvFiles, closestImageIndex[i], distances, counter, i);
-            saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[i]], "Output/Func3/Identificacao", 1);
+            saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[i]], "Output/Func3/Identificacao", function);
 
         }
 
     }
 
-    public static void generateNewImage(int vectorNumbers, String dataBase) {
+    public static void generateNewImage(int vectorNumbers, String dataBase, int function) {
         double[][][] allMatricesCsv = getMatricesFromCsvFolder(dataBase);
         double[][] linearizedImages = new double[allMatricesCsv[0].length * allMatricesCsv[0].length][allMatricesCsv.length];
         populateLinearizedImages(linearizedImages, allMatricesCsv);
@@ -361,7 +361,7 @@ public class mainGabriel {
         double[] newImage = creationImage(dimension, meanVector, vectorK, newEigenValuesK, eigenfaces);
         double[][] newImageMatrix = array1DToMatrix(newImage, allMatricesCsv[0]);
         System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + vectorK + "\n");
-        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", 1);
+        saveImage(newImageMatrix, "Input/Funcao2-3/csv", "Output/Func4", function);
     }
     //* ------------------ Fim dos métodos de distribuição de tarefas ------------------
 
@@ -685,18 +685,21 @@ public class mainGabriel {
         return normalizedImage;
     }
 
-    public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath, int printOrNot) {
+    public static void saveImage(double[][] imageArray, String inputCsvPath, String outputFolderPath, int function) {
         double[] minMaxValues = findMinMaxValues(imageArray);
         double min = minMaxValues[0];
         double max = minMaxValues[1];
 
         int[][] normalizedImage = normalizeImage(imageArray, min, max);
 
-        String jpgFileName = new File(inputCsvPath).getName();
-        if (inputCsvPath.endsWith(".csv")) {
-            jpgFileName = jpgFileName.replace(".csv", ".jpg");
-        } else {
+        String jpgFileName;
+        if (function == 2 || function == 3) {
+            jpgFileName = new File(inputCsvPath).getName().replace(".csv", ".jpg");
+        } else if (function == 4) {
             jpgFileName = "RandomImage.jpg";
+        } else {
+            errorGeneral("Função inválida para salvar a imagem.");
+            return;
         }
 
         int counter = 1;
@@ -720,9 +723,7 @@ public class mainGabriel {
 
         try {
             writeArrayAsImage(normalizedImage, outputPath);
-            if (printOrNot == 1) {
                 System.out.println("A imagem foi gerada com sucesso: " + outputPath);
-            }
         } catch (IOException e) {
             errorGeneral("Erro ao salvar a imagem: " + e.getMessage());
         }

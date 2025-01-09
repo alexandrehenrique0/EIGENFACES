@@ -780,6 +780,10 @@ public class LAPR1_24_25_DAB_02 {
                 errorGeneral("O tamanho da matriz não está dentro dos limites permitidos.");
             }
 
+            if (checkSquareMatrix(rowCount, columnCount)) {
+                errorGeneral("A matriz não é quadrada.");
+            }
+
             double[][] matrix = new double[rowCount][columnCount];
             fillMatrixFromCsv(path, matrix);
             return matrix;
@@ -882,6 +886,10 @@ public class LAPR1_24_25_DAB_02 {
 
     public static boolean checkSizeBoundaries(int rows, int cols) {
         return rows > MAX_SIZE_ROWS_AND_COLS || cols > MAX_SIZE_ROWS_AND_COLS || rows < MIN_SIZE_ROWS_AND_COLS || cols < MIN_SIZE_ROWS_AND_COLS;
+    }
+
+    public static boolean checkSquareMatrix(int rows, int cols) {
+        return rows != cols;
     }
 
     public static boolean checkCsvLocation(String csvLocation) {

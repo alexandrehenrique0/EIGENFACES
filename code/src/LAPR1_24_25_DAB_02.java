@@ -649,7 +649,7 @@ public class LAPR1_24_25_DAB_02 {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int intensity = array[y][x];
-                if (intensity < MIN_BIT_VALUE || intensity > MAX_BIT_VALUE) {
+                if (checkValuesLimits(intensity)) {
                     errorGeneral("Erro: Na normalização dos pixels, a intensidade do pixel deve estar entre 0 e 255.");
                 }
                 int rgb = (intensity << 16) | (intensity << 8) | intensity;
@@ -682,7 +682,7 @@ public class LAPR1_24_25_DAB_02 {
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                normalizedImage[y][x] = (int) ((imageArray[y][x] - min) / (max - min) * 255);
+                normalizedImage[y][x] = (int) ((imageArray[y][x] - min) / (max - min) * MAX_BIT_VALUE);
             }
         }
 
@@ -778,9 +778,7 @@ public class LAPR1_24_25_DAB_02 {
 
             if (checkSizeBoundaries(rowCount, columnCount)) {
                 errorGeneral("O tamanho da matriz não está dentro dos limites permitidos.");
-            }
-
-            if (checkSquareMatrix(rowCount, columnCount)) {
+            } else if (checkSquareMatrix(rowCount, columnCount)) {
                 errorGeneral("A matriz não é quadrada.");
             }
 
@@ -819,6 +817,9 @@ public class LAPR1_24_25_DAB_02 {
             if (!line.trim().isEmpty()) {
                 String[] values = line.split(",");
                 for (int col = 0; col < values.length; col++) {
+                    if (checkValuesLimits(Double.parseDouble(values[col].trim()))) {
+                        errorGeneral("Erro: Os valores da matriz devem estar entre 0 e 255.");
+                    }
                     matrix[row][col] = Double.parseDouble(values[col].trim());
                 }
                 row++;
@@ -886,6 +887,10 @@ public class LAPR1_24_25_DAB_02 {
 
     public static boolean checkSizeBoundaries(int rows, int cols) {
         return rows > MAX_SIZE_ROWS_AND_COLS || cols > MAX_SIZE_ROWS_AND_COLS || rows < MIN_SIZE_ROWS_AND_COLS || cols < MIN_SIZE_ROWS_AND_COLS;
+    }
+
+    public static boolean checkValuesLimits (double value) {
+        return value < MIN_BIT_VALUE || value > MAX_BIT_VALUE;
     }
 
     public static boolean checkSquareMatrix(int rows, int cols) {

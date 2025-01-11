@@ -1277,7 +1277,7 @@ public class LAPR1_24_25_DAB_02 {
             System.out.print("|");
             for (int i = 0; i < row.length; i++) {
                 adjustValue(row[i]);
-                System.out.printf("%12.3f\t", row[i]);
+                System.out.printf("%12.2f\t", row[i]);
                 if (i == row.length - 1) {
                     System.out.print("|");
                 }
@@ -1324,7 +1324,7 @@ public class LAPR1_24_25_DAB_02 {
         printMatrix(newEigenValuesK, "Valores Próprios da matriz K");
         printMatrix(newEigenVectorsK, "Vetores Próprios matriz K:");
         printMatrix(reconstructedMatrix, "Reconstruída");
-        System.out.printf("\nErro Absoluto Médio: %.3f\n", maximumAbsolutError);
+        System.out.printf("\nErro Absoluto Médio: %.2f\n", maximumAbsolutError);
     }
 
     public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex, double[] actualVectorOmegaI) {

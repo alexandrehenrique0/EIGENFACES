@@ -535,6 +535,8 @@ public class mainGabriel {
             }
         }
 
+
+
         return valuesAndIndexArray;
     }
 
@@ -1225,27 +1227,25 @@ public class mainGabriel {
         return matrixResult;
     }
 
-    @SuppressWarnings("JavaExistingMethodCanBeUsed")
     public static double[][] createSubMatrix(double[][] eigenVectors, double[][] valuesAndIndexArray) {
-        boolean[] keepColumnsBoolean = new boolean[eigenVectors[0].length];
-
-        for (double[] columns : valuesAndIndexArray) {
-            keepColumnsBoolean[(int) columns[1]] = true;
+        for (int i = 0; i < valuesAndIndexArray.length - 1; i++) {
+            for (int j = 0; j < valuesAndIndexArray.length - 1 - i; j++) {
+                if (valuesAndIndexArray[j][1] > valuesAndIndexArray[j + 1][1]) {
+                    double[] temp = valuesAndIndexArray[j];
+                    valuesAndIndexArray[j] = valuesAndIndexArray[j + 1];
+                    valuesAndIndexArray[j + 1] = temp;
+                }
+            }
         }
 
         double[][] submatrix = new double[eigenVectors.length][valuesAndIndexArray.length];
 
-        int subMatrixRows = 0;
-        for (double[] doubles : eigenVectors) {
-            int subMatrixColumns = 0;
-            for (int j = 0; j < doubles.length; j++) {
-                if (keepColumnsBoolean[j]) {
-                    submatrix[subMatrixRows][subMatrixColumns] = doubles[j];
-                    subMatrixColumns++;
-                }
+        for (int i = 0; i < eigenVectors.length; i++) {
+            for (int j = 0; j < valuesAndIndexArray.length; j++) {
+                submatrix[i][j] = eigenVectors[i][(int) valuesAndIndexArray[j][1]];
             }
-            subMatrixRows++;
         }
+
         return submatrix;
     }
     //* ----------------- Fim operações básicas com matrizes ------------------

@@ -11,7 +11,6 @@ import java.util.*;
 //* Use the keyboard shortcut Ctrl + F and search for "//*" to navigate between parts of the code.
 
 
-
 public class LAPR1_24_25_DAB_02 {
     //* Constantes para limites de tamanho.
     public static final int MAX_SIZE_ROWS_AND_COLS = 256;
@@ -20,7 +19,7 @@ public class LAPR1_24_25_DAB_02 {
     public static final int MIN_BIT_VALUE = 0;
     public static final int MAX_BIT_VALUE = 255;
     public static final double MIN_LAMBDA_VALUE = 1e-8;
-    public static final double MIN_DECIMAL_VALUE = 1e-3;
+    public static final double MIN_DECIMAL_VALUE = 1e-2;
 
     //* Scanner global para ser utilizado em todos os métodos necessários.
     public static Scanner scanner = new Scanner(System.in);
@@ -235,7 +234,7 @@ public class LAPR1_24_25_DAB_02 {
         double[][] matrixEigenFaces = multiplyMatrices(multiplyMatrices(newEigenVectorsK, newEigenValuesK), newEigenVectorsTransposeK);
 
         double maximumAbsolutError = calculateMAE(oneMatrixCsv, matrixEigenFaces);
-        adjustValue(maximumAbsolutError);
+        maximumAbsolutError = adjustValue(maximumAbsolutError);
 
         printFunction1(vectorK, newEigenValuesK, newEigenVectorsK, maximumAbsolutError, matrixEigenFaces);
         saveMatrixToFile(matrixEigenFaces, csvLocation, "Output/Func1", 1);
@@ -270,7 +269,7 @@ public class LAPR1_24_25_DAB_02 {
     public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv, int function, double[][] AtxA) {
 
         printVector("Valores do vetor médio :", averageVectors);
-        printMatrix(AtxA,"AtxA ");
+        printMatrix(AtxA, "AtxA ", true);
         System.out.println("\nQuantidade de Eigenfaces utilizadas:  " + vectorNumbers);
 
         for (int img = 0; img < linearizedImages[0].length; img++) {
@@ -278,10 +277,10 @@ public class LAPR1_24_25_DAB_02 {
             double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, columnWeights, vectorNumbers);
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[img]);
             double maximumAbsolutError = calculateMAE(allMatricesCsv[img], reconstructedImageMatrix);
-            adjustValue(maximumAbsolutError);
+            maximumAbsolutError = adjustValue(maximumAbsolutError);
             System.out.print("\nPara a imagem: " + csvFiles[img]);
             printVector(", foi utilizado este vetor peso :", columnWeights);
-            System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
+            System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.2f\n", maximumAbsolutError);
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", function);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
         }
@@ -880,10 +879,11 @@ public class LAPR1_24_25_DAB_02 {
         }
     }
 
-    public static void adjustValue(double value) {
-        if (value < MIN_DECIMAL_VALUE) {
-            value = MIN_DECIMAL_VALUE;
+    public static double adjustValue(double value) {
+        if (value < 0 && Math.abs(value) < MIN_DECIMAL_VALUE) {
+            value = -MIN_DECIMAL_VALUE;
         }
+        return value;
     }
 
     public static boolean checkFunctionOptions(int function) {
@@ -894,7 +894,7 @@ public class LAPR1_24_25_DAB_02 {
         return rows > MAX_SIZE_ROWS_AND_COLS || cols > MAX_SIZE_ROWS_AND_COLS || rows < MIN_SIZE_ROWS_AND_COLS || cols < MIN_SIZE_ROWS_AND_COLS;
     }
 
-    public static boolean checkValuesLimits (double value) {
+    public static boolean checkValuesLimits(double value) {
         return value < MIN_BIT_VALUE || value > MAX_BIT_VALUE;
     }
 
@@ -1268,36 +1268,44 @@ public class LAPR1_24_25_DAB_02 {
         System.out.println();
     }
 
-    public static void printMatrix(double[][] matrixToPrint, String matrixName) {
+    public static void printMatrix(double[][] matrixToPrint, String matrixName, boolean printInt) {
         System.out.println("\nMatriz: " + matrixName + " ↓");
-        printLine(matrixToPrint[0].length, "________________");
+        printLine(matrixToPrint[0].length, "____________");
         System.out.println();
 
         for (double[] row : matrixToPrint) {
             System.out.print("|");
             for (int i = 0; i < row.length; i++) {
-                adjustValue(row[i]);
-                System.out.printf("%12.2f\t", row[i]);
+                double value = adjustValue(row[i]);
+                if (printInt) {
+                    System.out.printf("%9.0f\t", value);
+                } else {
+                    System.out.printf("%10.2f\t", value);
+                }
                 if (i == row.length - 1) {
                     System.out.print("|");
                 }
             }
             System.out.println();
         }
-        printLine(matrixToPrint[0].length, "================");
+        printLine(matrixToPrint[0].length, "============");
         System.out.println();
     }
 
     public static void printVector(String vectorName, double[] array) {
         System.out.print(vectorName);
         for (int i = 0; i < array.length; i++) {
-            adjustValue(array[i]);
+            double value = adjustValue(array[i]);
             if (i == 0) {
-                System.out.printf(" [%.3f; ", array[i]);
+                if (array.length == 1) {
+                    System.out.printf("[%.2f]\n", value);
+                } else {
+                    System.out.printf(" [%.2f; ", value);
+                }
             } else if (i == array.length - 1) {
-                System.out.printf("%.3f]\n", array[i]);
+                System.out.printf("%.2f]\n", value);
             } else {
-                System.out.printf("%.3f; ", array[i]);
+                System.out.printf("%.2f; ", value);
             }
         }
     }
@@ -1306,8 +1314,8 @@ public class LAPR1_24_25_DAB_02 {
         System.out.println("Vetor: " + vetorName + " ↓");
         System.out.println(" ___________ ");
         for (double v : vetorToPrint) {
-            adjustValue(v);
-            System.out.printf("|%8.3f\t|\n", v);
+            v = adjustValue(v);
+            System.out.printf("|%8.2f\t|\n", v);
         }
         System.out.println(" =========== ");
         System.out.println();
@@ -1321,15 +1329,16 @@ public class LAPR1_24_25_DAB_02 {
 
     public static void printFunction1(int numbersEigenfaces, double[][] newEigenValuesK, double[][] newEigenVectorsK, double maximumAbsolutError, double[][] reconstructedMatrix) {
         System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + numbersEigenfaces);
-        printMatrix(newEigenValuesK, "Valores Próprios da matriz K");
-        printMatrix(newEigenVectorsK, "Vetores Próprios matriz K:");
-        printMatrix(reconstructedMatrix, "Reconstruída");
+        printMatrix(newEigenValuesK, "Valores Próprios da matriz K", false);
+        printMatrix(newEigenVectorsK, "Vetores Próprios matriz K:", false);
+        printMatrix(reconstructedMatrix, "Reconstruída", true);
         System.out.printf("\nErro Absoluto Médio: %.2f\n", maximumAbsolutError);
     }
 
     public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex, double[] actualVectorOmegaI) {
         if (counter == 1) {
             System.out.printf("\nA imagem mais próxima foi: %s e foi salva em Identificação!\n", csvFiles[closestImageIndex]);
+            System.out.println();
             printDistances(csvFiles, distances, closestImageIndex, counter, actualVectorOmegaI);
         } else if (counter > 1 && imageIndex == 0) {
             System.out.println("\nForam identificadas " + counter + " imagens com a mesma distância!\n");
@@ -1342,15 +1351,19 @@ public class LAPR1_24_25_DAB_02 {
             if (i == closestImageIndex || distances[i] == distances[closestImageIndex]) {
                 if (counter == 1) {
                     System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
+                    printVector("E o seu vetor Ômega (Ωi) foi:", actualVectorOmegaI);
+                    System.out.println();
                 } else {
                     System.out.printf("Essa foi uma das " + counter + " imagens mais próximas da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
+                    printVector("E o seu vetor Ômega (Ωi) foi:", actualVectorOmegaI);
+                    System.out.println();
                 }
             } else {
                 System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
                 printVector("E o vetor Ômega (Ωi) da imagem " + csvFiles[i] + " foi:", actualVectorOmegaI);
+                System.out.println();
             }
         }
-        System.out.println();
     }
     //* ----------------- Fim métodos para printar -----------------------
 
@@ -1431,8 +1444,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("centralizarMatriz: Teste bem sucedido!");
         } else {
             System.out.println("centralizarMatriz: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }
@@ -1457,8 +1470,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("Multiplicação: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }
@@ -1486,8 +1499,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("Normalização: Teste bem sucedido!");
         } else {
             System.out.println("Normalização: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }
@@ -1514,8 +1527,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("Transposta: Teste bem sucedido!");
         } else {
             System.out.println("Transposta: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }
@@ -1544,8 +1557,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("Multiplicação por escalar: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação por escalar: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }
@@ -1600,8 +1613,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("Submatriz: Teste bem sucedido!");
         } else {
             System.out.println("Submatriz: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }
@@ -1691,7 +1704,7 @@ public class LAPR1_24_25_DAB_02 {
         } else {
             System.out.println("Cálculo do MAE: Falha - Resultado incorreto.");
             System.out.println("Esperado: " + expectedResult);
-            System.out.printf("Obtido: %.3f\n", obtainedResult);
+            System.out.printf("Obtido: %.2f\n", obtainedResult);
         }
         System.out.println();
     }
@@ -1744,8 +1757,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("getValuesAndIndexArray: Teste bem sucedido!");
         } else {
             System.out.println("getValuesAndIndexArray: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }
@@ -1802,8 +1815,8 @@ public class LAPR1_24_25_DAB_02 {
             System.out.println("Matriz Diagonal: Teste bem sucedido!");
         } else {
             System.out.println("Matriz Diagonal: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", false);
+            printMatrix(obtainedResult, "Obtido", false);
         }
         System.out.println();
     }

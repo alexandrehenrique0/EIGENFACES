@@ -109,7 +109,8 @@ public class mainGabriel {
         double[][] phiT = transposeMatrix(phi);
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
+        double[][] eigenValues = getEigenValues(phiTxPhi);
+        double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
@@ -252,7 +253,8 @@ public class mainGabriel {
         double[][] phiT = transposeMatrix(phi);
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
+        double[][] eigenValues = getEigenValues(phiTxPhi);
+        double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
@@ -267,7 +269,7 @@ public class mainGabriel {
     public static void reconstructImagesWithEigenfaces(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] linearizedImages, double[][] weightsMatrix, double[][][] allMatricesCsv, int function, double[][] AtxA) {
 
         printVector("Valores do vetor médio :", averageVectors);
-        printMatrix(AtxA,"AtxA ");
+        printMatrix(AtxA, "AtxA ", 1);
         System.out.println("\nQuantidade de Eigenfaces utilizadas:  " + vectorNumbers);
 
         for (int img = 0; img < linearizedImages[0].length; img++) {
@@ -278,7 +280,7 @@ public class mainGabriel {
             adjustValue(maximumAbsolutError);
             System.out.print("\nPara a imagem: " + csvFiles[img]);
             printVector(", foi utilizado este vetor peso :", columnWeights);
-            System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.3f\n", maximumAbsolutError);
+            System.out.printf("O erro absoluto médio dessa imagem com sua original foi: %.2f\n", maximumAbsolutError);
             saveImage(reconstructedImageMatrix, csvFiles[img], "Output/Func2/ImagensReconstruidas", function);
             saveMatrixToFile(reconstructedImageMatrix, csvFiles[img], "Output/Func2/Eigenfaces", 0);
         }
@@ -299,7 +301,8 @@ public class mainGabriel {
         double[][] phiT = transposeMatrix(phi);
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
+        double[][] eigenValues = getEigenValues(phiTxPhi);
+        double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
@@ -534,8 +537,6 @@ public class mainGabriel {
                 }
             }
         }
-
-
 
         return valuesAndIndexArray;
     }
@@ -892,7 +893,7 @@ public class mainGabriel {
         return rows > MAX_SIZE_ROWS_AND_COLS || cols > MAX_SIZE_ROWS_AND_COLS || rows < MIN_SIZE_ROWS_AND_COLS || cols < MIN_SIZE_ROWS_AND_COLS;
     }
 
-    public static boolean checkValuesLimits (double value) {
+    public static boolean checkValuesLimits(double value) {
         return value < MIN_BIT_VALUE || value > MAX_BIT_VALUE;
     }
 
@@ -1266,7 +1267,7 @@ public class mainGabriel {
         System.out.println();
     }
 
-    public static void printMatrix(double[][] matrixToPrint, String matrixName) {
+    public static void printMatrix(double[][] matrixToPrint, String matrixName, int intOrDouble) {
         System.out.println("\nMatriz: " + matrixName + " ↓");
         printLine(matrixToPrint[0].length, "________________");
         System.out.println();
@@ -1275,10 +1276,15 @@ public class mainGabriel {
             System.out.print("|");
             for (int i = 0; i < row.length; i++) {
                 adjustValue(row[i]);
-                System.out.printf("%12.3f\t", row[i]);
+                if (intOrDouble == 1) {
+                    System.out.printf("%12.0f\t", row[i]);
+                } else {
+                    System.out.printf("%12.2f\t", row[i]);
+                }
                 if (i == row.length - 1) {
                     System.out.print("|");
                 }
+
             }
             System.out.println();
         }
@@ -1291,11 +1297,11 @@ public class mainGabriel {
         for (int i = 0; i < array.length; i++) {
             adjustValue(array[i]);
             if (i == 0) {
-                System.out.printf(" [%.3f; ", array[i]);
+                System.out.printf(" [%.2f; ", array[i]);
             } else if (i == array.length - 1) {
-                System.out.printf("%.3f]\n", array[i]);
+                System.out.printf("%.2f]\n", array[i]);
             } else {
-                System.out.printf("%.3f; ", array[i]);
+                System.out.printf("%.2f; ", array[i]);
             }
         }
     }
@@ -1305,7 +1311,7 @@ public class mainGabriel {
         System.out.println(" ___________ ");
         for (double v : vetorToPrint) {
             adjustValue(v);
-            System.out.printf("|%8.3f\t|\n", v);
+            System.out.printf("|%8.2f\t|\n", v);
         }
         System.out.println(" =========== ");
         System.out.println();
@@ -1319,10 +1325,10 @@ public class mainGabriel {
 
     public static void printFunction1(int numbersEigenfaces, double[][] newEigenValuesK, double[][] newEigenVectorsK, double maximumAbsolutError, double[][] reconstructedMatrix) {
         System.out.println("A quantidade de Eigenfaces selecionadas para a variável K foi: " + numbersEigenfaces);
-        printMatrix(newEigenValuesK, "Valores Próprios da matriz K");
-        printMatrix(newEigenVectorsK, "Vetores Próprios matriz K:");
-        printMatrix(reconstructedMatrix, "Reconstruída");
-        System.out.printf("\nErro Absoluto Médio: %.3f\n", maximumAbsolutError);
+        printMatrix(newEigenValuesK, "Valores Próprios da matriz K", 2);
+        printMatrix(newEigenVectorsK, "Vetores Próprios matriz K:", 2);
+        printMatrix(reconstructedMatrix, "Reconstruída", 1);
+        System.out.printf("\nErro Absoluto Médio: %.2f\n", maximumAbsolutError);
     }
 
     public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex, double[] actualVectorOmegaI) {
@@ -1429,8 +1435,8 @@ public class mainGabriel {
             System.out.println("centralizarMatriz: Teste bem sucedido!");
         } else {
             System.out.println("centralizarMatriz: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }
@@ -1455,8 +1461,8 @@ public class mainGabriel {
             System.out.println("Multiplicação: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }
@@ -1484,8 +1490,8 @@ public class mainGabriel {
             System.out.println("Normalização: Teste bem sucedido!");
         } else {
             System.out.println("Normalização: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }
@@ -1512,8 +1518,8 @@ public class mainGabriel {
             System.out.println("Transposta: Teste bem sucedido!");
         } else {
             System.out.println("Transposta: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }
@@ -1542,8 +1548,8 @@ public class mainGabriel {
             System.out.println("Multiplicação por escalar: Teste bem sucedido!");
         } else {
             System.out.println("Multiplicação por escalar: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }
@@ -1598,8 +1604,8 @@ public class mainGabriel {
             System.out.println("Submatriz: Teste bem sucedido!");
         } else {
             System.out.println("Submatriz: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }
@@ -1689,7 +1695,7 @@ public class mainGabriel {
         } else {
             System.out.println("Cálculo do MAE: Falha - Resultado incorreto.");
             System.out.println("Esperado: " + expectedResult);
-            System.out.printf("Obtido: %.3f\n", obtainedResult);
+            System.out.printf("Obtido: %.2f\n", obtainedResult);
         }
         System.out.println();
     }
@@ -1742,8 +1748,8 @@ public class mainGabriel {
             System.out.println("getValuesAndIndexArray: Teste bem sucedido!");
         } else {
             System.out.println("getValuesAndIndexArray: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }
@@ -1800,8 +1806,8 @@ public class mainGabriel {
             System.out.println("Matriz Diagonal: Teste bem sucedido!");
         } else {
             System.out.println("Matriz Diagonal: Falha - Resultado incorreto.");
-            printMatrix(expectedResult, "Esperado");
-            printMatrix(obtainedResult, "Obtido");
+            printMatrix(expectedResult, "Esperado", 2);
+            printMatrix(obtainedResult, "Obtido", 2);
         }
         System.out.println();
     }

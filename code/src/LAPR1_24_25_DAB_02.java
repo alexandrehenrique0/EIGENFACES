@@ -11,6 +11,7 @@ import java.util.*;
 //* Use the keyboard shortcut Ctrl + F and search for "//*" to navigate between parts of the code.
 
 
+
 public class LAPR1_24_25_DAB_02 {
     //* Constantes para limites de tamanho.
     public static final int MAX_SIZE_ROWS_AND_COLS = 256;
@@ -252,7 +253,8 @@ public class LAPR1_24_25_DAB_02 {
         double[][] phiT = transposeMatrix(phi);
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
+        double[][] eigenValues = getEigenValues(phiTxPhi);
+        double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);
@@ -299,7 +301,8 @@ public class LAPR1_24_25_DAB_02 {
         double[][] phiT = transposeMatrix(phi);
         double[][] phiTxPhi = multiplyMatrices(phiT, phi);
         double[][] eigenVectors = getEigenVectors(phiTxPhi);
-        double[][] selectedColumnsK = getValuesAndIndexArray(eigenVectors, vectorK);
+        double[][] eigenValues = getEigenValues(phiTxPhi);
+        double[][] selectedColumnsK = getValuesAndIndexArray(eigenValues, vectorK);
         double[][] newEigenVectorsK = createSubMatrix(eigenVectors, selectedColumnsK);
         double[][] expandedVectorsK = multiplyMatrices(phi, newEigenVectorsK);
         double[][] eigenfaces = normalize(expandedVectorsK);

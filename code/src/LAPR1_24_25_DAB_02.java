@@ -16,6 +16,7 @@ public class LAPR1_24_25_DAB_02 {
     public static final int MAX_SIZE_ROWS_AND_COLS = 256;
     public static final int MIN_SIZE_ROWS_AND_COLS = 1;
     public static final int MIN_QUANTITY_VECTORS = 1;
+    public static final int CODE_FOR_ALL_VECTORS = -1;
     public static final int MIN_BIT_VALUE = 0;
     public static final int MAX_BIT_VALUE = 255;
     public static final double MIN_LAMBDA_VALUE = 1e-8;
@@ -885,6 +886,10 @@ public class LAPR1_24_25_DAB_02 {
         return function >= 1 && function <= 5 || function == 0;
     }
 
+    public static boolean checkVectorsNumbers(int vectorNumbers) {
+        return vectorNumbers >= MIN_QUANTITY_VECTORS || vectorNumbers == CODE_FOR_ALL_VECTORS;
+    }
+
     public static boolean checkSizeBoundaries(int rows, int cols) {
         return rows > MAX_SIZE_ROWS_AND_COLS || cols > MAX_SIZE_ROWS_AND_COLS || rows < MIN_SIZE_ROWS_AND_COLS || cols < MIN_SIZE_ROWS_AND_COLS;
     }
@@ -923,10 +928,8 @@ public class LAPR1_24_25_DAB_02 {
 
     public static String verifyDataBaseLocation() {
         String dataBaseLocation;
-        do {
-            uiDataBase();
-            dataBaseLocation = receiveDataBaseLocation(null);
-        } while (!checkDataBaseLocation(dataBaseLocation));
+        uiDataBase();
+        dataBaseLocation = receiveDataBaseLocation(null);
         return dataBaseLocation;
     }
 
@@ -944,7 +947,7 @@ public class LAPR1_24_25_DAB_02 {
         do {
             uiVectorNumbers();
             vectorNumbers = receiveNumberVectors(null);
-        } while (vectorNumbers < MIN_QUANTITY_VECTORS);
+        } while (!checkVectorsNumbers(vectorNumbers));
         return vectorNumbers;
     }
 
@@ -1064,8 +1067,8 @@ public class LAPR1_24_25_DAB_02 {
         int vectorNumbersArgs;
         if (args == null) {
             vectorNumbersArgs = scanner.nextInt();
-            if (vectorNumbersArgs < MIN_QUANTITY_VECTORS) {
-                System.out.println("Erro: O número de vetores deve ser maior que 0.");
+            if (vectorNumbersArgs < MIN_QUANTITY_VECTORS && vectorNumbersArgs != CODE_FOR_ALL_VECTORS) {
+                System.out.println("Erro: O número de vetores deve ser maior que 0.\nOu insira -1 para utilizar todos os vetores possíveis.");
                 System.out.println("Tentar novamente? (S/N)");
                 String answer = scanner.next().toUpperCase();
                 if (answer.equals("N")) {
@@ -1075,10 +1078,14 @@ public class LAPR1_24_25_DAB_02 {
             }
         } else {
             vectorNumbersArgs = Integer.parseInt(args[3]);
-            if (vectorNumbersArgs < MIN_QUANTITY_VECTORS) {
-                errorGeneral("Erro: O número de vetores deve ser maior que 0.");
+            if (vectorNumbersArgs < MIN_QUANTITY_VECTORS && vectorNumbersArgs != CODE_FOR_ALL_VECTORS) {
+                errorGeneral("Erro: O número de vetores deve ser maior que 0.\nOu insira -1 para utilizar todos os vetores possíveis.");
             }
             return vectorNumbersArgs;
+        }
+
+        if (vectorNumbersArgs == CODE_FOR_ALL_VECTORS) {
+            vectorNumbersArgs = MAX_SIZE_ROWS_AND_COLS;
         }
         return vectorNumbersArgs;
     }

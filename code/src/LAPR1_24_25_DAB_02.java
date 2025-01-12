@@ -315,8 +315,6 @@ public class LAPR1_24_25_DAB_02 {
     }
 
     public static void identifyClosestImage(int vectorNumbers, String[] csvFiles, double[] averageVectors, double[][] eigenfaces, double[][] oneMatrixCsv, double[][] weightsMatrix, double[][][] allMatricesCsv, int function) {
-        int counter = 0;
-
         double[] linearizedPrincipalImage = matrixToArray1D(oneMatrixCsv);
         double[] phiPrincipalImage = subtractionColumns(linearizedPrincipalImage, averageVectors);
 
@@ -328,22 +326,19 @@ public class LAPR1_24_25_DAB_02 {
         System.out.println("O número de vetores próprios utilizados: " + vectorNumbers + "\n");
         printVector("Novo vetor Omega (Ω nova) :", principalWeightsVector);
 
+        int counter = 0;
         for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
             counter++;
         }
 
-        for (int i = 0; closestImageIndex[i] != Integer.MAX_VALUE; i++) {
-
+        for (int i = 0; i < counter; i++) {
             double[] closestImageWeights = getColumn(weightsMatrix, closestImageIndex[i]);
             double[] reconstructedImage = reconstructImage(averageVectors, eigenfaces, closestImageWeights, vectorNumbers);
-
             double[][] reconstructedImageMatrix = array1DToMatrix(reconstructedImage, allMatricesCsv[0]);
 
-            printFunction3(csvFiles, closestImageIndex[i], distances, counter, i, closestImageWeights);
+            printFunction3(csvFiles, closestImageIndex[i], distances, counter, i, closestImageWeights, weightsMatrix);
             saveImage(reconstructedImageMatrix, csvFiles[closestImageIndex[i]], "Output/Func3/Identificacao", function);
-
         }
-
     }
 
     public static void generateNewImage(int vectorNumbers, String dataBase, int function) {
@@ -1335,32 +1330,31 @@ public class LAPR1_24_25_DAB_02 {
         System.out.printf("\nErro Absoluto Médio: %.2f\n", maximumAbsolutError);
     }
 
-    public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex, double[] actualVectorOmegaI) {
+    public static void printFunction3(String[] csvFiles, int closestImageIndex, double[] distances, int counter, int imageIndex, double[] actualVectorOmegaI, double[][] weightsMatrix) {
         if (counter == 1) {
-            System.out.printf("\nA imagem mais próxima foi: %s e foi salva em Identificação!\n", csvFiles[closestImageIndex]);
+            System.out.printf("\nA imagem mais próxima foi: %s e será armazenada na pasta Identificação!\n", csvFiles[closestImageIndex]);
             System.out.println();
-            printDistances(csvFiles, distances, closestImageIndex, counter, actualVectorOmegaI);
+            printDistances(csvFiles, distances, closestImageIndex, counter, actualVectorOmegaI, weightsMatrix);
         } else if (counter > 1 && imageIndex == 0) {
-            System.out.println("\nForam identificadas " + counter + " imagens com a mesma distância!\n");
-            printDistances(csvFiles, distances, closestImageIndex, counter, actualVectorOmegaI);
+            System.out.println("\nForam identificadas " + counter + " imagens com a mesma distância!\nTodas serão armazenadas na pasta Identificação!\n");
+            printDistances(csvFiles, distances, closestImageIndex, counter, actualVectorOmegaI, weightsMatrix);
         }
     }
 
-    public static void printDistances(String[] csvFiles, double[] distances, int closestImageIndex, int counter, double[] actualVectorOmegaI) {
+    public static void printDistances(String[] csvFiles, double[] distances, int closestImageIndex, int counter, double[] actualVectorOmegaI, double[][] weightsMatrix) {
         for (int i = 0; i < csvFiles.length; i++) {
             if (i == closestImageIndex || distances[i] == distances[closestImageIndex]) {
                 if (counter == 1) {
-                    System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
-                    printVector("E o seu vetor Ômega (Ωi) foi:", actualVectorOmegaI);
-                    System.out.println();
+                    System.out.printf("Essa foi a imagem mais próxima da solicitada! %s e a sua distância foi: %.1f\n", csvFiles[i], distances[i]);
                 } else {
-                    System.out.printf("Essa foi uma das " + counter + " imagens mais próximas da solicitada! %s e sua distância foi: %.1f\n", csvFiles[i], distances[i]);
-                    printVector("E o seu vetor Ômega (Ωi) foi:", actualVectorOmegaI);
-                    System.out.println();
+                    System.out.printf("Essa foi uma das " + counter + " imagens mais próximas da solicitada! %s e a sua distância foi: %.1f\n", csvFiles[i], distances[i]);
                 }
+                printVector("E o seu vetor Ômega (Ωi) foi:", actualVectorOmegaI);
+                System.out.println();
             } else {
                 System.out.printf("Distância euclidiana para a imagem %s: %.1f\n", csvFiles[i], distances[i]);
-                printVector("E o vetor Ômega (Ωi) da imagem " + csvFiles[i] + " foi:", actualVectorOmegaI);
+                double[] omegaI = getColumn(weightsMatrix, i);
+                printVector("E o vetor Ômega (Ωi) da imagem " + csvFiles[i] + " foi:", omegaI);
                 System.out.println();
             }
         }

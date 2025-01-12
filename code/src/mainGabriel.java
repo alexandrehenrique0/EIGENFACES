@@ -395,7 +395,11 @@ public class mainGabriel {
     }
 
     public static void populateLinearizedImages(double[][] linearizedImages, double[][][] imageMatrices) {
+        int expectedLength = imageMatrices[0].length * imageMatrices[0][0].length;
         for (int img = 0; img < imageMatrices.length; img++) {
+            if (imageMatrices[img].length * imageMatrices[img][0].length != expectedLength) {
+                errorGeneral("Todas as matrizes devem ter o mesmo tamanho.");
+            }
             double[] linearizedMatrix = matrixToArray1D(imageMatrices[img]);
             for (int i = 0; i < linearizedMatrix.length; i++) {
                 linearizedImages[i][img] = linearizedMatrix[i];
@@ -1371,7 +1375,7 @@ public class mainGabriel {
     //! ------------------ Error Messages para não interativo ------------------
     public static void errorGeneral(String error) {
         //! Esse tipo de mensagem de erro deve ser usado apenas para o modo não interativo!
-        System.out.println(error);
+        System.err.println(error);
         System.exit(1);
     }
     //! ------------------ Fim error messages --------------

@@ -1018,7 +1018,6 @@ public class mainGabriel {
         System.out.println("|Luiz Gabriel de Souza Sargaço Teixeira              |");
         System.out.println("|Rafael Pinto Vieira                                 |");
         System.out.println("|Rita Mafalda Martins de Oliveira                    |");
-        System.out.println("|Younés André Marques de Almeida Bouayad             |");
         System.out.println("+----------------------------------------------------+");
     }
 
